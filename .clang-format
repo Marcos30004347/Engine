@@ -1,0 +1,28 @@
+# .clang-format
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: true
+  BeforeLambdaBody: false
+ColumnLimit: 180
+
+BreakBeforeBraces: Allman
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackParameters: false
+BinPackArguments : false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLambdasOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AlignAfterOpenBracket: AlwaysBreak
+BracedInitializerIndentWidth: 2
+EmptyLineBeforeAccessModifier : Always

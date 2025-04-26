@@ -8,12 +8,6 @@ if (NOT CMAKE_MODULE_PATH)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 endif()
 
-if (MSVC AND NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
-    enable_language(CXX ASM_MASM)
-else()
-    enable_language(CXX ASM)
-endif()
-
 if(MSVC)
   add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
   add_definitions(-D_HAS_EXCEPTIONS=0)
@@ -108,6 +102,7 @@ set_property(CACHE BOOST_CONTEXT_ASSEMBLER PROPERTY STRINGS masm gas armasm armc
 unset(_default_asm)
 
 ## Assembler source suffix
+message("BOOST_CONTEXT_ASSEMBLER = ${BOOST_CONTEXT_ASSEMBLER}")
 
 if(BOOST_CONTEXT_ASSEMBLER STREQUAL armclang)
   set(_default_ext .S)
@@ -118,6 +113,7 @@ elseif(BOOST_CONTEXT_ASSEMBLER STREQUAL gas)
 else()
   set(_default_ext .asm)
 endif()
+message("_default_ext = ${_default_ext}")
 
 set(BOOST_CONTEXT_ASM_SUFFIX "${_default_ext}" CACHE STRING "Boost.Context assembler source suffix (.asm, .S)")
 set_property(CACHE BOOST_CONTEXT_ASM_SUFFIX PROPERTY STRINGS .asm .S)
@@ -159,6 +155,8 @@ if(BOOST_CONTEXT_IMPLEMENTATION STREQUAL "fcontext")
   else()
     set(ASM_LANGUAGE ASM_MASM)
   endif()
+
+  enable_language(${ASM_LANGUAGE})
 endif()
 
 # Choose .asm sources
@@ -173,8 +171,29 @@ set(ASM_SOURCES
   asm/jump_${_asm_suffix}
   asm/ontop_${_asm_suffix}
 )
+message("ASM SOURCES = ${ASM_SOURCES}" )
 
 unset(_asm_suffix)
+
+if(BOOST_CONTEXT_ASSEMBLER STREQUAL masm)
+  set_property(SOURCE ${ASM_SOURCES} APPEND PROPERTY COMPILE_OPTIONS "/nologo")
+  if(MSVC AND NOT(MSVC_VERSION LESS 1936) AND NOT(CMAKE_CXX_SIMULATE_VERSION))
+    set_property(SOURCE ${ASM_SOURCES} APPEND PROPERTY COMPILE_OPTIONS "/quiet")
+  endif()
+  if(BOOST_CONTEXT_ARCHITECTURE STREQUAL i386)
+    set_property(SOURCE ${ASM_SOURCES} APPEND PROPERTY COMPILE_OPTIONS "/safeseh")
+  endif()
+else() 
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set_property(SOURCE ${ASM_SOURCES} APPEND PROPERTY COMPILE_OPTIONS "-x" "assembler-with-cpp")
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set_property(SOURCE ${ASM_SOURCES} APPEND PROPERTY COMPILE_OPTIONS "-Wno-unused-command-line-argument")
+  endif()
+endif() 
+
+enable_language(${ASM_LANGUAGE})
+
+set_source_files_properties(${ASM_SOURCES} PROPERTIES LANGUAGE ${ASM_LANGUAGE})
 
 add_library(fcontext STATIC ${SOURCES} ${ASM_SOURCES})
 

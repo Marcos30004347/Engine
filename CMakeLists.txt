@@ -63,3 +63,19 @@ target_link_libraries(Engine
     PRIVATE SDL3::SDL3
     PRIVATE simdpp
 )
+
+if(WIN32)    
+    set(DLLS
+        "${CMAKE_BINARY_DIR}/thirdparty/SDL/SDL3.dll"
+    )
+
+    set_target_properties(Engine PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
+    foreach(DLL ${DLLS})
+        add_custom_command(TARGET Engine POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${DLL}"
+                "$<TARGET_FILE_DIR:Engine>"
+        )
+    endforeach()
+endif()
