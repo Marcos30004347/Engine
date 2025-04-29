@@ -21,15 +21,17 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-struct QueueFamilyIndices
+struct VulkanQueueFamilyIndices
 {
   bool hasGraphicsFamily = false;
-  uint32_t graphicsFamily;
   bool hasComputeFamily = false;
-  uint32_t computeFamily;
   bool hasTransferFamily = false;
+  bool hasPresentFamily = false;
+
+  uint32_t graphicsFamily;
+  uint32_t computeFamily;
   uint32_t transferFamily;
-  std::unordered_map<VkSurfaceKHR, uint32_t> surface2PresentQueueFamily;
+  uint32_t presentFamily;
 };
 
 struct SwapChainSupportDetails
@@ -104,10 +106,11 @@ private:
   std::unordered_map<VkSurfaceKHR, VkExtent2D> swapChainExtent;
   std::unordered_map<VkSurfaceKHR, std::vector<VkImageView>> swapChainImageViews;
   std::unordered_map<VkSurfaceKHR, std::vector<VkFramebuffer>> swapChainFramebuffers;
-  std::unordered_map<VkSurfaceKHR, VkQueue> presentQueues;
+  // std::unordered_map<VkSurfaceKHR, VkQueue> presentQueues;
 
   // Queues
-  QueueFamilyIndices indices;
+  VulkanQueueFamilyIndices indices;
+  std::vector<VkQueue> presentQueues;
   std::vector<VkQueue> graphicsQueue;
   std::vector<VkQueue> computeQueue;
   std::vector<VkQueue> transferQueue;

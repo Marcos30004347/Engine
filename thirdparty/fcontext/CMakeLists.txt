@@ -12,7 +12,6 @@ if(MSVC)
   add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
   add_definitions(-D_HAS_EXCEPTIONS=0)
 endif()
-add_definitions(-DBOOST_CONTEXT_EXPORT=)
 
 set(HEADER "include/fcontext/fcontext.h")
 set(SOURCES "source/stack.c")

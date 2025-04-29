@@ -86,7 +86,7 @@ struct DeviceResult
   DeviceProperties properties;
 };
 
-QueueFamilyIndices findQueueFamilyIndices(VkPhysicalDevice device, std::vector<VkSurfaceKHR> &surfaces)
+VulkanQueueFamilyIndices findQueueFamilyIndices(VkPhysicalDevice device, std::vector<VkSurfaceKHR> &surfaces)
 {
   uint32_t queueFamilyCount = 0;
   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -94,7 +94,7 @@ QueueFamilyIndices findQueueFamilyIndices(VkPhysicalDevice device, std::vector<V
   std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-  QueueFamilyIndices indices;
+  VulkanQueueFamilyIndices indices;
 
   indices.hasGraphicsFamily = false;
   indices.hasComputeFamily = false;
@@ -118,13 +118,16 @@ QueueFamilyIndices findQueueFamilyIndices(VkPhysicalDevice device, std::vector<V
       indices.computeFamily = i;
       indices.hasComputeFamily = true;
     }
+
     for (uint32_t j = 0; j < surfaces.size(); j++)
     {
       VkBool32 supported = VK_FALSE;
+      
       vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surfaces[j], &supported);
+      
       if (supported)
       {
-        indices.surface2PresentQueueFamily[surfaces[j]] = i;
+        indices.presentFamily = i;
       }
     }
   }
@@ -490,8 +493,8 @@ void VulkanDevice::addWindowSurface(window::Window *windowObj)
     {
       throw std::runtime_error("Could not create surface");
     }
-
-    surfaces.push_back(surface);
+    SurfaceHandle handle = static_cast<SurfaceHandle>(surfaces.size());
+    surfaces[handle] = surface;
     surfaceRetrieved = true;
   }
 
@@ -563,20 +566,15 @@ void VulkanDevice::createLogicalDevice()
     uniqueFamiles.insert(indices.transferFamily);
   }
 
-  for (auto &p : surfaces)
+  if (indices.hasPresentFamily)
   {
-    VkSurfaceKHR surface = p.second;
-
-    if (indices.surface2PresentQueueFamily.count(surface))
+    if (familyToCount.count(indices.presentFamily) == 0)
     {
-      if (familyToCount.count(indices.surface2PresentQueueFamily[surface]) == 0)
-      {
-        familyToCount[indices.surface2PresentQueueFamily[surface]] = 0;
-      }
-
-      familyToCount[indices.surface2PresentQueueFamily[surface]] += 1;
-      uniqueFamiles.insert(indices.surface2PresentQueueFamily[surface]);
+      familyToCount[indices.presentFamily] = 0;
     }
+
+    familyToCount[indices.presentFamily] += surfaces.size();
+    uniqueFamiles.insert(indices.presentFamily);
   }
 
   for (uint32_t familyIndex : uniqueFamiles)
@@ -611,6 +609,7 @@ void VulkanDevice::createLogicalDevice()
   uint32_t graphicsCount = 0;
   uint32_t computeCount = 0;
   uint32_t transferCount = 0;
+  uint32_t presentCount = 0;
 
   for (VkDeviceQueueCreateInfo &info : queueCreateInfos)
   {
@@ -622,17 +621,20 @@ void VulkanDevice::createLogicalDevice()
       index = computeCount;
       computeCount++;
     }
-
     if (info.queueFamilyIndex == indices.graphicsFamily)
     {
       index = graphicsCount;
       graphicsCount++;
     }
-
     if (info.queueFamilyIndex == indices.transferFamily)
     {
       index = transferCount;
       transferCount++;
+    }
+    if (info.queueFamilyIndex == indices.presentFamily)
+    {
+      index = presentCount;
+      presentCount++;
     }
 
     vkGetDeviceQueue(device, info.queueFamilyIndex, index, &queue);
@@ -641,26 +643,28 @@ void VulkanDevice::createLogicalDevice()
     {
       computeQueue.push_back(queue);
     }
-
     if (info.queueFamilyIndex == indices.graphicsFamily)
     {
       graphicsQueue.push_back(queue);
     }
-
     if (info.queueFamilyIndex == indices.transferFamily)
     {
       transferQueue.push_back(queue);
     }
+    if (info.queueFamilyIndex == indices.presentFamily)
+    {
+      presentQueues.push_back(queue);
+    }
   }
 
-  uint32_t index = 0;
-  for (auto &kv : surfaces)
-  {
-    VkSurfaceKHR surface = kv.second;
-    VkQueue queue = VK_NULL_HANDLE;
-    vkGetDeviceQueue(device, indices.surface2PresentQueueFamily[surface], index++, &queue);
-    presentQueues[surface] = queue;
-  }
+  // uint32_t index = 0;
+  // for (auto &kv : surfaces)
+  // {
+  //   VkSurfaceKHR surface = kv.second;
+  //   VkQueue queue = VK_NULL_HANDLE;
+  //   vkGetDeviceQueue(device, indices.presentFamily, index++, &queue);
+  //   presentQueues.push_back(queue);
+  // }
 }
 
 bool VulkanDevice::checkValidationLayerSupport()
@@ -1064,9 +1068,9 @@ void VulkanDevice::createSwapChain(VkSurfaceKHR surface)
 
   std::vector<VkSurfaceKHR> surfaces = {surface};
 
-  uint32_t queueFamilyIndices[2] = {indices.graphicsFamily, indices.surface2PresentQueueFamily[surface]};
+  uint32_t queueFamilyIndices[2] = {indices.graphicsFamily, indices.presentFamily};
 
-  if (indices.graphicsFamily != indices.surface2PresentQueueFamily[surface])
+  if (indices.graphicsFamily != indices.presentFamily)
   {
     createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
     createInfo.queueFamilyIndexCount = 2;

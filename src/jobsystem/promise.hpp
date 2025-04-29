@@ -69,6 +69,7 @@ public:
   void get()
   {
     std::unique_lock<std::mutex> lock(mtx_);
+    
     cv_.wait(
         lock,
         [&]
