@@ -1,37 +1,23 @@
 #pragma once
-#include "core/print.hpp"
-
-#include <chrono>
-#include <mutex>
-#include <queue>
-#include <stdio.h>
 #include <thread>
-#include <vector>
 
 #include "fiber.hpp"
 #include "fiberpool.hpp"
 
-#include "lib/parallel/linearqueue.hpp"
+#include "lib/parallel/priorityqueue.hpp"
+#include "lib/parallel/queue.hpp"
+#include "lib/time.hpp"
+#include "lib/vector.hpp"
+
 #include "promise.hpp"
 
 namespace jobsystem
 {
 
-struct DelayedTask
-{
-  std::chrono::steady_clock::time_point wake_time;
-  fiber::Fiber *fiber;
-
-  bool operator>(const DelayedTask &other) const
-  {
-    return wake_time > other.wake_time;
-  }
-};
-
 class JobSystem
 {
 public:
-  static void init(size_t numThreads, void (*entry)());
+  static void init(void (*entry)(), size_t numThreads = std::thread::hardware_concurrency());
   static void shutdown();
 
   template <typename F, typename... Args> static auto enqueue(F &&f, Args &&...args);
@@ -40,24 +26,29 @@ public:
   static void wait(Promise<void> promise);
   static void yield();
   static void stop();
+  static void delay(lib::TimeSpan span);
 
 private:
-  static void timerLoop();
   static void workerLoop();
+  static void sleepAndWakeOnPromiseResolve(PromiseHandler *data);
+  static void wakeUpFiber(fiber::Fiber *);
+  template <typename F, typename... Args> static void jobDispatcher(void *data, fiber::Fiber *self);
 
-  static std::vector<std::thread> workers_;
-  static lib::parallel::LinearQueue<fiber::Fiber *, 4096> tasks_;
-  static std::atomic<bool> running_;
+  static lib::Vector<std::thread> workerThreads;
+  static lib::parallel::Queue<fiber::Fiber *> pendingFibers;
+  static lib::parallel::PriorityQueue<fiber::Fiber *, double> waitingFibers;
+
+  static std::atomic<bool> isRunning;
 };
 
 template <typename F, typename... Args> struct JobData
 {
   F f;
   std::tuple<std::decay_t<Args>...> args;
-  std::shared_ptr<PromiseHandler<std::invoke_result_t<F, Args...>>> promise;
+  std::shared_ptr<PromiseContainer<std::invoke_result_t<F, Args...>>> promise;
 };
 
-template <typename F, typename... Args> static void job_dispatcher(void *data, fiber::Fiber *self)
+template <typename F, typename... Args> void JobSystem::jobDispatcher(void *data, fiber::Fiber *self)
 {
   using Ret = std::invoke_result_t<F, Args...>;
   using Job = JobData<std::decay_t<F>, std::decay_t<Args>...>;
@@ -75,6 +66,8 @@ template <typename F, typename... Args> static void job_dispatcher(void *data, f
     job->promise->set_value(result);
   }
 
+  job->promise->handler.foreachWatcher(JobSystem::wakeUpFiber);
+
   delete job;
 
   fiber::FiberPool::release(self);
@@ -82,18 +75,30 @@ template <typename F, typename... Args> static void job_dispatcher(void *data, f
 
 template <typename F, typename... Args> auto JobSystem::enqueue(F &&f, Args &&...args)
 {
+  // TODO: add a job pool or special allocator
   using Ret = std::invoke_result_t<F, Args...>;
   using Job = JobData<std::decay_t<F>, std::decay_t<Args>...>;
 
-  auto promise = std::make_shared<PromiseHandler<Ret>>();
+  auto promise = std::make_shared<PromiseContainer<Ret>>();
 
   Job *job = new Job{std::forward<F>(f), std::make_tuple(std::forward<Args>(args)...), promise};
 
-  fiber::Fiber *fiber = fiber::FiberPool::acquire(&job_dispatcher<F, Args...>, static_cast<void *>(job));
+  fiber::Fiber *fiber = fiber::FiberPool::acquire(&jobDispatcher<F, Args...>, static_cast<void *>(job));
 
-  tasks_.push(fiber);
+  pendingFibers.enqueue(fiber);
 
   return promise;
+}
+
+template <typename T> inline T JobSystem::wait(Promise<T> promise)
+{
+  sleepAndWakeOnPromiseResolve(&promise->handler);
+  return promise->get();
+}
+
+inline void JobSystem::wait(Promise<void> promise)
+{
+  sleepAndWakeOnPromiseResolve(&promise->handler);
 }
 
 // template <typename F, typename... Args> Promise<void> JobSystem::enqueueGroup(F &&f, size_t size, size_t group_size, Args *...arrays)
@@ -156,25 +161,5 @@ template <typename F, typename... Args> auto JobSystem::enqueue(F &&f, Args &&..
 //   wait(right);
 //   safe_print("      dispatch end\n");
 // }
-
-template <typename T> inline T JobSystem::wait(Promise<T> promise)
-{
-  while (!promise->is_ready())
-  {
-    yield();
-  }
-
-  return promise->get();
-}
-
-inline void JobSystem::wait(Promise<void> promise)
-{
-  while (!promise->is_ready())
-  {
-    yield();
-  }
-
-  promise->get();
-}
 
 } // namespace jobsystem

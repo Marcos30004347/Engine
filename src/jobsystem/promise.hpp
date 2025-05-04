@@ -7,87 +7,106 @@
 #include <thread>
 #include <vector>
 
+#include "lib/parallel/vector.hpp"
+
 namespace jobsystem
 {
-template <typename T> class PromiseHandler
+
+class PromiseHandler
 {
 public:
-  PromiseHandler() : ready_(false)
+  PromiseHandler() : ready(false), spinLock(false)
   {
   }
-
-  void set_value(const T &value)
-  {
-    {
-      std::lock_guard<std::mutex> lock(mtx_);
-      value_ = value;
-      ready_ = true;
-    }
-    cv_.notify_all();
-  }
-
-  T get()
-  {
-    std::unique_lock<std::mutex> lock(mtx_);
-    cv_.wait(
-        lock,
-        [&]
-        {
-          return ready_.load();
-        });
-    return value_;
-  }
-
   bool is_ready() const
   {
-    return ready_.load();
+    return ready.load();
+  }
+
+  void lock()
+  {
+    bool expected = false;
+    while (spinLock.compare_exchange_weak(expected, true))
+    {
+    }
+  }
+
+  void unlock()
+  {
+    bool expected = true;
+    while (spinLock.compare_exchange_weak(expected, false))
+    {
+    }
+  }
+
+  bool addToWatchGroup(fiber::Fiber *f)
+  {
+    if (ready.load())
+    {
+      return false;
+    }
+
+    waiters.push_back(f);
+    return true;
+  }
+
+  void foreachWatcher(void (*callback)(fiber::Fiber *))
+  {
+    for (uint32_t i = 0; i < waiters.size(); i++)
+    {
+      callback(waiters[i]);
+    }
+  }
+
+  std::atomic<bool> ready;
+  std::atomic<bool> spinLock;
+  lib::parallel::Vector<fiber::Fiber *> waiters;
+};
+
+template <typename T> class PromiseContainer
+{
+  friend class JobSystem;
+
+public:
+  PromiseContainer()
+  {
+  }
+  void set_value(const T &value)
+  {
+    handler.lock();
+    value_ = value;
+    handler.ready = true;
+    handler.unlock();
+  }
+  T get()
+  {
+    return value_;
   }
 
 private:
   T value_;
-  std::atomic<bool> ready_;
-  mutable std::mutex mtx_;
-  std::condition_variable cv_;
+  PromiseHandler handler;
 };
 
-template <> class PromiseHandler<void>
+template <> class PromiseContainer<void>
 {
+  friend class JobSystem;
+
 public:
-  PromiseHandler() : ready_(false)
+  PromiseContainer()
   {
   }
 
   void set_value()
   {
-    {
-      std::lock_guard<std::mutex> lock(mtx_);
-      ready_ = true;
-    }
-    cv_.notify_all();
-  }
-
-  void get()
-  {
-    std::unique_lock<std::mutex> lock(mtx_);
-    
-    cv_.wait(
-        lock,
-        [&]
-        {
-          return ready_.load();
-        });
-  }
-
-  bool is_ready() const
-  {
-    return ready_.load();
+    handler.lock();
+    handler.ready = true;
+    handler.unlock();
   }
 
 private:
-  std::atomic<bool> ready_;
-  mutable std::mutex mtx_;
-  std::condition_variable cv_;
+  PromiseHandler handler;
 };
 
-template <typename T> using Promise = std::shared_ptr<PromiseHandler<T>>;
+template <typename T> using Promise = std::shared_ptr<PromiseContainer<T>>;
 } // namespace jobsystem

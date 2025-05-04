@@ -4,17 +4,14 @@
 using namespace jobsystem;
 using namespace jobsystem::fiber;
 
-std::queue<Fiber *> FiberPool::pool;
-std::mutex FiberPool::pool_mutex;
+lib::parallel::Queue<Fiber *> FiberPool::pool;
 
-Fiber *FiberPool::acquire(Fiber::Handler func, void* data)
+Fiber *FiberPool::acquire(Fiber::Handler func, void *data)
 {
-  std::lock_guard<std::mutex> l(pool_mutex);
+  Fiber *fiber;
 
-  if (!pool.empty())
+  if (pool.dequeue(fiber))
   {
-    Fiber *fiber = pool.front();
-    pool.pop();
     fiber->reset(func, data);
     return fiber;
   }
@@ -24,6 +21,5 @@ Fiber *FiberPool::acquire(Fiber::Handler func, void* data)
 
 void FiberPool::release(Fiber *fiber)
 {
-  std::lock_guard<std::mutex> l(pool_mutex);
-  pool.push(fiber);
+  pool.enqueue(fiber);
 }

@@ -1,133 +1,196 @@
 #include "jobsystem/jobsystem.hpp"
+#include "lib/parallel/priorityqueue.hpp"
+#include "lib/parallel/queue.hpp"
+#include "lib/time.hpp"
+#include "lib/allocator/systemallocator.hpp"
+
 #include "rhi/rhi.hpp"
+#include "core/print.hpp"
+
 #include "window/window.hpp"
 #include <cstdio>
-#include "lib/parallel/priorityqueue.hpp"
 
 using namespace window;
 using namespace jobsystem;
+using namespace lib;
 
-#include "fcontext/fcontext.h"
-#define ARRAY_SIZE 16 * 3
-int a[ARRAY_SIZE];
+// void push_to_list(uint32_t count, lib::parallel::List<uint32_t> *l)
+// {
+//   std::vector<lib::TimeSpan> push_times = std::vector<lib::TimeSpan>(count);
+//   std::vector<lib::TimeSpan> pop_times = std::vector<lib::TimeSpan>(count);
 
-void group_example(uint32_t index, uint32_t n, uint32_t group_size, int *a)
+//   double pops = 0;
+//   double pushes = 0;
+
+//   lib::Timer timer;
+//   uint32_t x = 0;
+
+//   for (uint32_t i = 0; i < count; i++)
+//   {
+//     timer.start();
+//     l->push_back(x);
+//     push_times[i] = timer.end();
+
+//     timer.start();
+//     if (l->pop_front(x))
+//     {
+//     }
+//     pop_times[i] = timer.end();
+//   }
+
+//   for (uint32_t i = 0; i < count; i++)
+//   {
+//     pops += pop_times[i].nanoseconds();
+//     pushes += push_times[i].nanoseconds();
+//   }
+
+//   threadSafePrintf("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
+// }
+
+// void enqueue_list_pushes_and_pops()
+// {
+//   lib::parallel::List<uint32_t> *l = new lib::parallel::List<uint32_t>();
+
+//   auto p0 = JobSystem::enqueue(push_to_list, 10000, l);
+//   auto p1 = JobSystem::enqueue(push_to_list, 10000, l);
+//   auto p2 = JobSystem::enqueue(push_to_list, 10000, l);
+//   auto p3 = JobSystem::enqueue(push_to_list, 10000, l);
+
+//   JobSystem::wait(p0);
+//   JobSystem::wait(p1);
+//   JobSystem::wait(p2);
+//   JobSystem::wait(p3);
+
+//   delete l;
+// }
+
+void push_to_queue(uint32_t count, lib::parallel::Queue<uint32_t> *l)
 {
-  // std::lock_guard<std::mutex> lock(print_mutex); // Lock during the entire printing
-  // for(uint32_t i = 0; i < group_size; i++) {
-  //     if(index + i >= n) break;
-  //     printf("%i \n", a[index + i]);
-  // }
-  threadSafePrintf("AAAA\n");
+  std::vector<lib::TimeSpan> push_times = std::vector<lib::TimeSpan>(count);
+  std::vector<lib::TimeSpan> pop_times = std::vector<lib::TimeSpan>(count);
+
+  double pops = 0;
+  double pushes = 0;
+
+  lib::Timer timer;
+  uint32_t x = 0;
+
+  for (uint32_t i = 0; i < count; i++)
+  {
+    timer.start();
+    l->enqueue(x);
+    push_times[i] = timer.end();
+
+    timer.start();
+    if (l->dequeue(x))
+    {
+    }
+    pop_times[i] = timer.end();
+  }
+
+  for (uint32_t i = 0; i < count; i++)
+  {
+    pops += pop_times[i].nanoseconds();
+    pushes += push_times[i].nanoseconds();
+  }
+
+  threadSafePrintf("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
 }
-void enqueue_two()
+
+void enqueue_queue_pushes_and_pops()
 {
-  auto p0 = JobSystem::enqueue(group_example, 0, ARRAY_SIZE, 16, a);
-  auto p1 = JobSystem::enqueue(group_example, 0, ARRAY_SIZE, 16, a);
+  lib::parallel::Queue<uint32_t> *l = new lib::parallel::Queue<uint32_t>();
+
+  auto p0 = JobSystem::enqueue(push_to_queue, 10000, l);
+  auto p1 = JobSystem::enqueue(push_to_queue, 10000, l);
+  auto p2 = JobSystem::enqueue(push_to_queue, 10000, l);
+  auto p3 = JobSystem::enqueue(push_to_queue, 10000, l);
 
   JobSystem::wait(p0);
   JobSystem::wait(p1);
-  // std::lock_guard<std::mutex> lock(print_mutex); // Lock during the entire printing
-  // for(uint32_t i = 0; i < group_size; i++) {
-  //     if(index + i >= n) break;
-  //     printf("%i \n", a[index + i]);
-  // }
-  printf("over\n");
+  JobSystem::wait(p2);
+  JobSystem::wait(p3);
+
+  delete l;
+}
+
+
+
+void push_to_priority_queue(uint32_t count, lib::parallel::PriorityQueue<uint32_t, uint32_t> *l)
+{
+  std::vector<lib::TimeSpan> push_times = std::vector<lib::TimeSpan>(count);
+  std::vector<lib::TimeSpan> pop_times = std::vector<lib::TimeSpan>(count);
+
+  double pops = 0;
+  double pushes = 0;
+
+  lib::Timer timer;
+  uint32_t x = 0;
+
+  for (uint32_t i = 0; i < count; i++)
+  {
+    timer.start();
+    x = i + 1;
+
+    l->push(x, x);
+    push_times[i] = timer.end();
+
+    timer.start();
+    if (l->try_pop(x))
+    {
+    }
+    pop_times[i] = timer.end();
+  }
+
+  for (uint32_t i = 0; i < count; i++)
+  {
+    pops += pop_times[i].nanoseconds();
+    pushes += push_times[i].nanoseconds();
+  }
+
+  threadSafePrintf("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
+}
+
+void enqueue_priority_queue_pushes_and_pops()
+{
+  lib::parallel::PriorityQueue<uint32_t, uint32_t> *l = new lib::parallel::PriorityQueue<uint32_t, uint32_t>();
+
+  auto p0 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
+  auto p1 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
+  auto p2 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
+  auto p3 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
+
+  JobSystem::wait(p0);
+  JobSystem::wait(p1);
+  JobSystem::wait(p2);
+  JobSystem::wait(p3);
+  delete l;
 }
 
 void entry()
 {
-  threadSafePrintf("aaaaa\n");
-  for (uint32_t i = 0; i < ARRAY_SIZE; i++)
-  {
-    a[i] = i;
-  }
-  threadSafePrintf("bbbb\n");
-
   //   auto p = JobSystem::enqueueGroup(group_example, ARRAY_SIZE, 16, a);
-  auto p = JobSystem::enqueue(enqueue_two);
   //   Window *appWindow = createWindow(WindowBackend::WindowBackend_SDL3, WindowSurfaceType::WindowSurface_Vulkan, "Engine");
-  threadSafePrintf("cccc\n");
+  // threadSafePrintf("list\n");
+  // auto p0 = JobSystem::enqueue(enqueue_list_pushes_and_pops);
+  // JobSystem::wait(p0);
+  threadSafePrintf("queue\n");
+  JobSystem::wait(JobSystem::enqueue(enqueue_queue_pushes_and_pops));
+  threadSafePrintf("priority queue\n");
+  JobSystem::wait(JobSystem::enqueue(enqueue_priority_queue_pushes_and_pops));
 
-  JobSystem::wait(p);
-  threadSafePrintf("ddddd\n");
+
 
   JobSystem::stop();
 }
 
-// void child_fn0(fcontext_transfer_t arg) {
-//     printf("aaa\n");
-//     fcontext_t parent = arg.ctx;
-//     fcontext_transfer_t t0 =jump_fcontext(parent, NULL);
-//     printf("bbbb\n");
-//     fcontext_transfer_t t1 =jump_fcontext(t0.ctx, NULL);
-//     printf("cccc\n");
 
-// }
-fiber::Fiber *fib0, *fib1, *fib2, *fib3;
 
-void f0(void*, fiber::Fiber*) {
-  threadSafePrintf("fib3 A\n");
-  fiber::Fiber::switchTo(fib2);
-  threadSafePrintf("fib3 B\n");
-  fiber::Fiber::switchTo(fib2);
-}
-void f1(void*, fiber::Fiber*) {
-  threadSafePrintf("fib0 A\n");
-  fiber::Fiber::switchTo(fib1);
-  threadSafePrintf("fib0 B\n");
-  fiber::Fiber::switchTo(fib3);
-  threadSafePrintf("fib0 C\n");
-  fiber::Fiber::switchTo(fib2);
-}
-void f2(void*, fiber::Fiber*) {
-  threadSafePrintf("fib1 A\n");
-  fiber::Fiber::switchTo(fib0);
-  threadSafePrintf("fib1 B\n");
-  fiber::Fiber::switchTo(fib2);
-  threadSafePrintf("fib1 C\n");
-  fiber::Fiber::switchTo(fib2);
-}
 int main()
 {
-
-  lib::parallel::PriorityQueue<int, int> pq;
-
-  pq.insert(2, 1);
-  pq.insert(9, 2);
-  pq.insert(8, 3);
-  pq.insert(7, 4);
-  pq.insert(6, -1);
-
-  int x;
-  pq.deletemin(x);
-  printf("%i\n", x);
-  pq.deletemin(x);
-  printf("%i\n", x);
-  pq.deletemin(x);
-  printf("%i\n", x);
-  pq.deletemin(x);
-  printf("%i\n", x);
-  pq.deletemin(x);
-  printf("%i\n", x);
-  fib3 = fiber::FiberPool::acquire(f0, nullptr);
-  fib0 = fiber::FiberPool::acquire(f1, nullptr);
-  fib1 = fiber::FiberPool::acquire(f2, nullptr);
-
-  fib2 = fiber::Fiber::currentThreadToFiber();
-
-  fiber::Fiber::switchTo(fib1);
-  fiber::Fiber::switchTo(fib0);
-  fiber::Fiber::switchTo(fib0);
-  fiber::Fiber::switchTo(fib3);
-
-  delete fib0;
-  delete fib1;
-  delete fib2;
-  //   fib0->resume();
-  //   printf("finished\n");
-
-  JobSystem::init(5, entry);
+  SystemAllocator::init();
+  JobSystem::init(entry);
+  
   //   rhi::DeviceRequiredLimits limits;
 
   //   limits.minimumComputeSharedMemory = 0;
@@ -151,7 +214,10 @@ int main()
   //   }
 
   //   delete device;
+
   JobSystem::shutdown();
+  SystemAllocator::shutdown();
+  
   return 0;
 }
 
@@ -243,13 +309,13 @@ int main()
 //   // 5. (Optional) Verify the queue is empty after all pops
 //   int remaining_elements = 0;
 //   int val;
-  
+
 //   while (pq.deletemin(val)) {
 //     remaining_elements++;
 //   }
-  
+
 //   std::cout << "Remaining elements in queue: " << remaining_elements << std::endl;
-  
+
 //   if (remaining_elements != 0)
 //   {
 //     std::cout << "FAILED: Queue is not empty after all pops" << std::endl;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fiber.hpp"
+#include "lib/parallel/queue.hpp"
 
 namespace jobsystem
 {
@@ -12,8 +13,8 @@ public:
   static Fiber *acquire(Fiber::Handler, void* userData);
   static void release(Fiber *fiber);
 private:
-  static std::queue<Fiber *> pool;
-  static std::mutex pool_mutex;
+  static lib::parallel::Queue<Fiber *> pool;
 };
+
 } // namespace fiber
 } // namespace jobsystem

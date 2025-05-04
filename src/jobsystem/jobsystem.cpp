@@ -5,22 +5,28 @@
 using namespace jobsystem;
 using namespace jobsystem::fiber;
 
-// thread_local fiber::Fiber *JobSystem::currentFiber = nullptr;
 static thread_local fiber::Fiber *workerFiber = nullptr;
 static thread_local fiber::Fiber *yieldedFiber = nullptr;
 
-std::vector<std::thread> JobSystem::workers_;
-lib::parallel::LinearQueue<fiber::Fiber *, 4096> JobSystem::tasks_ = lib::parallel::LinearQueue<fiber::Fiber *, 4096>();
-std::atomic<bool> JobSystem::running_ = false;
+static thread_local fiber::Fiber *forgetedFiber = nullptr;
+static thread_local PromiseHandler *promiseData = nullptr;
 
-void JobSystem::init(size_t numThreads, void (*entry)())
+static thread_local fiber::Fiber *waitedFiber = nullptr;
+static thread_local double waitedFiberNs;
+
+lib::Vector<std::thread> JobSystem::workerThreads;
+lib::parallel::Queue<fiber::Fiber *> JobSystem::pendingFibers = lib::parallel::Queue<fiber::Fiber *>();
+lib::parallel::PriorityQueue<fiber::Fiber *, double> JobSystem::waitingFibers = lib::parallel::PriorityQueue<fiber::Fiber *, double>();
+std::atomic<bool> JobSystem::isRunning = false;
+
+void JobSystem::init(void (*entry)(), size_t numThreads)
 {
-  running_ = true;
+  isRunning = true;
   enqueue(entry);
 
   for (size_t i = 0; i < numThreads; ++i)
   {
-    workers_.emplace_back(workerLoop);
+    workerThreads.emplace_back(workerLoop);
   }
 
   workerLoop();
@@ -28,48 +34,88 @@ void JobSystem::init(size_t numThreads, void (*entry)())
 
 void JobSystem::stop()
 {
-  running_.store(false);
+  isRunning.store(false);
 }
 
 void JobSystem::shutdown()
 {
-  assert(tasks_.size() == 0);
-
-  for (auto &w : workers_)
+  for (uint32_t i = 0; i < workerThreads.size(); i++)
   {
-    w.join();
+    workerThreads[i].join();
   }
 
-  workers_.clear();
+  workerThreads.clear();
 }
 
 void JobSystem::workerLoop()
 {
   workerFiber = fiber::Fiber::currentThreadToFiber();
 
-  while (JobSystem::running_)
+  while (JobSystem::isRunning)
   {
-    while (yieldedFiber != nullptr && !tasks_.push(yieldedFiber))
+    assert(fiber::Fiber::current() == workerFiber);
+
+    if (yieldedFiber != nullptr)
     {
+      pendingFibers.enqueue(yieldedFiber);
     }
 
     yieldedFiber = nullptr;
+
+    if (forgetedFiber)
+    {
+      assert(promiseData);
+
+      promiseData->lock();
+
+      if (!promiseData->addToWatchGroup(forgetedFiber))
+      {
+        pendingFibers.enqueue(forgetedFiber);
+      }
+
+      promiseData->unlock();
+    }
+
+    forgetedFiber = nullptr;
+    promiseData = nullptr;
+
+    if (waitedFiber)
+    {
+      waitingFibers.push(waitedFiber, waitedFiberNs);
+    }
+
+    waitedFiber = nullptr;
+    waitedFiberNs = 0;
+
+    lib::TimeSpan now = lib::TimeSpan::now();
+
     Fiber *fib = nullptr;
 
-    assert(fiber::Fiber::current() == workerFiber);
+    double priority = 0.0f;
 
-    if (tasks_.pop(fib))
+    if (waitingFibers.try_pop(fib, priority))
+    {
+      if (priority <= now.nanoseconds())
+      {
+        fiber::Fiber::switchTo(fib);
+      }
+      else
+      {
+        waitingFibers.push(fib, priority);
+      }
+    }
+
+    if (fib == nullptr && pendingFibers.dequeue(fib))
     {
       fiber::Fiber::switchTo(fib);
     }
   }
 
-  workerFiber = nullptr;
+  delete workerFiber;
 }
 
 void JobSystem::yield()
 {
-
   Fiber *f = Fiber::current();
 
   assert(yieldedFiber == nullptr);
@@ -81,3 +127,29 @@ void JobSystem::yield()
   assert(fiber::Fiber::current() == f);
 }
 
+void JobSystem::sleepAndWakeOnPromiseResolve(PromiseHandler *data)
+{
+  Fiber *f = Fiber::current();
+
+  forgetedFiber = f;
+  promiseData = data;
+
+  fiber::Fiber::switchTo(workerFiber);
+
+  assert(fiber::Fiber::current() == f);
+}
+
+void JobSystem::wakeUpFiber(fiber::Fiber *f)
+{
+  pendingFibers.enqueue(f);
+}
+
+void JobSystem::delay(lib::TimeSpan span)
+{
+  lib::TimeSpan wakeAt = lib::TimeSpan::now() + span;
+
+  waitedFiber = fiber::Fiber::current();
+  waitedFiberNs = wakeAt.nanoseconds();
+
+  fiber::Fiber::switchTo(workerFiber);
+}
