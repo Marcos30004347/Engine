@@ -1,9 +1,5 @@
 #pragma once
 
-#include <condition_variable>
-#include <mutex>
-#include <queue>
-
 #include <concurrentqueue/concurrentqueue.h>
 
 namespace lib
@@ -18,6 +14,7 @@ private:
 
 public:
   Queue() = default;
+  ~Queue() = default;
 
   void enqueue(const T &value)
   {

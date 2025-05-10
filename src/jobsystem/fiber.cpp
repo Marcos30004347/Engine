@@ -9,10 +9,9 @@ using namespace jobsystem::fiber;
 
 static thread_local Fiber *currentFiber = nullptr;
 
-
 static void fiber_entry(fcontext_transfer_t t)
 {
-  Fiber* self = (Fiber*)t.data;
+  Fiber *self = (Fiber *)t.data;
   self->from->ctx = t.ctx;
 
   currentFiber = self;
@@ -51,15 +50,22 @@ Fiber::Fiber()
 {
   stack = create_fcontext_stack(1024 * 1024);
   ctx = NULL;
+  stack_size = 1024 * 1024;
 }
 
-Fiber::Fiber(Handler handler, void* userData) 
+Fiber::Fiber(Handler handler, void *userData, size_t ssize)
 {
   this->handler = handler;
   this->userData = userData;
 
-  stack = create_fcontext_stack(1024 * 1024);
+  stack = create_fcontext_stack(ssize);
   ctx = make_fcontext(stack.sptr, stack.ssize, fiber_entry);
+  stack_size = ssize;
+}
+
+size_t Fiber::getStackSize()
+{
+  return stack_size;
 }
 
 Fiber::~Fiber()
@@ -67,7 +73,7 @@ Fiber::~Fiber()
   destroy_fcontext_stack(&stack);
 }
 
-void Fiber::reset(Handler handler, void* userData)
+void Fiber::reset(Handler handler, void *userData)
 {
   this->handler = handler;
   this->userData = userData;
@@ -83,20 +89,20 @@ void Fiber::run()
   handler(userData, this);
 }
 
-// fcontext_transfer_t yieldHandler(fcontext_transfer_t t) 
+// fcontext_transfer_t yieldHandler(fcontext_transfer_t t)
 // {
-//   Fiber* self = (Fiber*)t.data; 
+//   Fiber* self = (Fiber*)t.data;
 //   // self->from->ctx = t.ctx;
 //   safe_print("yield resume %p %p\n", self, self->from);
 
 //   return {t.ctx, t.data};
 // }
 
-void Fiber::switchTo(Fiber* other)
+void Fiber::switchTo(Fiber *other)
 {
   fcontext_t old_ctx = currentFiber->ctx;
 
-  Fiber* curr = currentFiber;
+  Fiber *curr = currentFiber;
   other->from = currentFiber;
 
   // threadSafePrintf("jump resume %p\n", other);
@@ -105,7 +111,7 @@ void Fiber::switchTo(Fiber* other)
 
   // threadSafePrintf("jump return %p\n", curr);
 
-  Fiber* self = (Fiber*)r.data;
+  Fiber *self = (Fiber *)r.data;
 
   self->from->ctx = r.ctx;
 

@@ -34,6 +34,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/rpmalloc/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/o1heap/o1heap/*.c"
 )
 
 message(${SOURCES})
@@ -62,6 +63,7 @@ target_compile_definitions(Engine PRIVATE SDL3_AVAILABLE)
 target_include_directories(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/fcontext/include)
 target_include_directories(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
+target_include_directories(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/o1heap)
 
 target_link_libraries(Engine 
     PRIVATE fcontext

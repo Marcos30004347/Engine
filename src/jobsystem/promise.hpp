@@ -3,11 +3,10 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
-#include <queue>
 #include <thread>
 #include <vector>
 
-#include "lib/parallel/vector.hpp"
+#include "lib/parallel/queue.hpp"
 
 namespace jobsystem
 {
@@ -39,28 +38,30 @@ public:
     }
   }
 
-  bool addToWatchGroup(fiber::Fiber *f)
+  bool enqueueWaiter(fiber::Fiber *f)
   {
     if (ready.load())
     {
       return false;
     }
 
-    waiters.push_back(f);
+    waiters.enqueue(f);
     return true;
   }
 
-  void foreachWatcher(void (*callback)(fiber::Fiber *))
+  void dequeueWaiters(void (*callback)(fiber::Fiber *))
   {
-    for (uint32_t i = 0; i < waiters.size(); i++)
-    {
-      callback(waiters[i]);
+    fiber::Fiber* f = nullptr;
+    
+    while(waiters.dequeue(f)) {
+      callback(f);
+      f = nullptr;
     }
   }
 
   std::atomic<bool> ready;
   std::atomic<bool> spinLock;
-  lib::parallel::Vector<fiber::Fiber *> waiters;
+  lib::parallel::Queue<fiber::Fiber *> waiters;
 };
 
 template <typename T> class PromiseContainer

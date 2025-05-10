@@ -17,6 +17,7 @@ struct Fiber
   typedef void (*Handler)(void*, Fiber*);
 
   Fiber* from;
+  size_t stack_size;
   
   fcontext_t ctx = nullptr;
   fcontext_stack_t stack{};
@@ -28,7 +29,7 @@ struct Fiber
   std::atomic<bool> started{false};
   std::atomic<bool> stalled{false};
 
-  Fiber(Handler, void* userData);
+  Fiber(Handler, void* userData, size_t stacksize);
   ~Fiber();
 
   void reset(Handler,  void* userData);
@@ -37,10 +38,10 @@ struct Fiber
 
   static Fiber *current();
   static Fiber *currentThreadToFiber();
+  size_t getStackSize();
 
 private:
   Fiber();
-
   static fcontext_transfer_t yield_entry(fcontext_transfer_t t);
 };
 

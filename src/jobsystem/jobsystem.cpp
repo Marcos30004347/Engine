@@ -21,15 +21,18 @@ std::atomic<bool> JobSystem::isRunning = false;
 
 void JobSystem::init(void (*entry)(), size_t numThreads)
 {
+  FiberPool::init();
+  
   isRunning = true;
   enqueue(entry);
 
   for (size_t i = 0; i < numThreads; ++i)
   {
-    workerThreads.emplace_back(workerLoop);
+    workerThreads.emplaceBack(workerLoop);
   }
 
   workerLoop();
+
 }
 
 void JobSystem::stop()
@@ -45,6 +48,7 @@ void JobSystem::shutdown()
   }
 
   workerThreads.clear();
+  FiberPool::shutdown();
 }
 
 void JobSystem::workerLoop()
@@ -68,7 +72,7 @@ void JobSystem::workerLoop()
 
       promiseData->lock();
 
-      if (!promiseData->addToWatchGroup(forgetedFiber))
+      if (!promiseData->enqueueWaiter(forgetedFiber))
       {
         pendingFibers.enqueue(forgetedFiber);
       }

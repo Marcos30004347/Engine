@@ -2,7 +2,9 @@
 #include "lib/parallel/priorityqueue.hpp"
 #include "lib/parallel/queue.hpp"
 #include "lib/time.hpp"
-#include "lib/allocator/systemallocator.hpp"
+#include "lib/memory/SystemMemoryManager.hpp"
+#include "lib/allocator/SystemAllocator.hpp"
+#include "lib/algorithm/parallel/HazardManager.hpp"
 
 #include "rhi/rhi.hpp"
 #include "core/print.hpp"
@@ -188,7 +190,9 @@ void entry()
 
 int main()
 {
-  SystemAllocator::init();
+lib::algorithm::parallel::HazardManager<void*, 2> hm = lib::algorithm::parallel::HazardManager<void*, 2>();
+
+  lib::memory::SystemMemoryManager::init();
   JobSystem::init(entry);
   
   //   rhi::DeviceRequiredLimits limits;
@@ -216,7 +220,7 @@ int main()
   //   delete device;
 
   JobSystem::shutdown();
-  SystemAllocator::shutdown();
+  lib::memory::SystemMemoryManager::shutdown();
   
   return 0;
 }

@@ -7,7 +7,7 @@
 #include "lib/parallel/priorityqueue.hpp"
 #include "lib/parallel/queue.hpp"
 #include "lib/time.hpp"
-#include "lib/vector.hpp"
+#include "lib/Vector.hpp"
 
 #include "promise.hpp"
 
@@ -20,7 +20,9 @@ public:
   static void init(void (*entry)(), size_t numThreads = std::thread::hardware_concurrency());
   static void shutdown();
 
+  template <typename F, typename... Args> static auto enqueue(size_t stack_size, F &&f, Args &&...args);
   template <typename F, typename... Args> static auto enqueue(F &&f, Args &&...args);
+
   template <typename T> static T wait(Promise<T> promise);
 
   static void wait(Promise<void> promise);
@@ -66,11 +68,28 @@ template <typename F, typename... Args> void JobSystem::jobDispatcher(void *data
     job->promise->set_value(result);
   }
 
-  job->promise->handler.foreachWatcher(JobSystem::wakeUpFiber);
+  job->promise->handler.dequeueWaiters(JobSystem::wakeUpFiber);
 
   delete job;
 
   fiber::FiberPool::release(self);
+}
+
+template <typename F, typename... Args> auto JobSystem::enqueue(size_t stack_size, F &&f, Args &&...args)
+{
+  // TODO: add a job pool or special allocator
+  using Ret = std::invoke_result_t<F, Args...>;
+  using Job = JobData<std::decay_t<F>, std::decay_t<Args>...>;
+
+  auto promise = std::make_shared<PromiseContainer<Ret>>();
+
+  Job *job = new Job{std::forward<F>(f), std::make_tuple(std::forward<Args>(args)...), promise};
+
+  fiber::Fiber *fiber = fiber::FiberPool::acquire(&jobDispatcher<F, Args...>, static_cast<void *>(job), stack_size);
+
+  pendingFibers.enqueue(fiber);
+
+  return promise;
 }
 
 template <typename F, typename... Args> auto JobSystem::enqueue(F &&f, Args &&...args)
@@ -83,7 +102,7 @@ template <typename F, typename... Args> auto JobSystem::enqueue(F &&f, Args &&..
 
   Job *job = new Job{std::forward<F>(f), std::make_tuple(std::forward<Args>(args)...), promise};
 
-  fiber::Fiber *fiber = fiber::FiberPool::acquire(&jobDispatcher<F, Args...>, static_cast<void *>(job));
+  fiber::Fiber *fiber = fiber::FiberPool::acquire(&jobDispatcher<F, Args...>, static_cast<void *>(job), 1024 * 32);
 
   pendingFibers.enqueue(fiber);
 

@@ -25,9 +25,6 @@ enum class RenderPipelineHandle : std::uint32_t
 enum class ComputePipelineHandle : std::uint32_t
 {
 };
-enum class FenceHandle : std::uint32_t
-{
-};
 enum class SurfaceHandle : std::uint32_t
 {
 };
