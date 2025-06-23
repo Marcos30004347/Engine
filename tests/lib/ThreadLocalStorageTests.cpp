@@ -45,8 +45,8 @@ void multiThreadTests()
             assert(x == j);
           }
 
-          os::threadSafePrintf("Thread %u average insertion time is %fns\n", os::Thread::getCurrentThreadId(), total_insert_ns / 1000);
-          os::threadSafePrintf("Thread %u average get time is %fns\n", os::Thread::getCurrentThreadId(), total_get_ns / 1000);
+          os::print("Thread %u average insertion time is %fns\n", os::Thread::getCurrentThreadId(), total_insert_ns / 1000);
+          os::print("Thread %u average get time is %fns\n", os::Thread::getCurrentThreadId(), total_get_ns / 1000);
         });
   }
 
@@ -69,29 +69,29 @@ int main()
 
   then = lib::time::TimeSpan::now();
   lookupTable->insert(0, 0);
-  os::threadSafePrintf("Inserting 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Inserting 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
 
   then = lib::time::TimeSpan::now();
   lookupTable->insert(1, 1);
-  os::threadSafePrintf("Inserting 1 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Inserting 1 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
 
   then = lib::time::TimeSpan::now();
   lookupTable->insert(2, 2);
-  os::threadSafePrintf("Inserting 2 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Inserting 2 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
 
   int x;
 
   then = lib::time::TimeSpan::now();
   lookupTable->get(2, x);
-  os::threadSafePrintf("Getting value %i from key 2 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Getting value %i from key 2 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
 
   then = lib::time::TimeSpan::now();
   lookupTable->get(0, x);
-  os::threadSafePrintf("Getting value %i from key 0 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Getting value %i from key 0 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
 
   then = lib::time::TimeSpan::now();
   lookupTable->get(1, x);
-  os::threadSafePrintf("Getting value %i from key 1 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Getting value %i from key 1 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
 
   delete lookupTable;
   multiThreadTests();

@@ -97,7 +97,7 @@ void push_to_queue(uint32_t count, lib::ConcurrentQueue<uint32_t> *l)
     pushes += push_times[i].nanoseconds();
   }
 
-  os::threadSafePrintf("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
+  os::print("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
 }
 
 void enqueue_queue_pushes_and_pops()
@@ -121,11 +121,11 @@ void enqueue_queue_pushes_and_pops()
 
 void push_to_priority_queue(uint32_t count, lib::ConcurrentPriorityQueue<uint32_t, uint32_t> *l)
 {
-        os::threadSafePrintf("Start pq\n");
+        os::print("Start pq\n");
   std::vector<lib::time::TimeSpan> push_times = std::vector<lib::time::TimeSpan>(count);
   std::vector<lib::time::TimeSpan> pop_times = std::vector<lib::time::TimeSpan>(count);
 
-        os::threadSafePrintf("all pq\n");
+        os::print("all pq\n");
   double pops = 0;
   double pushes = 0;
 
@@ -134,12 +134,12 @@ void push_to_priority_queue(uint32_t count, lib::ConcurrentPriorityQueue<uint32_
 
   for (uint32_t i = 0; i < count; i++)
   {
-      os::threadSafePrintf("Start push\n");
+      os::print("Start push\n");
     timer.start();
     x = i + 1;
 
     l->push(x, x);
-      os::threadSafePrintf("End enqueue\n");
+      os::print("End enqueue\n");
     push_times[i] = timer.end();
 
 
@@ -158,21 +158,21 @@ void push_to_priority_queue(uint32_t count, lib::ConcurrentPriorityQueue<uint32_
     pushes += push_times[i].nanoseconds();
   }
 
-  os::threadSafePrintf("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
+  os::print("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
 }
 
 void enqueue_priority_queue_pushes_and_pops()
 {
   lib::ConcurrentPriorityQueue<uint32_t, uint32_t> *l = new lib::ConcurrentPriorityQueue<uint32_t, uint32_t>();
   
-  os::threadSafePrintf("Start enqueue\n");
+  os::print("Start enqueue\n");
 
   auto p0 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
   //auto p1 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
   //auto p2 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
  // auto p3 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
 
-  os::threadSafePrintf("End enqueues\n");
+  os::print("End enqueues\n");
 
   JobSystem::wait(p0);
 //  JobSystem::wait(p1);
@@ -188,7 +188,7 @@ void entry()
   // threadSafePrintf("list\n");
   // auto p0 = JobSystem::enqueue(enqueue_list_pushes_and_pops);
   // JobSystem::wait(p0);
-  os::threadSafePrintf("queue\n");
+  os::print("queue\n");
   JobSystem::wait(JobSystem::enqueue(enqueue_queue_pushes_and_pops));
   //os::threadSafePrintf("priority queue\n");
   //JobSystem::wait(JobSystem::enqueue(enqueue_priority_queue_pushes_and_pops));

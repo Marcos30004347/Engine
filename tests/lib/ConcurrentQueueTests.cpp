@@ -38,7 +38,7 @@ void multiThreadTests()
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
-          os::threadSafePrintf("Thread %u average insertion time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / 1000);
+          os::print("Thread %u average insertion time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / 1000);
 
           total_ns = 0;
 
@@ -61,7 +61,7 @@ void multiThreadTests()
             assert(removed);
           }
 
-          os::threadSafePrintf("Thread %u average removal time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / 1000);
+          os::print("Thread %u average removal time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / 1000);
         });
   }
   started = true;
@@ -77,22 +77,22 @@ void concurrentListMultithreadTests()
 {
   lib::ConcurrentQueue<int> queue;
 
-  os::threadSafePrintf("Inserting 0\n");
+  os::print("Inserting 0\n");
   queue.enqueue(0);
-  os::threadSafePrintf("Inserting 1\n");
+  os::print("Inserting 1\n");
   queue.enqueue(1);
-  os::threadSafePrintf("Inserting 2\n");
+  os::print("Inserting 2\n");
   queue.enqueue(2);
 
   int x;
   queue.tryDequeue(x);
-  os::threadSafePrintf("Popped %i\n", x);
+  os::print("Popped %i\n", x);
 
   queue.tryDequeue(x);
-  os::threadSafePrintf("Popped %i\n", x);
+  os::print("Popped %i\n", x);
 
   queue.tryDequeue(x);
-  os::threadSafePrintf("Popped %i\n", x);
+  os::print("Popped %i\n", x);
 
   size_t totalThreads = os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
@@ -113,7 +113,7 @@ void concurrentListMultithreadTests()
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
-          os::threadSafePrintf("Thread %u average insertion time is %fns\n", i, total_ns / 1000);
+          os::print("Thread %u average insertion time is %fns\n", i, total_ns / 1000);
 
           total_ns = 0;
 
@@ -128,7 +128,7 @@ void concurrentListMultithreadTests()
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
-          os::threadSafePrintf("Thread %u average removal time is %fns\n", i);
+          os::print("Thread %u average removal time is %fns\n", i);
         });
   }
 

@@ -9,5 +9,5 @@
 
 namespace os
 {
-void threadSafePrintf(const char *format, ...);
+void print(const char *format, ...);
 }

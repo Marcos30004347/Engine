@@ -37,7 +37,7 @@ void multiThreadTests()
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
-          os::threadSafePrintf("Thread %u average insertion time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / 1000);
+          os::print("Thread %u average insertion time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / 1000);
 
           insertedFinished.fetch_add(1);
           while (insertedFinished.load() != totalThreads)
@@ -68,7 +68,7 @@ void multiThreadTests()
             assert(removed);
           }
 
-          os::threadSafePrintf("Thread %u average removal time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / 1000);
+          os::print("Thread %u average removal time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / 1000);
         });
   }
   started = true;
@@ -83,22 +83,6 @@ void multiThreadTests()
 void concurrentListMultithreadTests()
 {
   lib::ConcurrentList<int> list;
-  os::threadSafePrintf("Inserting 0\n");
-  list.insert(0);
-  os::threadSafePrintf("Inserting 1\n");
-  list.insert(1);
-  os::threadSafePrintf("Inserting 2\n");
-  list.insert(2);
-
-  int x;
-  list.tryPop(x);
-  os::threadSafePrintf("Popped %i\n", x);
-
-  list.tryPop(x);
-  os::threadSafePrintf("Popped %i\n", x);
-
-  list.tryPop(x);
-  os::threadSafePrintf("Popped %i\n", x);
 
   size_t totalThreads = os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
@@ -111,44 +95,37 @@ void concurrentListMultithreadTests()
           lib::time::TimeSpan then = lib::time::TimeSpan::now();
 
           double total_ns = 0;
-         os::threadSafePrintf("Thread %u started\n");
 
           for (size_t j = 0; j < 1000; j++)
           {
             then = lib::time::TimeSpan::now();
-                     os::threadSafePrintf("Thread %u inserting\n");
             list.insert(j);
-        
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
-          os::threadSafePrintf("Thread %u average insertion time is %fns\n", i, total_ns / 1000);
+          os::print("Thread %u average insertion time is %fns\n", i, total_ns / 1000);
 
           total_ns = 0;
-
+          int x;
           for (size_t j = 0; j < 1000; j++)
           {
             then = lib::time::TimeSpan::now();
 
             while (!list.tryPop(x))
             {
-              os::threadSafePrintf("Thread %u looping\n", i);
             }
 
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
-          os::threadSafePrintf("Thread %u average removal time is %fns\n", i);
+          os::print("Thread %u average removal time is %fns\n", i);
         });
   }
 
   for (size_t i = 0; i < totalThreads; i++)
   {
-    os::threadSafePrintf("Waiting Thread %u\n", i);
     threads[i].join();
-    os::threadSafePrintf("Thread %u joined\n", i);
   }
-  os::threadSafePrintf("Second test\n");
 
   for (size_t i = 0; i < totalThreads; i++)
   {
@@ -165,7 +142,6 @@ void concurrentListMultithreadTests()
   for (size_t i = 0; i < totalThreads; i++)
   {
     threads[i].join();
-    os::threadSafePrintf("Thread %u joined\n", i);
   }
 
   for (size_t i = 0; i < totalThreads * 1000; i++)
@@ -184,27 +160,27 @@ int main()
 
   then = lib::time::TimeSpan::now();
   list->insert(0);
-  os::threadSafePrintf("Inserting 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Inserting 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
 
   then = lib::time::TimeSpan::now();
   list->insert(1);
-  os::threadSafePrintf("Inserting 1 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Inserting 1 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
 
   then = lib::time::TimeSpan::now();
   list->insert(2);
-  os::threadSafePrintf("Inserting 2 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Inserting 2 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
 
   then = lib::time::TimeSpan::now();
   list->tryRemove(2);
-  os::threadSafePrintf("Removing 2 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Removing 2 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
 
   then = lib::time::TimeSpan::now();
   list->tryRemove(0);
-  os::threadSafePrintf("Removing 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Removing 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
 
   then = lib::time::TimeSpan::now();
   list->tryRemove(1);
-  os::threadSafePrintf("Removing 1 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+  os::print("Removing 1 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
 
   list->insert(1);
   list->insert(3);
@@ -217,7 +193,7 @@ int main()
   printf("\n");
   while (list->tryPop(value))
   {
-    os::threadSafePrintf("Removing %i...\n", value);
+    os::print("Removing %i...\n", value);
     iters += 1;
   }
 
@@ -225,7 +201,7 @@ int main()
 
   delete list;
 
-  //multiThreadTests();
+  // multiThreadTests();
   concurrentListMultithreadTests();
 
   lib::memory::SystemMemoryManager::shutdown();

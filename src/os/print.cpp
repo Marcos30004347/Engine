@@ -5,7 +5,7 @@ namespace os
 {
 std::mutex print_mutex;
 
-void threadSafePrintf(const char *format, ...)
+void print(const char *format, ...)
 {
   std::lock_guard<std::mutex> lock(print_mutex);
   va_list args;

@@ -52,8 +52,8 @@ void multiThreadTests()
             total_get_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
-          os::threadSafePrintf("Thread %u average push time is %fns\n", os::Thread::getCurrentThreadId(), total_insert_ns / 1000);
-          os::threadSafePrintf("Thread %u average pop time is %fns\n", os::Thread::getCurrentThreadId(), total_get_ns / 1000);
+          os::print("Thread %u average push time is %fns\n", os::Thread::getCurrentThreadId(), total_insert_ns / 1000);
+          os::print("Thread %u average pop time is %fns\n", os::Thread::getCurrentThreadId(), total_get_ns / 1000);
 
           lib::memory::SystemMemoryManager::finializeThread();
         });
