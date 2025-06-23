@@ -39,7 +39,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 
 message(${SOURCES})
 
-add_executable(Engine ${SOURCES})
+add_library(Engine ${SOURCES})
 
 if (HAS_VULKAN)
     target_include_directories(Engine PRIVATE ${Vulkan_INCLUDE_DIR})
@@ -59,6 +59,7 @@ if(APPLE)
     target_link_libraries(Engine PRIVATE ${MOLTENVK_LIB})
 endif()
 
+target_compile_definitions(Engine PRIVATE ENABLE_OVERRIDE=0)
 target_compile_definitions(Engine PRIVATE SDL3_AVAILABLE)
 target_include_directories(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/fcontext/include)
@@ -70,6 +71,8 @@ target_link_libraries(Engine
     PRIVATE SDL3::SDL3
     PRIVATE simdpp
 )
+
+target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/)
 
 if(WIN32)    
     set(DLLS
@@ -86,3 +89,8 @@ if(WIN32)
         )
     endforeach()
 endif()
+
+
+enable_testing()
+
+add_subdirectory(tests)

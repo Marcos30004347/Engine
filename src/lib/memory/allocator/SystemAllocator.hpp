@@ -4,6 +4,8 @@
 
 namespace lib
 {
+namespace memory
+{
 namespace allocator
 {
 template <typename T> class SystemAllocator
@@ -27,7 +29,13 @@ public:
     return lib::memory::SystemMemoryManager::free(ptr);
   }
 
+  void deallocate(T *ptr)
+  {
+    return lib::memory::SystemMemoryManager::free(ptr);
+  }
+
 private:
 };
 } // namespace allocator
+} // namespace memory
 } // namespace lib

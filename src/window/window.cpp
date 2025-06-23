@@ -1,7 +1,9 @@
 #include "window.hpp"
 #include <cstdlib>
 
-#include "./sdl3/window_sdl3.hpp"
+#ifdef SDL3_AVAILABLE
+#include "./sdl3/SDL3Window.hpp"
+#endif
 
 namespace window {
 

@@ -16,6 +16,7 @@ Device *Device::create(DeviceBackend backend, DeviceRequiredLimits limits, std::
   return nullptr;
 }
 
+/*
 BufferHeapAllocator::BufferHeapAllocator(Device *device, size_t totalSize, BufferUsage usage) : device(device), totalSize(totalSize), usage(usage) {
   buffer = device->createBuffer(totalSize, usage, nullptr);
   freeRegions.emplace_back(0, totalSize);
@@ -105,3 +106,4 @@ void BufferStackAllocator::reset() {
 }
 
 size_t BufferStackAllocator::alignUp(size_t value, size_t alignment) { return (value + alignment - 1) & ~(alignment - 1); }
+*/

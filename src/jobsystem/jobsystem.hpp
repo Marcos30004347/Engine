@@ -1,184 +1,139 @@
 #pragma once
 #include <thread>
 
-#include "fiber.hpp"
-#include "fiberpool.hpp"
+#include "Fiber.hpp"
+#include "Fiberpool.hpp"
 
-#include "lib/parallel/priorityqueue.hpp"
-#include "lib/parallel/queue.hpp"
-#include "lib/time.hpp"
-#include "lib/Vector.hpp"
-
-#include "promise.hpp"
+#include "lib/datastructure/ConcurrentPriorityQueue.hpp"
+#include "lib/datastructure/ConcurrentQueue.hpp"
+#include "lib/datastructure/Vector.hpp"
+#include "lib/memory/allocator/BoundedHeapAllocator.hpp"
+#include "lib/time/TimeSpan.hpp"
+// #include "Promise.hpp"
+#include "Job.hpp"
 
 namespace jobsystem
 {
+struct JobSystemSettings
+{
+  size_t threadsCount;
+  size_t maxJobsConcurrent;
+  size_t maxJobPayloadSize;
+  size_t jobsBufferSize;
+};
 
 class JobSystem
 {
 public:
-  static void init(void (*entry)(), size_t numThreads = std::thread::hardware_concurrency());
+  static void init(void (*entry)(), JobSystemSettings settings);
   static void shutdown();
 
-  template <typename F, typename... Args> static auto enqueue(size_t stack_size, F &&f, Args &&...args);
   template <typename F, typename... Args> static auto enqueue(F &&f, Args &&...args);
 
-  template <typename T> static T wait(Promise<T> promise);
-
+  template <typename T> static T &wait(Promise<T> promise);
   static void wait(Promise<void> promise);
   static void yield();
   static void stop();
-  static void delay(lib::TimeSpan span);
 
 private:
   static void workerLoop();
-  static void sleepAndWakeOnPromiseResolve(PromiseHandler *data);
-  static void wakeUpFiber(fiber::Fiber *);
-  template <typename F, typename... Args> static void jobDispatcher(void *data, fiber::Fiber *self);
-
+  static void sleepAndWakeOnPromiseResolve(std::shared_ptr<Job> job);
+  template <typename F, typename... Args> static void dispatch(void *data, fiber::Fiber *self);
   static lib::Vector<std::thread> workerThreads;
-  static lib::parallel::Queue<fiber::Fiber *> pendingFibers;
-  static lib::parallel::PriorityQueue<fiber::Fiber *, double> waitingFibers;
+  // static lib::ConcurrentQueue<std::shared_ptr<Job>> pendingJobs;
+
+  static JobQueue *pendingJobs;
+  static JobAllocator *jobsAllocator;
 
   static std::atomic<bool> isRunning;
 };
-
-template <typename F, typename... Args> struct JobData
+struct EmptyResultTag
 {
-  F f;
-  std::tuple<std::decay_t<Args>...> args;
-  std::shared_ptr<PromiseContainer<std::invoke_result_t<F, Args...>>> promise;
+};
+template <typename Function, typename... Args> struct JobData
+{
+  using Return = std::invoke_result_t<Function, Args...>;
+  using ResultType = std::conditional_t<std::is_void_v<Return>, struct EmptyResultTag, Return>;
+
+  Function handler;
+  std::tuple<std::decay_t<Args>...> payload;
+  ResultType result;
+
+  // std::shared_ptr<Job> job;
 };
 
-template <typename F, typename... Args> void JobSystem::jobDispatcher(void *data, fiber::Fiber *self)
+template <typename F, typename... Args> void JobSystem::dispatch(void *data, fiber::Fiber *self)
 {
   using Ret = std::invoke_result_t<F, Args...>;
   using Job = JobData<std::decay_t<F>, std::decay_t<Args>...>;
 
-  Job *job = static_cast<Job *>(data);
+  std::shared_ptr<Job> job = *static_cast<std::shared_ptr<Job> *>(data);
+
+  size_t offset = calculateOffset<JobData<F, Args...>>();
+  JobData<F, Args...> *jobData = (JobData<F, Args...> *)(reinterpret_cast<char *>(job.get()) + offset);
 
   if constexpr (std::is_void_v<Ret>)
   {
-    std::apply(job->f, job->args);
-    job->promise->set_value();
+    std::apply(job->handler, job->payload);
   }
   else
   {
-    Ret result = std::apply(job->f, job->args);
-    job->promise->set_value(result);
+    job->resolve();
+    jobData->result = std::apply(job->handler, job->payload);
   }
-
-  job->promise->handler.dequeueWaiters(JobSystem::wakeUpFiber);
-
-  delete job;
 
   fiber::FiberPool::release(self);
 }
 
-template <typename F, typename... Args> auto JobSystem::enqueue(size_t stack_size, F &&f, Args &&...args)
-{
-  // TODO: add a job pool or special allocator
-  using Ret = std::invoke_result_t<F, Args...>;
-  using Job = JobData<std::decay_t<F>, std::decay_t<Args>...>;
-
-  auto promise = std::make_shared<PromiseContainer<Ret>>();
-
-  Job *job = new Job{std::forward<F>(f), std::make_tuple(std::forward<Args>(args)...), promise};
-
-  fiber::Fiber *fiber = fiber::FiberPool::acquire(&jobDispatcher<F, Args...>, static_cast<void *>(job), stack_size);
-
-  pendingFibers.enqueue(fiber);
-
-  return promise;
-}
-
 template <typename F, typename... Args> auto JobSystem::enqueue(F &&f, Args &&...args)
 {
-  // TODO: add a job pool or special allocator
   using Ret = std::invoke_result_t<F, Args...>;
-  using Job = JobData<std::decay_t<F>, std::decay_t<Args>...>;
 
-  auto promise = std::make_shared<PromiseContainer<Ret>>();
+  std::shared_ptr<Job> jobStorage = jobsAllocator->allocate();
+  void *data = (void *)(&jobStorage);
 
-  Job *job = new Job{std::forward<F>(f), std::make_tuple(std::forward<Args>(args)...), promise};
+  fiber::Fiber *fiber = fiber::FiberPool::acquire(&dispatch<F, Args...>, data, 1024 * 1024 * 2);
 
-  fiber::Fiber *fiber = fiber::FiberPool::acquire(&jobDispatcher<F, Args...>, static_cast<void *>(job), 1024 * 32);
+  Job *job = new (jobStorage.get()) Job(fiber);
 
-  pendingFibers.enqueue(fiber);
+  size_t offset = calculateOffset<JobData<F, Args...>>();
+  void *buffer = (void *)(reinterpret_cast<char *>(jobStorage.get()) + offset);
 
-  return promise;
+  JobData<F, Args...> *jobData = new (buffer) JobData<F, Args...>{
+
+    // jobData->job = jobStorage;
+    std::forward<F>(f),
+    std::make_tuple(std::forward<Args>(args)...),
+
+  };
+  pendingJobs->enqueue(jobStorage);
+
+  return Promise<Ret>(jobStorage);
 }
 
-template <typename T> inline T JobSystem::wait(Promise<T> promise)
+template <typename T> inline T &JobSystem::wait(Promise<T> promise)
 {
-  sleepAndWakeOnPromiseResolve(&promise->handler);
+  /*
+  if (!promise->job.addWaiter(fiber::Fiber::current()))
+  {
+    return promise->get();
+  }
+  */
+
+  sleepAndWakeOnPromiseResolve(promise.job);
+
   return promise->get();
 }
 
 inline void JobSystem::wait(Promise<void> promise)
 {
-  sleepAndWakeOnPromiseResolve(&promise->handler);
+  /*
+  if (!promise->job.addWaiter(fiber::Fiber::current()))
+  {
+    return;
+  }
+  */
+  sleepAndWakeOnPromiseResolve(promise.job);
 }
-
-// template <typename F, typename... Args> Promise<void> JobSystem::enqueueGroup(F &&f, size_t size, size_t group_size, Args *...arrays)
-// {
-//   auto promise = std::make_shared<PromiseHandler<void>>();
-
-//   struct Context
-//   {
-//     F func;
-//     size_t size;
-//     size_t group_size;
-//     std::tuple<Args *...> arrays;
-//   };
-
-//   auto context = std::make_shared<Context>(Context{std::forward<F>(f), size, group_size, std::tuple<Args *...>(arrays...)});
-
-//   auto fiber = fiber::FiberPool::acquire(
-//       [context, promise]() mutable
-//       {
-//         dispatchGroup(*context, 0, context->size);
-//         promise->set_value();
-//       });
-
-//   while (!tasks_.push(fiber))
-//   {
-//   }
-//   safe_print("pushed %p\n", fiber);
-
-//   return promise;
-// }
-
-// template <typename Context> void JobSystem::dispatchGroup(Context &context, size_t start, size_t end)
-// {
-//   if (end - start <= context.group_size)
-//   {
-//     std::apply(
-//         [&](auto *...arrays)
-//         {
-//           context.func(start, context.size, context.group_size, arrays...);
-//         },
-//         context.arrays);
-//     return;
-//   }
-
-//   size_t mid = start + (end - start) / 2;
-
-//   auto left = enqueue(
-//       [=, &context]()
-//       {
-//         dispatchGroup(context, start, mid);
-//       });
-
-//   auto right = enqueue(
-//       [=, &context]()
-//       {
-//         dispatchGroup(context, mid, end);
-//       });
-
-//   wait(left);
-//   wait(right);
-//   safe_print("      dispatch end\n");
-// }
 
 } // namespace jobsystem

@@ -235,7 +235,7 @@ public:
   // virtual FenceHandle submitCommandBuffer(CommandBufferHandle);
   // virtual void wait(FenceHandle);
 };
-
+/*
 class BufferHeapAllocator
 {
 public:
@@ -279,5 +279,5 @@ private:
 
   static size_t alignUp(size_t value, size_t alignment);
 };
-
+*/
 } // namespace rhi

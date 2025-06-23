@@ -2,7 +2,8 @@
 #include <chrono>
 namespace lib
 {
-class TimeSpan
+namespace time {
+  class TimeSpan
 {
 public:
   explicit TimeSpan(std::chrono::nanoseconds ns) : duration_ns(ns)
@@ -144,4 +145,5 @@ public:
 private:
   std::chrono::high_resolution_clock::time_point start_time;
 };
+}
 } // namespace lib

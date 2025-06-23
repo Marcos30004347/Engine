@@ -1,4 +1,4 @@
-#include "rhi/rhi.hpp"
+#include "rendering/rhi/rhi.hpp"
 
 #include <map>
 #include <stack>

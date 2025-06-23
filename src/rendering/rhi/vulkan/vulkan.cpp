@@ -9,7 +9,7 @@
 #include "vulkan.hpp"
 
 #ifdef SDL3_AVAILABLE
-#include "window/sdl3/window_sdl3.hpp"
+#include "window/sdl3/SDL3Window.hpp"
 #include <SDL3/SDL_vulkan.h>
 #endif
 

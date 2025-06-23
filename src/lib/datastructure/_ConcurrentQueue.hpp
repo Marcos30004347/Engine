@@ -4,17 +4,14 @@
 
 namespace lib
 {
-namespace parallel
-{
-
-template <typename T> class Queue
+template <typename T> class ConcurrentQueue
 {
 private:
   moodycamel::ConcurrentQueue<T> queue;
 
 public:
-  Queue() = default;
-  ~Queue() = default;
+  ConcurrentQueue() = default;
+  ~ConcurrentQueue() = default;
 
   void enqueue(const T &value)
   {
@@ -31,5 +28,5 @@ public:
     return queue.is_empty();
   }
 };
-} // namespace parallel
+
 } // namespace lib

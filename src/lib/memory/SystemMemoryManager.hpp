@@ -12,6 +12,8 @@ class SystemMemoryManager
 {
 public:
   static void init();
+  static void initializeThread();
+  static void finializeThread();
   static void shutdown();
   static void *malloc(size_t size, void *hint = 0);
   static void *alignedAlloc(size_t alignment, size_t size);

@@ -6,17 +6,17 @@ namespace lib
 {
 namespace allocator
 {
-template <typename T> class FixedBufferAllocator
+template <typename T> class BoundedHeapAllocator 
 {
 public:
-  FixedBufferAllocator(void *buffer, size_t capacity)
+  BoundedHeapAllocator(void *buffer, size_t capacity)
   {
     this->capacity = capacity;
     this->buffer = buffer;
     this->instance = o1heapInit(this->buffer, capacity);
   }
 
-  ~FixedBufferAllocator()
+  ~BoundedHeapAllocator()
   {
   }
 
@@ -25,7 +25,7 @@ public:
     return (T *)o1heapAllocate(instance, sizeof(T) * n);
   }
 
-  void deallocate(T *ptr, size_t n)
+  void deallocate(T *ptr, size_t n = 1)
   {
     return o1heapFree(instance, ptr);
   }

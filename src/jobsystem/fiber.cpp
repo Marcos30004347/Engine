@@ -1,8 +1,4 @@
-#include "fiber.hpp"
-#include "core/print.hpp"
-
-#include <assert.h>
-#include <stdio.h>
+#include "Fiber.hpp"
 
 using namespace jobsystem;
 using namespace jobsystem::fiber;
@@ -24,8 +20,6 @@ static void fiber_entry(fcontext_transfer_t t)
   // threadSafePrintf("finished resume %p\n", self);
 
   fcontext_transfer_t r = jump_fcontext(self->from->ctx, self);
-
-  printf("SHOULD NOT BE HERE\n");
 
   abort();
 

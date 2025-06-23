@@ -1,7 +1,8 @@
 #pragma once
 
-#include "fiber.hpp"
-#include "lib/parallel/queue.hpp"
+#include "Fiber.hpp"
+
+#include "lib/datastructure/ConcurrentQueue.hpp"
 
 namespace jobsystem
 {
@@ -16,8 +17,7 @@ public:
   static void release(Fiber *fiber);
 
 private:
-  static lib::parallel::Queue<Fiber *> pool[64];
-  static std::atomic<uint32_t> poolSize[64];
+  static lib::ConcurrentQueue<Fiber *> pool;
 };
 
 } // namespace fiber

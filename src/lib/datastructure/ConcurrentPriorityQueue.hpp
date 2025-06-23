@@ -6,9 +6,7 @@
 
 namespace lib
 {
-namespace parallel
-{
-template <typename T, typename P = int> class PriorityQueue
+template <typename T, typename P = int> class ConcurrentPriorityQueue
 {
 public:
   struct Element
@@ -91,5 +89,4 @@ private:
   std::condition_variable cond_var_;
   std::priority_queue<Element> queue_;
 };
-} // namespace parallel
 } // namespace lib

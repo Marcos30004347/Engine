@@ -1,7 +1,8 @@
 #include "SystemMemoryManager.hpp"
-#include <rpmalloc/rpmalloc.h>
+#include "os/print.hpp"
 
-#include <cstdlib>
+#include <atomic>
+#include <rpmalloc/rpmalloc.h>
 
 using namespace lib;
 using namespace memory;
@@ -19,7 +20,20 @@ void SystemMemoryManager::shutdown()
   return rpmalloc_finalize();
 }
 
-void *SystemMemoryManager::malloc(size_t size, void* hint)
+void SystemMemoryManager::initializeThread()
+{
+  if (!rpmalloc_is_thread_initialized())
+  {
+    rpmalloc_thread_initialize();
+  }
+}
+
+void SystemMemoryManager::finializeThread()
+{
+  rpmalloc_thread_finalize();
+}
+
+void *SystemMemoryManager::malloc(size_t size, void *hint)
 {
   return rpmalloc(size);
 }
@@ -40,11 +54,14 @@ void *operator new(std::size_t size) noexcept(false)
   {
     size = 1;
   }
+
   void *ptr = lib::memory::SystemMemoryManager::malloc(size);
+
   if (!ptr)
   {
     throw std::bad_alloc();
   }
+
   return ptr;
 }
 

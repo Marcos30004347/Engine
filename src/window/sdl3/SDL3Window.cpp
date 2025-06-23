@@ -1,4 +1,4 @@
-#include "window_sdl3.hpp"
+#include "SDL3Window.hpp"
 
 #ifdef SDL3_AVAILABLE
 
@@ -41,7 +41,7 @@ ColorFormat GetColorFormatFromSurface(SDL_Surface *surface)
 
 SDL3Window::SDL3Window(WindowSurfaceType surface, const char *title, int width, int height)
 {
-  if (SDL_Init(SDL_INIT_VIDEO) < 0)
+  if (SDL_Init(SDL_INIT_VIDEO) == false)
   {
     std::cerr << "Failed to initialize SDL3: " << SDL_GetError() << std::endl;
     isRunning = false;

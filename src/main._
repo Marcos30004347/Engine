@@ -1,13 +1,14 @@
-#include "jobsystem/jobsystem.hpp"
-#include "lib/parallel/priorityqueue.hpp"
-#include "lib/parallel/queue.hpp"
-#include "lib/time.hpp"
-#include "lib/memory/SystemMemoryManager.hpp"
-#include "lib/allocator/SystemAllocator.hpp"
-#include "lib/algorithm/parallel/HazardManager.hpp"
+#include "jobsystem/JobSystem.hpp"
+#include "jobsystem/Job.hpp"
 
-#include "rhi/rhi.hpp"
-#include "core/print.hpp"
+#include "lib/datastructure/ConcurrentPriorityQueue.hpp"
+#include "lib/datastructure/ConcurrentQueue.hpp"
+#include "lib/datastructure/ConcurrentHashTable.hpp"
+#include "lib/time/TimeSpan.hpp"
+#include "lib/memory/SystemMemoryManager.hpp"
+#include "lib/memory/allocator/SystemAllocator.hpp"
+
+#include "os/print.hpp"
 
 #include "window/window.hpp"
 #include <cstdio>
@@ -18,8 +19,8 @@ using namespace lib;
 
 // void push_to_list(uint32_t count, lib::parallel::List<uint32_t> *l)
 // {
-//   std::vector<lib::TimeSpan> push_times = std::vector<lib::TimeSpan>(count);
-//   std::vector<lib::TimeSpan> pop_times = std::vector<lib::TimeSpan>(count);
+//   std::vector<lib::time::TimeSpan> push_times = std::vector<lib::time::TimeSpan>(count);
+//   std::vector<lib::time::TimeSpan> pop_times = std::vector<lib::time::TimeSpan>(count);
 
 //   double pops = 0;
 //   double pushes = 0;
@@ -66,15 +67,15 @@ using namespace lib;
 //   delete l;
 // }
 
-void push_to_queue(uint32_t count, lib::parallel::Queue<uint32_t> *l)
+void push_to_queue(uint32_t count, lib::ConcurrentQueue<uint32_t> *l)
 {
-  std::vector<lib::TimeSpan> push_times = std::vector<lib::TimeSpan>(count);
-  std::vector<lib::TimeSpan> pop_times = std::vector<lib::TimeSpan>(count);
+  std::vector<lib::time::TimeSpan> push_times = std::vector<lib::time::TimeSpan>(count);
+  std::vector<lib::time::TimeSpan> pop_times = std::vector<lib::time::TimeSpan>(count);
 
   double pops = 0;
   double pushes = 0;
 
-  lib::Timer timer;
+  lib::time::Timer timer;
   uint32_t x = 0;
 
   for (uint32_t i = 0; i < count; i++)
@@ -96,12 +97,12 @@ void push_to_queue(uint32_t count, lib::parallel::Queue<uint32_t> *l)
     pushes += push_times[i].nanoseconds();
   }
 
-  threadSafePrintf("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
+  os::threadSafePrintf("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
 }
 
 void enqueue_queue_pushes_and_pops()
 {
-  lib::parallel::Queue<uint32_t> *l = new lib::parallel::Queue<uint32_t>();
+  lib::ConcurrentQueue<uint32_t> *l = new lib::ConcurrentQueue<uint32_t>();
 
   auto p0 = JobSystem::enqueue(push_to_queue, 10000, l);
   auto p1 = JobSystem::enqueue(push_to_queue, 10000, l);
@@ -118,29 +119,36 @@ void enqueue_queue_pushes_and_pops()
 
 
 
-void push_to_priority_queue(uint32_t count, lib::parallel::PriorityQueue<uint32_t, uint32_t> *l)
+void push_to_priority_queue(uint32_t count, lib::ConcurrentPriorityQueue<uint32_t, uint32_t> *l)
 {
-  std::vector<lib::TimeSpan> push_times = std::vector<lib::TimeSpan>(count);
-  std::vector<lib::TimeSpan> pop_times = std::vector<lib::TimeSpan>(count);
+        os::threadSafePrintf("Start pq\n");
+  std::vector<lib::time::TimeSpan> push_times = std::vector<lib::time::TimeSpan>(count);
+  std::vector<lib::time::TimeSpan> pop_times = std::vector<lib::time::TimeSpan>(count);
 
+        os::threadSafePrintf("all pq\n");
   double pops = 0;
   double pushes = 0;
 
-  lib::Timer timer;
+  lib::time::Timer timer;
   uint32_t x = 0;
 
   for (uint32_t i = 0; i < count; i++)
   {
+      os::threadSafePrintf("Start push\n");
     timer.start();
     x = i + 1;
 
     l->push(x, x);
+      os::threadSafePrintf("End enqueue\n");
     push_times[i] = timer.end();
 
+
     timer.start();
+    /*
     if (l->try_pop(x))
     {
     }
+    */
     pop_times[i] = timer.end();
   }
 
@@ -150,22 +158,26 @@ void push_to_priority_queue(uint32_t count, lib::parallel::PriorityQueue<uint32_
     pushes += push_times[i].nanoseconds();
   }
 
-  threadSafePrintf("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
+  os::threadSafePrintf("pushes %f ns, pops = %f ns\n", pushes / count, pops / count);
 }
 
 void enqueue_priority_queue_pushes_and_pops()
 {
-  lib::parallel::PriorityQueue<uint32_t, uint32_t> *l = new lib::parallel::PriorityQueue<uint32_t, uint32_t>();
+  lib::ConcurrentPriorityQueue<uint32_t, uint32_t> *l = new lib::ConcurrentPriorityQueue<uint32_t, uint32_t>();
+  
+  os::threadSafePrintf("Start enqueue\n");
 
   auto p0 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
-  auto p1 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
-  auto p2 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
-  auto p3 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
+  //auto p1 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
+  //auto p2 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
+ // auto p3 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
+
+  os::threadSafePrintf("End enqueues\n");
 
   JobSystem::wait(p0);
-  JobSystem::wait(p1);
-  JobSystem::wait(p2);
-  JobSystem::wait(p3);
+//  JobSystem::wait(p1);
+ // JobSystem::wait(p2);
+ // JobSystem::wait(p3);
   delete l;
 }
 
@@ -176,12 +188,10 @@ void entry()
   // threadSafePrintf("list\n");
   // auto p0 = JobSystem::enqueue(enqueue_list_pushes_and_pops);
   // JobSystem::wait(p0);
-  threadSafePrintf("queue\n");
+  os::threadSafePrintf("queue\n");
   JobSystem::wait(JobSystem::enqueue(enqueue_queue_pushes_and_pops));
-  threadSafePrintf("priority queue\n");
-  JobSystem::wait(JobSystem::enqueue(enqueue_priority_queue_pushes_and_pops));
-
-
+  //os::threadSafePrintf("priority queue\n");
+  //JobSystem::wait(JobSystem::enqueue(enqueue_priority_queue_pushes_and_pops));
 
   JobSystem::stop();
 }
@@ -190,10 +200,9 @@ void entry()
 
 int main()
 {
-lib::algorithm::parallel::HazardManager<void*, 2> hm = lib::algorithm::parallel::HazardManager<void*, 2>();
-
   lib::memory::SystemMemoryManager::init();
-  JobSystem::init(entry);
+  JobSystemSettings settings;
+  JobSystem::init(entry, settings);
   
   //   rhi::DeviceRequiredLimits limits;
 
@@ -225,7 +234,7 @@ lib::algorithm::parallel::HazardManager<void*, 2> hm = lib::algorithm::parallel:
   return 0;
 }
 
-// #include "lib/parallel/priorityqueue.hpp" // Assuming your PriorityQueue is in priorityqueue.hpp
+// #include "lib/parallel/priorityqueue.hpp" // Assuming your ConcurrentPriorityQueue is in priorityqueue.hpp
 // #include <algorithm>
 // #include <chrono>
 // #include <iostream>
@@ -248,7 +257,7 @@ lib::algorithm::parallel::HazardManager<void*, 2> hm = lib::algorithm::parallel:
 // }
 
 // // Function for a thread to push elements into the priority queue
-// void push_thread_func(PriorityQueue<int, int> &pq, const std::vector<int> &keys, int thread_id, int num_threads)
+// void push_thread_func(ConcurrentPriorityQueue<int, int> &pq, const std::vector<int> &keys, int thread_id, int num_threads)
 // {
 //   int num_elements_per_thread = keys.size() / num_threads;
 //   int start_index = thread_id * num_elements_per_thread;
@@ -261,7 +270,7 @@ lib::algorithm::parallel::HazardManager<void*, 2> hm = lib::algorithm::parallel:
 // }
 
 // // Function for a thread to pop elements from the priority queue
-// void pop_thread_func(PriorityQueue<int, int> &pq, int num_elements_to_pop)
+// void pop_thread_func(ConcurrentPriorityQueue<int, int> &pq, int num_elements_to_pop)
 // {
 //   for (int i = 0; i < num_elements_to_pop; ++i)
 //   {
@@ -280,7 +289,7 @@ lib::algorithm::parallel::HazardManager<void*, 2> hm = lib::algorithm::parallel:
 // // Test function to spawn threads and test concurrent push and pop
 // void test_concurrent_priority_queue(int num_threads, int num_elements_to_push, int num_elements_to_pop)
 // {
-//   PriorityQueue<int, int> pq;
+//   ConcurrentPriorityQueue<int, int> pq;
 //   std::vector<std::thread> push_threads;
 //   std::vector<std::thread> pop_threads;
 
