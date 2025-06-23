@@ -219,13 +219,11 @@ public:
       return false;
     }
 
-    size_t offset = time % 3; // time % 3 == 0 ? 0 : (os::Thread::getCurrentThreadId() + time++);
-
     time++;
 
     for (size_t i = 0; i < listsCount; i++)
     {
-      if (lists[(i + offset) % listsCount]->tryPop(value))
+      if (lists[i % listsCount]->tryPop(value))
       {
         return true;
       }

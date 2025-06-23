@@ -59,6 +59,11 @@ if(APPLE)
     target_link_libraries(Engine PRIVATE ${MOLTENVK_LIB})
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  target_compile_definitions(Engine PRIVATE DEBUG)
+  target_compile_definitions(Engine PRIVATE NDEBUG)
+endif()
+
 target_compile_definitions(Engine PRIVATE ENABLE_OVERRIDE=0)
 target_compile_definitions(Engine PRIVATE SDL3_AVAILABLE)
 target_include_directories(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

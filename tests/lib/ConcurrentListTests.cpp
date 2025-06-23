@@ -100,7 +100,6 @@ void concurrentListMultithreadTests()
   list.tryPop(x);
   os::threadSafePrintf("Popped %i\n", x);
 
-
   size_t totalThreads = os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
 
@@ -112,11 +111,14 @@ void concurrentListMultithreadTests()
           lib::time::TimeSpan then = lib::time::TimeSpan::now();
 
           double total_ns = 0;
+         os::threadSafePrintf("Thread %u started\n");
 
           for (size_t j = 0; j < 1000; j++)
           {
             then = lib::time::TimeSpan::now();
+                     os::threadSafePrintf("Thread %u inserting\n");
             list.insert(j);
+        
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
@@ -140,24 +142,30 @@ void concurrentListMultithreadTests()
         });
   }
 
-
   for (size_t i = 0; i < totalThreads; i++)
   {
+    os::threadSafePrintf("Waiting Thread %u\n", i);
     threads[i].join();
+    os::threadSafePrintf("Thread %u joined\n", i);
   }
+  os::threadSafePrintf("Second test\n");
 
   for (size_t i = 0; i < totalThreads; i++)
   {
     threads[i] = os::Thread(
         [&]()
         {
-          double total_ns = 0;
-
           for (size_t j = 0; j < 1000; j++)
           {
             list.insert(j);
           }
         });
+  }
+
+  for (size_t i = 0; i < totalThreads; i++)
+  {
+    threads[i].join();
+    os::threadSafePrintf("Thread %u joined\n", i);
   }
 
   for (size_t i = 0; i < totalThreads * 1000; i++)
@@ -217,7 +225,7 @@ int main()
 
   delete list;
 
-  multiThreadTests();
+  //multiThreadTests();
   concurrentListMultithreadTests();
 
   lib::memory::SystemMemoryManager::shutdown();

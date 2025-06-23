@@ -19,7 +19,9 @@ void multiThreadTests()
     threads[i] = os::Thread(
         [&]()
         {
-          while(!started) {}
+          while (!started)
+          {
+          }
 
           lib::time::TimeSpan then = lib::time::TimeSpan::now();
           double total_insert_ns = 0;
@@ -36,7 +38,7 @@ void multiThreadTests()
             then = lib::time::TimeSpan::now();
             storage->set(j);
             total_insert_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
-            
+
             then = lib::time::TimeSpan::now();
             assert(storage->get(x));
             total_get_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
@@ -58,10 +60,40 @@ void multiThreadTests()
     }
   }
 }
-
 int main()
 {
+  lib::time::TimeSpan then = lib::time::TimeSpan::now();
   lib::memory::SystemMemoryManager::init();
+
+  lib::detail::ConcurrentLookupTable<int> *lookupTable = new lib::detail::ConcurrentLookupTable<int>();
+
+  then = lib::time::TimeSpan::now();
+  lookupTable->insert(0, 0);
+  os::threadSafePrintf("Inserting 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+
+  then = lib::time::TimeSpan::now();
+  lookupTable->insert(1, 1);
+  os::threadSafePrintf("Inserting 1 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+
+  then = lib::time::TimeSpan::now();
+  lookupTable->insert(2, 2);
+  os::threadSafePrintf("Inserting 2 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
+
+  int x;
+
+  then = lib::time::TimeSpan::now();
+  lookupTable->get(2, x);
+  os::threadSafePrintf("Getting value %i from key 2 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
+
+  then = lib::time::TimeSpan::now();
+  lookupTable->get(0, x);
+  os::threadSafePrintf("Getting value %i from key 0 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
+
+  then = lib::time::TimeSpan::now();
+  lookupTable->get(1, x);
+  os::threadSafePrintf("Getting value %i from key 1 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
+
+  delete lookupTable;
   multiThreadTests();
   lib::memory::SystemMemoryManager::shutdown();
   return 0;

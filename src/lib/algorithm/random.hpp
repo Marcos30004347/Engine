@@ -6,7 +6,7 @@
 namespace lib
 {
 
-template <typename T> void shuffleArray(std::vector<T> &arr, size_t hash)
+template <typename T> inline void shuffleArray(std::vector<T> &arr, size_t hash)
 {
   std::seed_seq seed{static_cast<uint32_t>(hash >> 32), static_cast<uint32_t>(hash & 0xFFFFFFFF)};
   std::mt19937 rng(seed);
@@ -18,7 +18,7 @@ template <typename T> void shuffleArray(std::vector<T> &arr, size_t hash)
   }
 }
 
-size_t random(size_t hash)
+inline size_t random(size_t hash)
 {
   std::random_device rd;
   std::mt19937_64 gen(rd());
@@ -26,4 +26,13 @@ size_t random(size_t hash)
   return dis(gen);
 }
 
+inline size_t hashInteger(size_t h)
+{
+  h ^= h >> 16;
+  h *= 0x85ebca6b;
+  h ^= h >> 13;
+  h *= 0xc2b2ae35;
+  h ^= h >> 16;
+  return h;
+}
 } // namespace lib

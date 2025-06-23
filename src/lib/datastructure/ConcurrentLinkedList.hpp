@@ -228,6 +228,7 @@ public:
     if (!localLists.get(local))
     {
       // NOTE: never delete local directly, it will be cleaned up on destruction.
+
       detail::ConcurrentLinkedList<T> *producer = new detail::ConcurrentLinkedList<T>();
       local = threadLists.insert(producer);
       localLists.set(local);
@@ -241,7 +242,6 @@ public:
   bool tryPop(T &value)
   {
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentLinkedList<T> *> *local = nullptr;
-
     localLists.get(local);
 
     if (local == nullptr)
@@ -305,11 +305,11 @@ public:
       return false;
     }
 
-    size_t offset = time % 3 == 0 ? 0 : (os::Thread::getCurrentThreadId() + time);
     time++;
+
     for (size_t i = 0; i < listsCount; i++)
     {
-      if (lists[(i + offset) % listsCount]->tryPop(value))
+      if (lists[i]->tryPop(value))
       {
         return true;
       }

@@ -319,7 +319,7 @@ public:
     }
 
     time++;
-
+   
     for (size_t i = 0; i < listsCount; i++)
     {
       if (lists[i]->tryDequeue(value))
