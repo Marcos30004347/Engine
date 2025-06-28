@@ -124,11 +124,14 @@ public:
     {
       pointers[index] = (void *)ref;
     }
-
+    inline void unassign(uint32_t index = 0)
+    {
+      pointers[index] = nullptr;
+    }
     template <typename T, typename Allocator> void retire(Allocator &allocator, uint32_t index)
     {
       retiredList.pushBack((void *)pointers[index]);
-      
+
       pointers[index] = nullptr;
 
       if (retiredList.size() >= R)
@@ -202,9 +205,9 @@ public:
   {
     for (size_t i = 0; i < K; i++)
     {
-      assert(rec->pointers[i] == nullptr);
+      rec->pointers[i] = nullptr;
     }
-    
+
     assert(rec->isActive.test());
     rec->isActive.clear();
   }

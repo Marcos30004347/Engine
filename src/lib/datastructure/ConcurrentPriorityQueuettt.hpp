@@ -109,7 +109,6 @@ private:
 #include <stdio.h>
 #include <stdlib.h>
 
-
 /******************x86 code atomics*****************************/
 #define CAE(a, b, c) __atomic_compare_exchange(a, b, c, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
 #define CAS(a, b, c) __sync_bool_compare_and_swap(a, b, c)
@@ -208,6 +207,7 @@ static inline node_t *ADDRESS(volatile node_t *ptr)
 {
   return (node_t *)(((uint64_t)ptr) & 0xfffffffffffffffc);
 }
+
 static inline uint64_t GETMARK(volatile node_t *ptr)
 {
   return ((uint64_t)ptr) & 3;
@@ -241,7 +241,6 @@ static inline void try_helping_insert(volatile node_t *item_node);
 
 uint32_t pq_size(tsl_set_t *set);
 static inline uint32_t random_gen(tsl_set_t *set);
-
 
 __thread node_t *previous_dummy, *previous_head;
 

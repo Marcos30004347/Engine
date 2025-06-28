@@ -1,9 +1,12 @@
+#pragma once
+
 #include <assert.h>
 #include <atomic>
 #include <thread>
 
 #include "Vector.hpp"
 
+#include "lib/algorithm/random.hpp"
 #include "os/Thread.hpp"
 #include "os/print.hpp"
 
@@ -11,15 +14,6 @@ namespace lib
 {
 namespace detail
 {
-inline static size_t hashInteger(size_t h)
-{
-  h ^= h >> 16;
-  h *= 0x85ebca6b;
-  h ^= h >> 13;
-  h *= 0xc2b2ae35;
-  h ^= h >> 16;
-  return h;
-}
 
 template <typename V> struct Entry
 {
@@ -47,6 +41,18 @@ template <typename V> struct HashTableBucket
       entries = nullptr;
     }
   */
+
+  HashTableBucket(size_t capacity, Entry<V> *initial) : capacity(capacity), prev(nullptr)
+  {
+    entries = initial;
+
+    for (size_t i = 0; i != capacity; ++i)
+    {
+      entries[i].key.store(INVALID_KEY, std::memory_order_relaxed);
+      entries[i].filled.store(0, std::memory_order_relaxed);
+    }
+  }
+
   HashTableBucket(size_t capacity) : capacity(capacity), prev(nullptr)
   {
     entries = new Entry<V>[capacity];
@@ -69,6 +75,7 @@ template <typename V> struct HashTableBucket
 template <typename Value> class ConcurrentLookupTable
 {
 private:
+
   std::atomic<HashTableBucket<Value> *> rootTable;
 
   std::atomic_flag rootTableResizeInProgress;
@@ -391,7 +398,7 @@ template <typename T> class ThreadLocalStorage
   }
 
 public:
-  ThreadLocalStorage() : lookupTable(nextPowerOfTwo(os::Thread::getHardwareConcurrency()))
+  ThreadLocalStorage() : lookupTable(nextPowerOfTwo(2 * os::Thread::getHardwareConcurrency()))
   {
   }
 
@@ -401,7 +408,6 @@ public:
     T old;
     assert(lookupTable.get(os::Thread::getCurrentThreadId(), old) == false);
 #endif
-
     assert(lookupTable.insert(os::Thread::getCurrentThreadId(), val));
   }
 

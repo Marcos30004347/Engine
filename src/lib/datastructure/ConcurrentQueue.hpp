@@ -2,10 +2,9 @@
 
 #include "lib/algorithm/random.hpp"
 #include "lib/datastructure/ConcurrentLinkedList.hpp"
-#include "lib/datastructure/utils/HazardPointer.hpp"
+#include "lib/datastructure/HazardPointer.hpp"
 #include "lib/memory/allocator/SystemAllocator.hpp"
 #include "os/Thread.hpp"
-#include "utils/HazardPointer.hpp"
 #include <atomic>
 #include <cstddef>
 

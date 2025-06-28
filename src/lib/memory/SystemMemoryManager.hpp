@@ -16,6 +16,7 @@ public:
   static void finializeThread();
   static void shutdown();
   static void *malloc(size_t size, void *hint = 0);
+  static void *allignedMalloc(size_t size, size_t alignment, void *hint);
   static void *alignedAlloc(size_t alignment, size_t size);
   static void free(void *ptr);
 
