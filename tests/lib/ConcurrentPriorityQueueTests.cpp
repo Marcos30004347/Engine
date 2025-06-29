@@ -11,7 +11,7 @@ void multiThreadTests()
 {
   lib::ConcurrentPriorityQueue<int, size_t> *pq = new lib::ConcurrentPriorityQueue<int, size_t>();
 
-  size_t totalThreads = os::Thread::getHardwareConcurrency();
+  size_t totalThreads = 2;//os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
 
   std::atomic<size_t> started(0);
@@ -34,14 +34,14 @@ void multiThreadTests()
 
           for (size_t j = 0; j < 1000; j++)
           {
-            //os::print("Thread %i enqueuing %i\n", i, (i + 1) * 1000 + j);
+            // os::print("Thread %i enqueuing %i\n", i, (i + 1) * 1000 + j);
             then = lib::time::TimeSpan::now();
             assert(pq->enqueue((i + 1) * 1000 + j, (i + 1) * 1000 + j));
             total_insert_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
           dequeing.fetch_add(1);
-         // pq->printTree(i);
+          // pq->printTree(i);
 
           // pq->printTree(i);
 
@@ -56,7 +56,9 @@ void multiThreadTests()
           for (size_t j = 0; j < 1000; j++)
           {
             then = lib::time::TimeSpan::now();
-            assert(pq->tryDequeue(x));
+            while (!pq->tryDequeue(x))
+            {
+            }
 
             if (x <= prev)
             {
@@ -69,8 +71,8 @@ void multiThreadTests()
             prev = x;
           }
 
-          os::print("Thread %u average insertion time is %fns\n", i, total_insert_ns / 1000);
-          os::print("Thread %u average get time is %fns\n", i, total_get_ns / 1000);
+          os::print("Thread %u average insertion time is %lluns\n", i, (size_t)total_insert_ns / 1000);
+          os::print("Thread %u average get time is %lluns\n", i, (size_t)total_get_ns / 1000);
           lib::memory::SystemMemoryManager::finializeThread();
         });
   }

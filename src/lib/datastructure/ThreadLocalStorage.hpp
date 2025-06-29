@@ -240,7 +240,7 @@ public:
       hash = prev;
     }
 
-    delete root.entries;
+    // delete root.entries;
   }
 
   bool get(size_t id, Value &v)

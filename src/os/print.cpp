@@ -13,4 +13,5 @@ void print(const char *format, ...)
   vprintf(format, args);
   va_end(args);
 }
+
 } // namespace os

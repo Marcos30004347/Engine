@@ -2,54 +2,60 @@
 #include "os/print.hpp"
 
 #include <atomic>
-#include <rpmalloc/rpmalloc.h>
+//#include <rpmalloc/rpmalloc.h>
 
 using namespace lib;
 using namespace memory;
 
 void SystemMemoryManager::init()
 {
+  /*
   if (rpmalloc_initialize(nullptr))
   {
     abort();
-  }
+}
+ */
 }
 
 void SystemMemoryManager::shutdown()
 {
-  return rpmalloc_finalize();
+  // return rpmalloc_finalize();
 }
 
 void SystemMemoryManager::initializeThread()
 {
+  /*
   if (!rpmalloc_is_thread_initialized())
   {
     rpmalloc_thread_initialize();
   }
+    */
 }
 
 void SystemMemoryManager::finializeThread()
 {
-  rpmalloc_thread_finalize();
+  //rpmalloc_thread_finalize();
 }
 
 void *SystemMemoryManager::malloc(size_t size, void *hint)
 {
-  return rpmalloc(size);
+  return std::malloc(size);
+  //  return rpmalloc(size);
 }
 
 void *SystemMemoryManager::allignedMalloc(size_t size, size_t alignment, void *hint)
 {
-  return rpaligned_alloc(alignment, size);
+  //return rpaligned_alloc(alignment, size);
 }
 void SystemMemoryManager::free(void *ptr)
 {
-  return rpfree(ptr);
+  std::free(ptr);
+  // return rpfree(ptr);
 }
 
 void *SystemMemoryManager::alignedAlloc(size_t alignment, size_t size)
 {
-  return rpaligned_alloc(alignment, size);
+  //return rpaligned_alloc(alignment, size);
 }
 
 void *operator new(std::size_t size) noexcept(false)
