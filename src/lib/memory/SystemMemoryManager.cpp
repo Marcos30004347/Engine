@@ -37,6 +37,7 @@ void *SystemMemoryManager::malloc(size_t size, void *hint)
 {
   return rpmalloc(size);
 }
+
 void *SystemMemoryManager::allignedMalloc(size_t size, size_t alignment, void *hint)
 {
   return rpaligned_alloc(alignment, size);
