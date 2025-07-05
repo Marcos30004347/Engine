@@ -36,7 +36,10 @@ public:
 
   // NOTE(marcos): maybe have a list of records and a ThreadLocalStorage to store thread records
   // so we dont need to achire them often. At destruction we iterate over the record list and release them.
-  HazardPointer<2> hazardAllocator;
+  using HazardPointerManager = HazardPointer<2, ConcurrentSingleLinkedListNode<T>, Allocator>;
+  using HazardPointerRecord = typename HazardPointer<2, ConcurrentSingleLinkedListNode<T>, Allocator>::Record;
+
+  HazardPointerManager hazardAllocator;
 
   Allocator allocator;
 
@@ -77,7 +80,7 @@ public:
 
   bool find(const T &value)
   {
-    HazardPointer<2>::Record *rec = hazardAllocator.acquire();
+    HazardPointerRecord *rec = hazardAllocator.acquire();
 
     ConcurrentSingleLinkedListNode<T> *curr = head.load();
 
@@ -106,7 +109,7 @@ public:
 
   bool tryRemove(const T &value)
   {
-    HazardPointer<2>::Record *rec = hazardAllocator.acquire();
+    HazardPointerRecord *rec = hazardAllocator.acquire();
 
     void *nil = nullptr;
 
@@ -162,7 +165,7 @@ public:
 
   bool tryPop(T &value)
   {
-    HazardPointer<2>::Record *rec = hazardAllocator.acquire();
+    HazardPointerType::Record *rec = hazardAllocator.acquire();
 
     while (true)
     {

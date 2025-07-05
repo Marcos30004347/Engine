@@ -141,6 +141,10 @@ public:
 
       if (next == nullptr)
       {
+        rec->unassign(0);
+        rec->unassign(1);
+        hazardAllocator.release(rec);
+        
         return false;
       }
 
@@ -318,7 +322,7 @@ public:
     }
 
     time++;
-   
+
     for (size_t i = 0; i < listsCount; i++)
     {
       if (lists[i]->tryDequeue(value))

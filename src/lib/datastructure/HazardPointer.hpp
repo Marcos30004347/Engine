@@ -12,7 +12,7 @@
 namespace lib
 {
 
-template <size_t K> class HazardPointer
+template <size_t K, typename T, typename Allocator> class HazardPointer
 {
 public:
   class Record
@@ -20,15 +20,16 @@ public:
     const int R = 16;
     friend class HazardPointer;
 
-    HazardPointer *parent;
+    HazardPointer *manager;
     Record *next;
 
     std::atomic_flag isActive;
     void *pointers[K];
 
     Vector<void *> retiredList;
+    Allocator &allocator;
 
-    Record(HazardPointer *manager) : retiredList(), isActive(false), next(nullptr), parent(manager)
+    Record(HazardPointer *manager, Allocator &allocator) : allocator(allocator), retiredList(), isActive(false), next(nullptr), manager(manager)
     {
       for (size_t i = 0; i < K; i++)
       {
@@ -36,10 +37,18 @@ public:
       }
     }
 
-    template <typename T, typename Allocator> void helpScan(Allocator &allocator)
+    ~Record()
+    {
+      for (size_t i = 0; i < retiredList.size(); i++)
+      {
+        delete retiredList[i];
+      }
+    }
+
+    void helpScan()
     {
       // Accumulate retired nodes from inactive records
-      for (Record *hprec = parent->head.load(); hprec != nullptr; hprec = hprec->next)
+      for (Record *hprec = manager->head.load(); hprec != nullptr; hprec = hprec->next)
       {
         if (hprec->isActive.test())
         {
@@ -60,7 +69,7 @@ public:
 
           if (retiredList.size() > R)
           {
-            scan<T, Allocator>(parent->head.load(), allocator);
+            scan(manager->head.load(), allocator);
           }
         }
 
@@ -68,7 +77,7 @@ public:
       }
     }
 
-    template <typename T, typename Allocator> void scan(Record *h, Allocator &allocator)
+    void scan(Record *h)
     {
       lib::Vector<void *> hp;
       size_t i = 0;
@@ -77,7 +86,7 @@ public:
       {
         for (size_t k = 0; k < K; k++)
         {
-          if (h->pointers[k] != nullptr)
+          if (h->pointers[k] != nullptr && h->isActive.test())
           {
             hp.pushBack(h->pointers[k]);
           }
@@ -92,17 +101,10 @@ public:
       {
         size_t index = lib::algorithm::search::binarySearch(hp.buffer(), retiredList[i], hp.size());
 
-        /*
-        size_t index = 0;
-        for(index = 0; index < hp.size(); index++) {
-          if(retiredList[i] == hp[index]) {
-            break;
-          }
-        }
-        */
-
         if (index == hp.size()) // not found
         {
+          // os::print("deallocating %p\n", retiredList[i]);
+
           allocator.deallocate((T *)retiredList[i]);
 
           if (i != retiredList.size() - 1)
@@ -121,8 +123,9 @@ public:
     }
 
   public:
-    template <typename T> inline void assign(T *&ref, uint32_t index = 0)
+    inline void assign(T *ref, uint32_t index = 0)
     {
+      // os::print("assigning %p\n", ref);
       pointers[index] = (void *)ref;
     }
 
@@ -130,17 +133,35 @@ public:
     {
       pointers[index] = nullptr;
     }
-
-    template <typename T, typename Allocator> void retire(Allocator &allocator, uint32_t index)
+    inline void *get(uint32_t index)
+    {
+      return pointers[index];
+    }
+    void retire(Allocator &allocator, uint32_t index)
     {
       retiredList.pushBack((void *)pointers[index]);
+
+      // os::print("retiring %p\n", pointers[index]);
 
       pointers[index] = nullptr;
 
       if (retiredList.size() >= R)
       {
-        scan<T, Allocator>(parent->head, allocator);
-        helpScan<T, Allocator>(allocator);
+        scan(manager->head, allocator);
+        helpScan(allocator);
+      }
+    }
+
+    void retirePtr(Allocator &allocator, void *ptr)
+    {
+      retiredList.pushBack(ptr);
+
+      // os::print("retiring %p\n", ptr);
+
+      if (retiredList.size() >= R)
+      {
+        scan(manager->head, allocator);
+        helpScan(allocator);
       }
     }
   };

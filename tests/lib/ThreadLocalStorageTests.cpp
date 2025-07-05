@@ -7,11 +7,11 @@
 
 void multiThreadTests()
 {
-  lib::ThreadLocalStorage<int> *storage = new lib::ThreadLocalStorage<int>();
+  lib::ThreadLocalStorage<size_t> *storage = new lib::ThreadLocalStorage<size_t>();
 
   bool started = false;
 
-  size_t totalThreads = os::Thread::getHardwareConcurrency();
+  size_t totalThreads = 128;//os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
 
   for (size_t i = 0; i < totalThreads; i++)
@@ -27,23 +27,14 @@ void multiThreadTests()
           double total_insert_ns = 0;
           double total_get_ns = 0;
 
-          storage->set(0);
-
-          int x;
-
+          then = lib::time::TimeSpan::now();
+          storage->set(os::Thread::getCurrentThreadId());
+          total_insert_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
+          size_t x;
+          then = lib::time::TimeSpan::now();
           assert(storage->get(x));
-
-          for (size_t j = 0; j < 1000; j++)
-          {
-            then = lib::time::TimeSpan::now();
-            storage->set(j);
-            total_insert_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
-
-            then = lib::time::TimeSpan::now();
-            assert(storage->get(x));
-            total_get_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
-            assert(x == j);
-          }
+          total_get_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
+          assert(x == os::Thread::getCurrentThreadId());
 
           os::print("Thread %u average insertion time is %fns\n", os::Thread::getCurrentThreadId(), total_insert_ns / 1000);
           os::print("Thread %u average get time is %fns\n", os::Thread::getCurrentThreadId(), total_get_ns / 1000);

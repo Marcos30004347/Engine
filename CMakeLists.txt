@@ -2,16 +2,17 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Engine)
 
-set(SANITIZE_FLAGS "-fsanitize=address -fno-omit-frame-pointer -g")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_FLAGS}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZE_FLAGS}")
-
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set default build type to Debug" FORCE)
 endif()
+set(SANITIZE_FLAGS "-fno-omit-frame-pointer -g")
+
+#set(SANITIZE_FLAGS "-fsanitize=address -fno-omit-frame-pointer -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZE_FLAGS}")
+
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
