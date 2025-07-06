@@ -1,481 +1,10 @@
 #pragma once
 
-#include "ThreadLocalStorage.hpp"
-#include "lib/datastructure/HazardPointer.hpp"
-#include "lib/time/TimeSpan.hpp"
+#include "lib/datastructure/ConcurrentTimestampGarbageCollector.hpp"
 #include <atomic>
-#include <unordered_set>
+
 namespace lib
 {
-
-struct ThreadRecord
-{
-  uint64_t threadId;
-  uint64_t timestamp;
-};
-
-template <typename T, typename Allocator = memory::allocator::SystemAllocator<T>> class ConcurrentTimestampGarbageCollector
-{
-
-  template <typename K> class ConcurrentTimestampGarbageCollectorList
-  {
-  public:
-    struct Node
-    {
-    public:
-      uint64_t key;
-      K data;
-      std::atomic<Node *> next;
-
-      Node(uint64_t key, K data) : key(key), data(data), next(nullptr)
-      {
-      }
-    };
-
-    HazardPointer<3> hazardAllocator;
-    memory::allocator::SystemAllocator<Node> nodeAllocator;
-
-    std::atomic<Node *> head;
-    ConcurrentTimestampGarbageCollectorList() : head(nullptr), hazardAllocator(), nodeAllocator()
-    {
-    }
-
-    ~ConcurrentTimestampGarbageCollectorList()
-    {
-      auto h = head.load();
-
-      while (h)
-      {
-        auto tmp = h->next.load();
-        nodeAllocator.deallocate(h);
-        h = tmp;
-      }
-    }
-
-    bool front(K &out)
-    {
-      auto *rec = hazardAllocator.acquire();
-
-      do
-      {
-        auto curr = head.load();
-
-        if (curr == nullptr)
-        {
-          hazardAllocator.release(rec);
-          return false;
-        }
-        rec->assign(curr, 0);
-        if (head.load() != curr)
-        {
-          continue;
-        }
-
-        // os::print("Thread %u curr = %u\n", os::Thread::getCurrentThreadId(), curr->key);
-
-        out = curr->data;
-        hazardAllocator.release(rec);
-        return true;
-      } while (true);
-      hazardAllocator.release(rec);
-
-      return false;
-    }
-
-    bool insert(uint64_t key, K data)
-    {
-      auto *rec = hazardAllocator.acquire();
-
-      Node *buff = nodeAllocator.allocate(1);
-      Node *newNode = new (buff) Node(key, data);
-
-      Node *curr = nullptr;
-      Node *next = nullptr;
-
-      std::atomic<Node *> *prev = nullptr;
-
-      int iter = 0;
-
-      while (true)
-      {
-
-        Node *curr = nullptr;
-        Node *next = nullptr;
-
-        std::atomic<Node *> *prev = nullptr;
-
-        if (find(key, rec, curr, prev, next, &head))
-        {
-          rec->template retirePtr<Node, memory::allocator::SystemAllocator<Node>>(nodeAllocator, newNode);
-          hazardAllocator.release(rec);
-          return false;
-        }
-
-        newNode->next.store(curr);
-
-        if (prev->compare_exchange_strong(curr, newNode))
-        {
-          hazardAllocator.release(rec);
-          return true;
-        }
-      }
-    }
-
-    bool get(uint64_t key, K &data)
-    {
-      auto *rec = hazardAllocator.acquire();
-
-      Node *buff = nodeAllocator.allocate(1);
-      Node *newNode = new (buff) Node(key, data);
-
-      Node *curr = nullptr;
-      Node *next = nullptr;
-
-      std::atomic<Node *> *prev = nullptr;
-
-      int iter = 0;
-
-      while (true)
-      {
-
-        Node *curr = nullptr;
-        Node *next = nullptr;
-
-        std::atomic<Node *> *prev = nullptr;
-
-        if (find(key, rec, curr, prev, next, &head))
-        {
-          data = curr->data;
-          rec->template retirePtr<Node, memory::allocator::SystemAllocator<Node>>(nodeAllocator, newNode);
-          hazardAllocator.release(rec);
-          return true;
-        }
-        else
-        {
-          hazardAllocator.release(rec);
-          return false;
-        }
-      }
-    }
-    bool find(uint64_t key, HazardPointer<3>::Record *rec, Node *&curr, std::atomic<Node *> *&prev, Node *&next, std::atomic<Node *> *head)
-    {
-      bool found = false;
-
-      while (true)
-      {
-        prev = head;
-        if (prev == nullptr)
-        {
-          return false;
-        }
-
-        curr = prev->load();
-
-        if (curr == nullptr)
-        {
-          break;
-        }
-
-        // os::print("Thread %u curr = %u, key = %u\n", os::Thread::getCurrentThreadId(), curr->key, key);
-
-        while (curr != nullptr)
-        {
-          rec->assign(curr, 0);
-
-          if (prev->load() != curr)
-          {
-            break;
-          }
-
-          next = curr->next.load();
-
-          if ((uintptr_t)next & 1)
-          {
-            Node *nextPtr = (Node *)((uintptr_t)next - 1);
-
-            if (!prev->compare_exchange_strong(curr, nextPtr))
-            {
-              break;
-            }
-
-            rec->template retire<Node, memory::allocator::SystemAllocator<Node>>(nodeAllocator, 0);
-            curr = nextPtr;
-          }
-          else
-          {
-            size_t ckey = curr->key;
-
-            if (prev->load() != curr)
-            {
-              break;
-            }
-
-            if (ckey == key)
-            {
-              return ckey == key;
-            }
-
-            prev = &curr->next;
-
-            rec->assign((Node *)rec->get(0), 2);
-            rec->assign((Node *)rec->get(1), 0);
-            rec->assign((Node *)rec->get(2), 1);
-
-            curr = next;
-          }
-        }
-
-        if (curr == nullptr)
-        {
-          break;
-        }
-      }
-
-      return false;
-    }
-
-    bool remove(uint64_t key, K &data)
-    {
-      auto *rec = hazardAllocator.acquire();
-
-      while (true)
-      {
-        Node *curr = nullptr;
-        Node *next = nullptr;
-
-        std::atomic<Node *> *prev = nullptr;
-
-        if (!find(key, rec, curr, prev, next, &head))
-        {
-          return false;
-        }
-
-        Node *flagged = (Node *)((uintptr_t)next + 1);
-
-        if (!curr->next.compare_exchange_strong(next, flagged))
-        {
-          continue;
-        }
-
-        data = curr->data;
-
-        if (prev->compare_exchange_strong(curr, next))
-        {
-          rec->template retirePtr<Node, memory::allocator::SystemAllocator<Node>>(nodeAllocator, curr);
-        }
-        else
-        {
-          find(key, rec, curr, prev, next, &head);
-        }
-
-        hazardAllocator.release(rec);
-        return true;
-      }
-    }
-
-    bool min(uint64_t (*map)(K &), K &out)
-    {
-      uint64_t min = UINT64_MAX;
-      auto *rec = hazardAllocator.acquire();
-
-      bool result = false;
-
-      while (true)
-      {
-        auto prev = &head;
-        auto curr = prev->load();
-
-        if (curr == nullptr)
-        {
-          break;
-        }
-
-        while (curr != nullptr)
-        {
-          rec->assign(curr, 0);
-
-          if (prev->load() != curr)
-          {
-            break;
-          }
-
-          auto next = curr->next.load();
-
-          if ((uintptr_t)next & 1)
-          {
-            Node *nextPtr = (Node *)((uintptr_t)next - 1);
-
-            if (!prev->compare_exchange_strong(curr, nextPtr))
-            {
-              break;
-            }
-
-            rec->template retire<Node, memory::allocator::SystemAllocator<Node>>(nodeAllocator, 0);
-            curr = nextPtr;
-          }
-          else
-          {
-            uint64_t value = map(curr->data);
-
-            if (value < min)
-            {
-              out = curr->data;
-              min = value;
-              result = true;
-            }
-
-            if (prev->load() != curr)
-            {
-              break;
-            }
-
-            prev = &curr->next;
-
-            rec->assign((Node *)rec->get(0), 2);
-            rec->assign((Node *)rec->get(1), 0);
-            rec->assign((Node *)rec->get(2), 1);
-
-            curr = next;
-          }
-        }
-
-        if (curr == nullptr)
-        {
-          break;
-        }
-      }
-
-      hazardAllocator.release(rec);
-      return result;
-    }
-  };
-
-public:
-  // std::atomic<ConcurrentTimestampGarbageCollectorNode *> head;
-  // std::atomic<ConcurrentTimestampGarbageCollectorNode *> tail;
-
-  struct GarbageRecord
-  {
-    T **garbage;
-    size_t size;
-    uint64_t timestamp;
-  };
-
-  ConcurrentTimestampGarbageCollectorList<ThreadRecord> activeThreads;
-  ConcurrentTimestampGarbageCollectorList<GarbageRecord> garbageRecords;
-
-  std::atomic<uint64_t> timestamp;
-  HazardPointer<3> hazardAllocator;
-
-  Allocator &allocator;
-
-  ConcurrentTimestampGarbageCollector(Allocator &allocator) : allocator(allocator), garbageRecords(), activeThreads(), timestamp(0)
-  {
-  }
-
-  ~ConcurrentTimestampGarbageCollector()
-  {
-  }
-
-  void openThreadContext()
-  {
-    ThreadRecord record;
-    record.threadId = os::Thread::getCurrentThreadId();
-    record.timestamp = timestamp.fetch_add(1);
-
-    // os::print("Thread %u with timestamp %u started\n", os::Thread::getCurrentThreadId(), record.timestamp);
-    if (!activeThreads.insert(record.threadId, record))
-    {
-      os::print("failed to start thread %u\n", os::Thread::getCurrentThreadId());
-      assert(false);
-    }
-  }
-
-  void closeThreadContext()
-  {
-    ThreadRecord record;
-
-    if (!activeThreads.remove(os::Thread::getCurrentThreadId(), record))
-    {
-      os::print("failed to stop thread %u\n", os::Thread::getCurrentThreadId());
-      assert(false);
-    }
-    // os::print("Thread %u with timestamp %u stopped\n", os::Thread::getCurrentThreadId(), record.timestamp);
-  }
-
-  void free(T **garbage, size_t size)
-  {
-    GarbageRecord record;
-
-    record.garbage = garbage;
-    record.size = size;
-    record.timestamp = timestamp.fetch_add(1) + 1;
-
-    if (!garbageRecords.insert(record.timestamp, record))
-    {
-      os::print("failed to push garbage on thread %u\n", os::Thread::getCurrentThreadId());
-      assert(false);
-    }
-  }
-
-  static uint64_t getTimestamp(ThreadRecord &record)
-  {
-    return record.timestamp;
-  }
-
-  void collect(void (*gc)(T *, uint64_t tts, uint64_t gts) = nullptr)
-  {
-    uint64_t threadTimestamp = UINT64_MAX;
-
-    ThreadRecord record;
-
-    if (activeThreads.min(getTimestamp, record))
-    {
-      threadTimestamp = record.timestamp;
-    }
-    else
-    {
-      return;
-    }
-
-    // os::print("Thread %u collect timestamp = %u\n", os::Thread::getCurrentThreadId(), timestamp);
-
-    GarbageRecord garbage;
-
-    while (garbageRecords.front(garbage))
-    {
-      // os::print("Thread %u collect garbage = %u, timestamp = %u\n", os::Thread::getCurrentThreadId(), garbage.timestamp, timestamp);
-
-      if (garbage.timestamp >= threadTimestamp)
-      {
-        break;
-      }
-
-      if (garbageRecords.remove(garbage.timestamp, garbage))
-      {
-        // os::print("Thread %u removed hehe\n", os::Thread::getCurrentThreadId(), garbage.timestamp, timestamp);
-
-        for (size_t i = 0; i < garbage.size; i++)
-        {
-          if (gc)
-          {
-            gc(garbage.garbage[i], threadTimestamp, garbage.timestamp);
-          }
-          else
-          {
-            // os::print(
-            //     "Thread %u, garbage timestamp = %u, current timestamp = %u, freeing %p\n", os::Thread::getCurrentThreadId(), garbage.timestamp, threadTimestamp, garbage.garbage[i]);
-            allocator.deallocate(garbage.garbage[i]);
-          }
-        }
-
-        delete garbage.garbage;
-      }
-    }
-
-    return;
-  }
-};
 
 template <typename T, typename P = size_t> class ConcurrentPriorityQueue
 {
@@ -483,10 +12,9 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
 
   struct Node
   {
-    uint64_t freedBy;
-    uint64_t freedGarbageTimestamp;
-    uint64_t freedThreadTimestamp;
-
+    // uint64_t freedBy;
+    // uint64_t freedGarbageTimestamp;
+    // uint64_t freedThreadTimestamp;
     std::atomic<Node *> parent;
     std::atomic<Node *> left;
     std::atomic<Node *> next;
@@ -497,14 +25,11 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
     std::atomic<unsigned char> parentDirection;
     // TODO: add padding
 
-    Node(T value, P priority) : parent(nullptr), left(nullptr), next(nullptr), right(nullptr), inserting(false), parentDirection(false)
+    Node(T value, P priority) : parent(nullptr), left(nullptr), next(nullptr), right(nullptr), inserting(false), parentDirection(false), value(value), priority(priority)
     {
-      this->value = value;
-      this->priority = priority;
-
-      this->freedBy = UINT64_MAX;
-      this->freedGarbageTimestamp = UINT64_MAX;
-      this->freedThreadTimestamp = UINT64_MAX;
+      // this->freedBy = UINT64_MAX;
+      // this->freedGarbageTimestamp = UINT64_MAX;
+      // this->freedThreadTimestamp = UINT64_MAX;
     }
   };
 
@@ -522,11 +47,13 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
   std::atomic<Node *> head;
   std::atomic<Node *> root;
 
-  ThreadLocalStorage<Node *> previousDummy;
-  ThreadLocalStorage<Node *> previousHead;
+  // ThreadLocalStorage<Node *> previousDummy;
+  // ThreadLocalStorage<Node *> previousHead;
 
-  HazardPointer<16> hazardAllocator;
-  using HPRecord = HazardPointer<16>::Record;
+  // using HazardPointerManager = HazardPointer<16, Node *, memory::allocator::SystemAllocator<Node>>;
+  // using HazardPointerRecord = typename HazardPointerManager::Record;
+
+  // HazardPointerManager hazardAllocator;
 
   memory::allocator::SystemAllocator<Node> allocator;
   ConcurrentTimestampGarbageCollector<Node> garbageCollector;
@@ -562,109 +89,97 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
     return new (node) Node(v, p);
   }
 
-#define LOAD_ADDR(c, b, a, r, i)                                                                                                                                                   \
+#define LOAD_ADDR(c, b, a)                                                                                                                                                         \
   do                                                                                                                                                                               \
   {                                                                                                                                                                                \
     a = b;                                                                                                                                                                         \
     c = address(a);                                                                                                                                                                \
-    r->assign(c, i);                                                                                                                                                               \
   } while (b != a);
 
-#define LOAD(a, b, r, i)                                                                                                                                                           \
+#define LOAD(a, b)                                                                                                                                                                 \
   do                                                                                                                                                                               \
   {                                                                                                                                                                                \
     a = b;                                                                                                                                                                         \
-    r->assign(a, i);                                                                                                                                                               \
   } while (b != a);
 
-  inline void readLeft(
-      volatile Node *&parent_node,
-      volatile Node *&child_node,
-      volatile size_t &child_mark,
-      size_t &operation_mark,
-      unsigned char &parent_direction,
-      HPRecord *record,
-      size_t index,
-      size_t index2)
+  inline void readLeft(volatile Node *&parent_node, volatile Node *&child_node, volatile size_t &child_mark, size_t &operation_mark, unsigned char &parent_direction)
   {
     Node *parent, *parent_addr;
 
-    if (parent_node->freedBy != UINT64_MAX || parent_node->freedGarbageTimestamp != UINT64_MAX || parent_node->freedThreadTimestamp != UINT64_MAX)
-    {
-      ThreadRecord trecord = {};
+    // if (parent_node->freedBy != UINT64_MAX || parent_node->freedGarbageTimestamp != UINT64_MAX || parent_node->freedThreadTimestamp != UINT64_MAX)
+    // {
+    //   ThreadRecord trecord = {};
 
-      assert(garbageCollector.activeThreads.get(os::Thread::getCurrentThreadId(), trecord));
+    //   assert(garbageCollector.activeThreads.get(os::Thread::getCurrentThreadId(), trecord));
 
-      os::print(
-          "Thread %u at %u trying to access %p, freed by %u at threadTS = %u, garbageTs = %u\n",
-          trecord.threadId,
-          trecord.timestamp,
-          parent_node,
-          parent_node->freedBy,
-          parent_node->freedThreadTimestamp,
-          parent_node->freedGarbageTimestamp);
-      printTree();
-      assert(false);
-    }
+    //   os::print(
+    //       "Thread %u at %u trying to access %p, freed by %u at threadTS = %u, garbageTs = %u\n",
+    //       trecord.threadId,
+    //       trecord.timestamp,
+    //       parent_node,
+    //       parent_node->freedBy,
+    //       parent_node->freedThreadTimestamp,
+    //       parent_node->freedGarbageTimestamp);
+    //   printTree();
+    //   assert(false);
+    // }
 
-    LOAD_ADDR(parent_addr, parent_node->next.load(), parent, record, index2);
+    LOAD_ADDR(parent_addr, parent_node->next.load(), parent);
 
     operation_mark = getMark(parent);
 
     Node *raw;
-    LOAD_ADDR(child_node, parent_node->left.load(), raw, record, index);
+    LOAD_ADDR(child_node, parent_node->left.load(), raw);
 
     child_mark = getMark(raw);
     parent_direction = LEFT_DIRECTION;
   }
 
-  inline void readRight(
-      volatile Node *&parent_node,
-      volatile Node *&child_node,
-      volatile size_t &child_mark,
-      size_t &operation_mark,
-      unsigned char &parent_direction,
-      HPRecord *record,
-      size_t index,
-      size_t index2)
+  inline void readRight(volatile Node *&parent_node, volatile Node *&child_node, volatile size_t &child_mark, size_t &operation_mark, unsigned char &parent_direction)
   {
-    if (parent_node->freedBy != UINT64_MAX || parent_node->freedGarbageTimestamp != UINT64_MAX || parent_node->freedThreadTimestamp != UINT64_MAX)
-    {
-      ThreadRecord trecord = {};
+    // if (parent_node->freedBy != UINT64_MAX || parent_node->freedGarbageTimestamp != UINT64_MAX || parent_node->freedThreadTimestamp != UINT64_MAX)
+    // {
+    //   ThreadRecord trecord = {};
 
-      assert(garbageCollector.activeThreads.get(os::Thread::getCurrentThreadId(), trecord));
+    //   assert(garbageCollector.activeThreads.get(os::Thread::getCurrentThreadId(), trecord));
 
-      os::print(
-          "Thread %u at %u trying to access %p, freed by %u at threadTS = %u, garbageTs = %u\n",
-          trecord.threadId,
-          trecord.timestamp,
-          parent_node,
-          parent_node->freedBy,
-          parent_node->freedThreadTimestamp,
-          parent_node->freedGarbageTimestamp);
-      printTree();
-      assert(false);
-    }
+    //   os::print(
+    //       "Thread %u at %u trying to access %p, freed by %u at threadTS = %u, garbageTs = %u\n",
+    //       trecord.threadId,
+    //       trecord.timestamp,
+    //       parent_node,
+    //       parent_node->freedBy,
+    //       parent_node->freedThreadTimestamp,
+    //       parent_node->freedGarbageTimestamp);
+    //   printTree();
+    //   assert(false);
+    // }
 
     Node *parent, *parent_addr;
-    LOAD_ADDR(parent_addr, parent_node->next.load(), parent, record, index2);
+    LOAD_ADDR(parent_addr, parent_node->next.load(), parent);
 
     operation_mark = getMark(parent);
     Node *raw;
-    LOAD_ADDR(child_node, parent_node->right.load(), raw, record, index);
+    LOAD_ADDR(child_node, parent_node->right.load(), raw);
     child_mark = getMark(raw);
     parent_direction = RIGHT_DIRECTION;
   }
 
-  uint32_t randomGen()
+  uint32_t xorshift32()
   {
     if (seed == 0)
     {
-      seed = os::Thread::getCurrentThreadId();
+      seed = static_cast<uint32_t>(os::Thread::getCurrentThreadId());
     }
+    seed ^= seed << 13;
+    seed ^= seed >> 17;
+    seed ^= seed << 5;
+    return seed;
+  }
 
-    seed = seed * 1103515245 + 12345;
-    return seed % 20; // deleteScale;
+  uint32_t randomGen(size_t randomScale = 100)
+  {
+    return xorshift32() % randomScale;
   }
   /*
     inline void tryHelpInsert(Node *newNode)
@@ -695,7 +210,7 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
   */
   // thread_local static std::string dump;
 
-  InsertSeekRecordInfo insertSearch(P priority, HPRecord *record)
+  InsertSeekRecordInfo insertSearch(P priority)
   {
     // dump += "inserting " + std::to_string(priority) + "\n";
     Node *parent_node_left, *parent_original, *grand_parent_node_next, *grand_parent_node_left_addr, *grand_parent_node_left, *grand_parent_node_next_addr, *child_node_next_addr,
@@ -704,10 +219,10 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
     volatile Node *grand_parent_node = nullptr;
 
     volatile Node *parent_node;
-    LOAD(parent_node, root.load(), record, 1);
+    LOAD(parent_node, root.load());
 
     volatile Node *child_node; // = address(parent_node->left.load());
-    LOAD_ADDR(child_node, parent_node->left.load(), parent_node_left, record, 2);
+    LOAD_ADDR(child_node, parent_node->left.load(), parent_node_left);
     size_t operation_mark = getMark(parent_node_left);
 
     volatile size_t child_mark = 0;
@@ -721,7 +236,7 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
 
       if (operation_mark == DELETE_MARK)
       {
-        readRight(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+        readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
         marked_node = const_cast<Node *>(parent_node);
 
         while (true)
@@ -730,16 +245,15 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
           {
             if (child_mark != LEAF_MARK)
             {
-              record->assign(child_node, 1);
               parent_node = child_node;
 
-              readRight(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+              readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
               continue;
             }
             else
             {
-              LOAD_ADDR(parent_node, child_node->next.load(), parent_original, record, 1);
-              readRight(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+              LOAD_ADDR(parent_node, child_node->next.load(), parent_original);
+              readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
               break;
             }
           }
@@ -748,10 +262,10 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
             const static uint32_t insertCleanRate = 50;
 
             // occasional cleanup
-            if (randomGen() < insertCleanRate)
+            if (randomGen(100) < insertCleanRate)
             {
-              LOAD_ADDR(grand_parent_node_next_addr, grand_parent_node->next.load(), grand_parent_node_next, record, 4);
-              LOAD_ADDR(grand_parent_node_left_addr, grand_parent_node->left.load(), grand_parent_node_left, record, 5);
+              LOAD_ADDR(grand_parent_node_next_addr, grand_parent_node->next.load(), grand_parent_node_next);
+              LOAD_ADDR(grand_parent_node_left_addr, grand_parent_node->left.load(), grand_parent_node_left);
 
               if (!getMark(grand_parent_node_next) && grand_parent_node_left == marked_node)
               {
@@ -761,9 +275,9 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
 
             // TRAVERSE()
             if (priority <= parent_node->priority)
-              readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+              readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction);
             else
-              readRight(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+              readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
             break;
           }
         }
@@ -772,18 +286,15 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
 
       if (child_mark != LEAF_MARK)
       {
-        record->assign(parent_node, 9);
-        record->assign(child_node, 1);
-
         grand_parent_node = parent_node;
         parent_node = child_node;
 
         // dump += "traversal 1: " + std::to_string(priority) + " <= " + std::to_string(parent_node->priority) + "\n";
 
         if (priority <= parent_node->priority)
-          readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+          readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction);
         else
-          readRight(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+          readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
       }
       else
       {
@@ -791,14 +302,14 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
         Node *current_next; // = child_node->next.load();
         Node *child_next;   // = address(current_next);
 
-        LOAD_ADDR(child_next, child_node->next.load(), current_next, record, 6);
+        LOAD_ADDR(child_next, child_node->next.load(), current_next);
 
         if (getMark(current_next))
         {
           // printf("got mark\n");
           parent_node = child_next;
           // dump += "traversal 2 right: " + std::to_string(priority) + " <= " + std::to_string(parent_node->priority) + "\n";
-          readRight(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+          readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
           continue;
         }
 
@@ -832,8 +343,8 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
         Node *parent_left, *parent_left_addr;
         Node *parent_right, *parent_right_addr;
 
-        LOAD_ADDR(parent_left_addr, parent_node->left.load(), parent_left, record, 7);
-        LOAD_ADDR(parent_right_addr, parent_node->right.load(), parent_right, record, 8);
+        LOAD_ADDR(parent_left_addr, parent_node->left.load(), parent_left);
+        LOAD_ADDR(parent_right_addr, parent_node->right.load(), parent_right);
 
         bool is_correct_leaf = (parent_direction == LEFT_DIRECTION && parent_left == mark(child_node, LEAF_MARK)) ||
                                (parent_direction == RIGHT_DIRECTION && parent_right == mark(child_node, LEAF_MARK));
@@ -860,22 +371,22 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
         // dump += "traversal 4: " + std::to_string(priority) + " <= " + std::to_string(parent_node->priority) + "\n";
         //  else TRAVERSE()
         if (priority < parent_node->priority)
-          readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+          readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction);
         else
-          readRight(parent_node, child_node, child_mark, operation_mark, parent_direction, record, 2, 3);
+          readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
       }
     }
   }
 
-  void physicalDelete(Node *root, Node *dummyNode, HPRecord *record)
+  void physicalDelete(Node *root, Node *dummyNode)
   {
     volatile Node *grandParent = nullptr;
     volatile Node *parent; // = root.load(std::memory_order_acquire);
     volatile Node *child;  // = address(parent->left.load(std::memory_order_acquire));
     Node *child_ptr;
 
-    LOAD(parent, root, record, 6);
-    LOAD_ADDR(child, parent->left.load(), child_ptr, record, 7);
+    LOAD(parent, root);
+    LOAD_ADDR(child, parent->left.load(), child_ptr);
 
     unsigned char parentDirection;
     size_t opMark = getMark(child_ptr);
@@ -887,9 +398,8 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
     {
       if (opMark == DELETE_MARK)
       {
-        readRight(parent, child, childMark, opMark, parentDirection, record, 7, 8);
+        readRight(parent, child, childMark, opMark, parentDirection);
         marked = const_cast<Node *>(parent);
-        record->assign(marked, 12);
 
         while (true)
         {
@@ -897,17 +407,16 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
           {
             if (childMark != LEAF_MARK)
             {
-              record->assign(child, 6);
               parent = child;
 
-              readRight(parent, child, childMark, opMark, parentDirection, record, 7, 8);
+              readRight(parent, child, childMark, opMark, parentDirection);
 
               continue;
             }
             else
             {
               Node *childNext, *childNextPtr;
-              LOAD_ADDR(childNext, child->next.load(std::memory_order_acquire), childNextPtr, record, 9);
+              LOAD_ADDR(childNext, child->next.load(std::memory_order_acquire), childNextPtr);
               Node *parentRightPtr, *parentRight;
 
               // LOAD_ADDR(parentRight, parent->right.load(std::memory_order_acquire), parentRightPtr, record, 10);
@@ -927,7 +436,7 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
                 goto FINISH;
               }
 
-              readRight(parent, child, childMark, opMark, parentDirection, record, 7, 8);
+              readRight(parent, child, childMark, opMark, parentDirection);
               continue;
             }
           }
@@ -936,12 +445,10 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
             // try cleanup
             if (grandParent)
             {
-              assert((void *)grandParent == record->get(10));
-
               Node *grandParentNextPtr; // = child->next.load(std::memory_order_acquire);
               Node *grandParentNext;    // = address(currentNext);
 
-              LOAD_ADDR(grandParentNext, grandParent->next.load(std::memory_order_acquire), grandParentNextPtr, record, 9);
+              LOAD_ADDR(grandParentNext, grandParent->next.load(std::memory_order_acquire), grandParentNextPtr);
 
               if (!getMark(grandParentNextPtr))
               {
@@ -950,15 +457,14 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
                   if (grandParent->left.compare_exchange_strong(marked, const_cast<Node *>(parent), std::memory_order_acq_rel, std::memory_order_acquire))
                   {
 
-                    readLeft(grandParent, child, childMark, opMark, parentDirection, record, 7, 8);
+                    readLeft(grandParent, child, childMark, opMark, parentDirection);
                     break;
                   }
                 }
               }
 
-              record->assign(grandParent, 6);
               parent = grandParent;
-              readLeft(parent, child, childMark, opMark, parentDirection, record, 7, 8);
+              readLeft(parent, child, childMark, opMark, parentDirection);
               break;
             }
             goto FINISH;
@@ -979,13 +485,10 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
             goto FINISH;
           }
 
-          record->assign(parent, 10);
-          record->assign(child, 6);
-
           grandParent = parent;
           parent = child;
 
-          readLeft(parent, child, childMark, opMark, parentDirection, record, 7, 8);
+          readLeft(parent, child, childMark, opMark, parentDirection);
           continue;
         }
         else
@@ -993,7 +496,7 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
           Node *currentNext; // = child->next.load(std::memory_order_acquire);
           Node *childNext;   // = address(currentNext);
 
-          LOAD_ADDR(childNext, child->next.load(std::memory_order_acquire), currentNext, record, 9);
+          LOAD_ADDR(childNext, child->next.load(std::memory_order_acquire), currentNext);
 
           if (getMark(currentNext))
           {
@@ -1012,7 +515,7 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
               }
               goto FINISH;
             }
-            readLeft(parent, child, childMark, opMark, parentDirection, record, 7, 8);
+            readLeft(parent, child, childMark, opMark, parentDirection);
             continue;
           }
         }
@@ -1079,10 +582,10 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
   }
 
 public:
-  ConcurrentPriorityQueue() : previousDummy(), previousHead(), garbageCollector(allocator)
+  ConcurrentPriorityQueue() : garbageCollector(allocator)
   {
-    previousHead.set(nullptr);
-    previousDummy.set(nullptr);
+    // previousHead.set(nullptr);
+    // previousDummy.set(nullptr);
 
     Node *headNode = allocateNode(0, 0);
     Node *rootNode = allocateNode(0, 1);
@@ -1113,11 +616,21 @@ public:
     root.store(rootNode, std::memory_order_relaxed);
   }
 
+  ~ConcurrentPriorityQueue()
+  {
+    while (head.load())
+    {
+      Node *tmp = head.load();
+      head.store(address(tmp->next));
+      allocator.deallocate(tmp);
+    }
+
+    allocator.deallocate(root.load());
+  }
+
   bool enqueue(const T &value, P priority)
   {
     garbageCollector.openThreadContext();
-
-    HPRecord *record = hazardAllocator.acquire();
 
     // dump = "enqueing " + std::to_string(priority) + "\n";
     assert(priority != 0);
@@ -1127,11 +640,9 @@ public:
     Node *newNode = allocateNode(value, priority);
     newNode->right.store(mark(newNode, LEAF_MARK), std::memory_order_relaxed);
 
-    record->assign(newNode, 0);
-
     while (true)
     {
-      InsertSeekRecordInfo ins = insertSearch(priority, record);
+      InsertSeekRecordInfo ins = insertSearch(priority);
 
       if (ins.duplicate == DUPLICATE_DIRECTION)
       {
@@ -1139,8 +650,6 @@ public:
         // delete newNode;
         // hazardAllocator.release(record);
         // os::print("%s\n---------\n", dump.c_str());
-        record->retire<Node, memory::allocator::SystemAllocator<Node>>(allocator, 0);
-        hazardAllocator.release(record);
         garbageCollector.closeThreadContext();
         return false;
       }
@@ -1168,7 +677,7 @@ public:
       unsigned char expected = 1;
 
       Node *leaf_next_addr, *leaf_next;
-      LOAD_ADDR(leaf_next_addr, leaf->next.load(), leaf_next, record, 9);
+      LOAD_ADDR(leaf_next_addr, leaf->next.load(), leaf_next);
 
       if (leaf_next == nextLeaf)
       {
@@ -1190,7 +699,6 @@ public:
                 }
               }
 
-              hazardAllocator.release(record);
               garbageCollector.closeThreadContext();
 
               return true;
@@ -1216,7 +724,6 @@ public:
               }
 
               // os::print("%s---------\n", dump.c_str());
-              hazardAllocator.release(record);
               garbageCollector.closeThreadContext();
               return true;
             }
@@ -1226,29 +733,89 @@ public:
     }
   }
 
-  static void nodeFreeOverload(Node *n, uint64_t tts, uint64_t gts)
-  {
-    n->freedThreadTimestamp = tts;
-    n->freedGarbageTimestamp = gts;
-    n->freedBy = os::Thread::getCurrentThreadId();
-  }
+  // static void nodeFreeOverload(Node *n, uint64_t tts, uint64_t gts)
+  // {
+  //   n->freedThreadTimestamp = tts;
+  //   n->freedGarbageTimestamp = gts;
+  //   n->freedBy = os::Thread::getCurrentThreadId();
+  // }
 
-  bool tryDequeue(T &outValue)
+  bool dequeue(T &out)
   {
     garbageCollector.openThreadContext();
 
-    HPRecord *record = hazardAllocator.acquire();
+    Node *hNode = head.load()->next;
+
+    while (true)
+    {
+      if (hNode == nullptr)
+      {
+        garbageCollector.closeThreadContext();
+        return false;
+      }
+
+      if (getMark(hNode) == DELETE_MARK)
+      {
+        hNode = address(hNode->next);
+        continue;
+      }
+
+      Node *xorNode = (Node *)reinterpret_cast<std::atomic<uintptr_t> &>(hNode->next).fetch_or(1LL, std::memory_order_acquire);
+
+      if (!(getMark(xorNode) == DELETE_MARK))
+      {
+        out = xorNode->value;
+
+        xorNode->priority = 0;
+
+        if (randomGen(100) < 50)
+        {
+          garbageCollector.closeThreadContext();
+          return true;
+        }
+
+        if (head.load()->next.compare_exchange_strong(hNode, xorNode))
+        {
+          physicalDelete(xorNode, hNode);
+
+          Node *nextLeaf = hNode;
+          while (nextLeaf != xorNode)
+          {
+            Node *curr = nextLeaf;
+            nextLeaf = address(nextLeaf->next.load());
+
+            Node **buff = new Node *[1];
+            buff[0] = curr;
+            garbageCollector.free(buff, 1);
+          }
+        }
+
+        garbageCollector.collect();
+        garbageCollector.closeThreadContext();
+
+        return true;
+      }
+
+      hNode = address(xorNode);
+    }
+  }
+
+  bool tryDequeue(T &outValue, int i = 0)
+  {
+    garbageCollector.openThreadContext();
 
     outValue = -1;
     Node *h; // = head.load(std::memory_order_acquire);
-    LOAD(h, head.load(), record, 0);
+    LOAD(h, head.load());
 
     Node *leafNode, *leafAddr; // = h->next.load(); // address(h->next.load(std::memory_order_acquire));
-    LOAD_ADDR(leafAddr, h->next.load(), leafNode, record, 1);
+    LOAD_ADDR(leafAddr, h->next.load(), leafNode);
 
     Node *headItemNode;
-    LOAD(headItemNode, leafNode, record, 4);
+    LOAD(headItemNode, leafNode);
     Node *ph = nullptr;
+
+    Node *r = root.load();
 
     // previousHead.get(ph);
 
@@ -1263,23 +830,25 @@ public:
 
     while (true)
     {
-      Node *r = root.load();
 
       Node *currentNext, *nextLeaf;
-      assert(leafNode == record->get(1));
-      LOAD_ADDR(nextLeaf, leafNode->next.load(std::memory_order_acquire), currentNext, record, 2);
+      LOAD_ADDR(nextLeaf, leafNode->next.load(std::memory_order_acquire), currentNext);
 
       if (!nextLeaf)
       {
         // previousDummy.set(leafNode);
-        hazardAllocator.release(record);
         garbageCollector.closeThreadContext();
         return false;
       }
 
       if (getMark(currentNext))
       {
-        record->assign(nextLeaf, 1);
+        leafNode = nextLeaf;
+        continue;
+      }
+
+      if (currentNext->priority == P(0))
+      {
         leafNode = nextLeaf;
         continue;
       }
@@ -1294,8 +863,11 @@ public:
 
       if (!getMark(xorNode))
       {
+        os::print("Thread %u moving %u\n", i, xorNode->value);
         outValue = std::move(xorNode->value);
-        previousDummy.set(xorNode);
+        os::print("Thread %u moved %u, %u\n", i, xorNode->value, outValue);
+
+        // previousDummy.set(xorNode);
 
         // const static size_t physicalDeleteRate = 5;
 
@@ -1315,6 +887,9 @@ public:
           {
             xorNode->priority = P(0);
           }
+
+          physicalDelete(xorNode, r);
+
           nextLeaf = headItemNode;
           size_t count = 0;
 
@@ -1332,11 +907,10 @@ public:
             // }
           }
 
-          physicalDelete(xorNode, r, record);
-
           nextLeaf = headItemNode;
           Node **buff = new Node *[count];
           size_t at = 0;
+
           while (nextLeaf != xorNode)
           {
             // if (getMark(nextLeaf) == DELETE_MARK)
@@ -1346,19 +920,19 @@ public:
 
             nextLeaf = address(nextLeaf->next.load(std::memory_order_acquire));
           }
+
           garbageCollector.free(buff, count);
         }
 
-        hazardAllocator.release(record);
-
         garbageCollector.closeThreadContext();
         garbageCollector.collect();
+
         return true;
       }
 
-      Node *tmp;
-      LOAD_ADDR(leafNode, xorNode, tmp, record, 1);
-      // leafNode = address(xorNode);
+      // Node *tmp;
+      // LOAD_ADDR(leafNode, xorNode, tmp);
+      leafNode = address(xorNode);
     }
   }
 

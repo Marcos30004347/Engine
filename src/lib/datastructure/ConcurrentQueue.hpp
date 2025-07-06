@@ -38,17 +38,21 @@ public:
 
   // NOTE(marcos): maybe have a list of records and a ThreadLocalStorage to store thread records
   // so we dont need to achire them often. At destruction we iterate over the record list and release them.
-  HazardPointer<2> hazardAllocator;
+
+  using HazardPointerManager = HazardPointer<2, ConcurrentQueueNode<T>, Allocator>;
+  using HazardPointerRecord = typename HazardPointerManager::Record;
+
+  HazardPointerManager hazardAllocator;
 
   Allocator allocator;
 
-  ConcurrentQueueProducer(Allocator &allocator) : head(nullptr), tail(nullptr), allocator(allocator), size(0)
+  ConcurrentQueueProducer(Allocator &allocator) : head(nullptr), tail(nullptr), allocator(allocator), size(0), hazardAllocator(this->allocator)
   {
     head = new ConcurrentQueueNode<T>(T());
     tail = head.load();
   }
 
-  ConcurrentQueueProducer() : head(nullptr), tail(nullptr), size(0)
+  ConcurrentQueueProducer() : head(nullptr), tail(nullptr), size(0), hazardAllocator()
   {
     head = new ConcurrentQueueNode<T>(T());
     tail = head.load();
@@ -70,8 +74,7 @@ public:
   {
     ConcurrentQueueNode<T> *newNode = new ConcurrentQueueNode<T>(value);
     ConcurrentQueueNode<T> *oldHead = nullptr;
-    HazardPointer<2>::Record *rec = hazardAllocator.acquire();
-    void *null = nullptr;
+    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
 
     while (true)
     {
@@ -107,20 +110,17 @@ public:
 
     size.fetch_add(1);
 
-    rec->assign(null, 0);
-
     hazardAllocator.release(rec);
   }
 
   bool tryDequeue(T &value)
   {
-    HazardPointer<2>::Record *rec = hazardAllocator.acquire();
-
-    void *null = nullptr;
+    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
+    ConcurrentQueueNode<T> *h;
 
     while (true)
     {
-      ConcurrentQueueNode<T> *h = head.load();
+      h = head.load();
 
       rec->assign(h, 0);
 
@@ -141,10 +141,8 @@ public:
 
       if (next == nullptr)
       {
-        rec->unassign(0);
-        rec->unassign(1);
         hazardAllocator.release(rec);
-        
+
         return false;
       }
 
@@ -162,9 +160,7 @@ public:
       }
     }
 
-    rec->retire<ConcurrentQueueNode<T>, Allocator>(allocator, 0);
-    rec->assign(null, 1);
-
+    rec->retire(h);
     hazardAllocator.release(rec);
 
     return true;
@@ -172,7 +168,7 @@ public:
 
   bool tryPop(T &value)
   {
-    HazardPointer<2>::Record *rec = hazardAllocator.acquire();
+    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
     void *nil = nullptr;
 
     while (true)
@@ -200,8 +196,7 @@ public:
       {
         value = oldHead->value;
 
-        rec->retire<ConcurrentQueueNode<T>, Allocator>(allocator, 0);
-        rec->assign(nil, 1);
+        rec->retire(oldHead);
         hazardAllocator.release(rec);
         size.fetch_sub(1);
         return true;

@@ -12,7 +12,7 @@
 namespace lib
 {
 
-template <size_t K, typename T, typename Allocator> class HazardPointer
+template <size_t K, typename T, typename Allocator = memory::allocator::SystemAllocator<T>> class HazardPointer
 {
 public:
   class Record
@@ -41,7 +41,7 @@ public:
     {
       for (size_t i = 0; i < retiredList.size(); i++)
       {
-        delete retiredList[i];
+        allocator.deallocate((T*)retiredList[i]);
       }
     }
 
@@ -69,7 +69,7 @@ public:
 
           if (retiredList.size() > R)
           {
-            scan(manager->head.load(), allocator);
+            scan(manager->head.load());
           }
         }
 
@@ -137,22 +137,22 @@ public:
     {
       return pointers[index];
     }
-    void retire(Allocator &allocator, uint32_t index)
-    {
-      retiredList.pushBack((void *)pointers[index]);
+    // void retire(uint32_t index)
+    // {
+    //   retiredList.pushBack((void *)pointers[index]);
 
-      // os::print("retiring %p\n", pointers[index]);
+    //   // os::print("retiring %p\n", pointers[index]);
 
-      pointers[index] = nullptr;
+    //   pointers[index] = nullptr;
 
-      if (retiredList.size() >= R)
-      {
-        scan(manager->head, allocator);
-        helpScan(allocator);
-      }
-    }
+    //   if (retiredList.size() >= R)
+    //   {
+    //     scan(manager->head);
+    //     helpScan();
+    //   }
+    // }
 
-    void retirePtr(Allocator &allocator, void *ptr)
+    void retire(void *ptr)
     {
       retiredList.pushBack(ptr);
 
@@ -160,8 +160,8 @@ public:
 
       if (retiredList.size() >= R)
       {
-        scan(manager->head, allocator);
-        helpScan(allocator);
+        scan(manager->head);
+        helpScan();
       }
     }
   };
@@ -183,7 +183,7 @@ public:
     }
   }
 
-  Record *acquire()
+  Record *acquire(Allocator &allocator)
   {
     Record *p = head;
 
@@ -205,7 +205,7 @@ public:
       oldLen = listLen.load();
     } while (!listLen.compare_exchange_weak(oldLen, oldLen + 1, std::memory_order_release, std::memory_order_relaxed));
 
-    p = new Record(this);
+    p = new Record(this, allocator);
 
     assert(!p->isActive.test_and_set(std::memory_order_acquire));
 

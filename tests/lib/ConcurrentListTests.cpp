@@ -156,51 +156,6 @@ int main()
   lib::time::TimeSpan then = lib::time::TimeSpan::now();
   lib::memory::SystemMemoryManager::init();
 
-  lib::detail::ConcurrentLinkedList<int> *list = new lib::detail::ConcurrentLinkedList<int>();
-
-  then = lib::time::TimeSpan::now();
-  list->insert(0);
-  os::print("Inserting 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
-
-  then = lib::time::TimeSpan::now();
-  list->insert(1);
-  os::print("Inserting 1 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
-
-  then = lib::time::TimeSpan::now();
-  list->insert(2);
-  os::print("Inserting 2 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
-
-  then = lib::time::TimeSpan::now();
-  list->tryRemove(2);
-  os::print("Removing 2 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
-
-  then = lib::time::TimeSpan::now();
-  list->tryRemove(0);
-  os::print("Removing 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
-
-  then = lib::time::TimeSpan::now();
-  list->tryRemove(1);
-  os::print("Removing 1 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
-
-  list->insert(1);
-  list->insert(3);
-  list->insert(4);
-  list->insert(6);
-
-  int value = 0;
-  size_t iters = 0;
-
-  printf("\n");
-  while (list->tryPop(value))
-  {
-    os::print("Removing %i...\n", value);
-    iters += 1;
-  }
-
-  assert(iters == 4);
-
-  delete list;
-
   // multiThreadTests();
   concurrentListMultithreadTests();
 

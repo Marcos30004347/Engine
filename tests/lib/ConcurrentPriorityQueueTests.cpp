@@ -49,14 +49,14 @@ void multiThreadTests()
           {
           }
 
-          os::print("Thread %i dequeing\n", i);
+          // os::print("Thread %i dequeing\n", i);
           int x;
           int prev = -1;
 
           for (size_t j = 0; j < 100; j++)
           {
             then = lib::time::TimeSpan::now();
-            while (!pq->tryDequeue(x))
+            while (!pq->dequeue(x))
             {
             }
 
@@ -91,10 +91,10 @@ void multiThreadGCTests()
   size_t totalThreads = os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
 
-  int *values[10000];
-  std::atomic<bool> wasFreed[10000];
+  int *values[1000];
+  std::atomic<bool> wasFreed[1000];
 
-  for (size_t i = 0; i < 10000; i++)
+  for (size_t i = 0; i < 1000; i++)
   {
     values[i] = allocator.allocate(1);
     wasFreed[i].store(false);
@@ -147,12 +147,12 @@ void multiThreadGCTests()
             }
 
             then = lib::time::TimeSpan::now();
-            gc.closeThreadContext();
-            total_get_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
-
-            then = lib::time::TimeSpan::now();
             gc.collect();
             total_collect_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
+            
+            then = lib::time::TimeSpan::now();
+            gc.closeThreadContext();
+            total_get_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
           os::print("Thread %u average insertion time is %lluns\n", os::Thread::getCurrentThreadId(), (size_t)total_insert_ns / 1000);
@@ -172,10 +172,10 @@ int main()
 
   multiThreadGCTests();
 
-  // for (size_t i = 0; i < 1; i++)
-  // {
-  //   multiThreadTests();
-  // }
+  for (size_t i = 0; i < 10000; i++)
+  {
+    multiThreadTests();
+  }
 
   lib::memory::SystemMemoryManager::shutdown();
 }

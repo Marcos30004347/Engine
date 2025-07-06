@@ -12,6 +12,7 @@ namespace lib
 namespace detail
 {
 template <typename K> class ConcurrentList;
+
 template <typename T> struct ConcurrentSingleLinkedListNode
 {
 public:
@@ -34,10 +35,8 @@ public:
   std::atomic<ConcurrentSingleLinkedListNode<T> *> head;
   std::atomic<int> size;
 
-  // NOTE(marcos): maybe have a list of records and a ThreadLocalStorage to store thread records
-  // so we dont need to achire them often. At destruction we iterate over the record list and release them.
   using HazardPointerManager = HazardPointer<2, ConcurrentSingleLinkedListNode<T>, Allocator>;
-  using HazardPointerRecord = typename HazardPointer<2, ConcurrentSingleLinkedListNode<T>, Allocator>::Record;
+  using HazardPointerRecord = typename HazardPointerManager::Record;
 
   HazardPointerManager hazardAllocator;
 
@@ -78,38 +77,10 @@ public:
     return newNode;
   }
 
-  bool find(const T &value)
-  {
-    HazardPointerRecord *rec = hazardAllocator.acquire();
-
-    ConcurrentSingleLinkedListNode<T> *curr = head.load();
-
-    while (curr)
-    {
-      rec->assign(curr, 0);
-
-      if (curr->value == value)
-      {
-        void *nil = nullptr;
-        rec->assign(nil, 0);
-
-        hazardAllocator.release(rec);
-        return true;
-      }
-
-      curr = curr->next.load();
-    }
-
-    void *nil = nullptr;
-    rec->assign(nil, 0);
-    hazardAllocator.release(rec);
-
-    return false;
-  }
 
   bool tryRemove(const T &value)
   {
-    HazardPointerRecord *rec = hazardAllocator.acquire();
+    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
 
     void *nil = nullptr;
 
@@ -143,8 +114,7 @@ public:
             }
           }
 
-          rec->retire<ConcurrentSingleLinkedListNode<T>, Allocator>(allocator, 0);
-          rec->assign(nil, 1);
+          rec->retire(curr);
           hazardAllocator.release(rec);
 
           size.fetch_sub(1);
@@ -155,8 +125,6 @@ public:
         curr = next;
       }
 
-      rec->assign(nil, 0);
-      rec->assign(nil, 1);
       hazardAllocator.release(rec);
 
       return false;
@@ -165,7 +133,7 @@ public:
 
   bool tryPop(T &value)
   {
-    HazardPointerType::Record *rec = hazardAllocator.acquire();
+    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
 
     while (true)
     {
@@ -173,9 +141,6 @@ public:
 
       if (!oldHead)
       {
-        void *nil = nullptr;
-        rec->assign(nil, 0);
-
         hazardAllocator.release(rec);
         return false;
       }
@@ -192,7 +157,7 @@ public:
       if (head.compare_exchange_strong(oldHead, newHead))
       {
         value = oldHead->value;
-        rec->retire<ConcurrentSingleLinkedListNode<T>, Allocator>(allocator, 0);
+        rec->retire(oldHead);
         hazardAllocator.release(rec);
         size.fetch_sub(1);
         return true;

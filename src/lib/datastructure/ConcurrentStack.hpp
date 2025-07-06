@@ -1,9 +1,9 @@
 #pragma once
 
+#include "HazardPointer.hpp"
 #include "lib/algorithm/random.hpp"
 #include "lib/memory/allocator/SystemAllocator.hpp"
 #include "os/Thread.hpp"
-#include "HazardPointer.hpp"
 #include <atomic>
 #include <cstddef>
 
@@ -35,7 +35,9 @@ public:
   std::atomic<int> size;
   // NOTE(marcos): maybe have a list of records and a ThreadLocalStorage to store thread records
   // so we dont need to achire them often. At destruction we iterate over the record list and release them.
-  HazardPointer<2> hazardAllocator;
+  using HazardPointerManager = HazardPointer<2, ConcurrentStackNode<T>, Allocator>;
+  using HazardPointerRecord = typename HazardPointerManager::Record;
+  HazardPointerManager hazardAllocator;
 
   Allocator allocator;
 
@@ -76,7 +78,7 @@ public:
 
   bool tryPop(T &value)
   {
-    HazardPointer<2>::Record *rec = hazardAllocator.acquire();
+    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
 
     while (true)
     {
@@ -84,9 +86,6 @@ public:
 
       if (!oldHead)
       {
-        void *nil = nullptr;
-        rec->assign(nil, 0);
-
         hazardAllocator.release(rec);
         return false;
       }
@@ -103,7 +102,7 @@ public:
       if (head.compare_exchange_strong(oldHead, newHead))
       {
         value = oldHead->value;
-        rec->retire<ConcurrentStackNode<T>, Allocator>(allocator, 0);
+        rec->retire(oldHead);
         hazardAllocator.release(rec);
         size.fetch_sub(1);
         return true;
