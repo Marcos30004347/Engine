@@ -9,137 +9,82 @@ template <> std::shared_ptr<Job> allocateJob<void>(fiber::Fiber *f)
 return std::make_shared<Job>(f);
 }
 */
-JobQueue::JobQueue(size_t capacity) : capacity(capacity), head(0), tail(0)
-{
-  jobs = new std::shared_ptr<Job>[capacity];
-  for (size_t i = 0; i < capacity; ++i)
-  {
-    jobs[i] = nullptr;
-  }
-}
 
-JobQueue::~JobQueue()
-{
-  delete[] jobs;
-}
-
-bool JobQueue::enqueue(std::shared_ptr<Job> job)
-{
-  size_t pos;
-
-  while (true)
-  {
-    pos = tail.load(std::memory_order_relaxed);
-
-    size_t next = (pos + 1) % capacity;
-
-    if (next == head.load(std::memory_order_acquire))
-    {
-      return false;
-    }
-
-    if (tail.compare_exchange_weak(pos, next, std::memory_order_acq_rel))
-    {
-      break;
-    }
-  }
-
-  while (jobs[pos] != nullptr)
-  {
-  }
-
-  jobs[pos] = job;
-
-  return true;
-}
-
-std::shared_ptr<Job> JobQueue::dequeue()
-{
-  size_t pos;
-
-  while (true)
-  {
-    pos = head.load(std::memory_order_relaxed);
-    if (pos == tail.load(std::memory_order_acquire))
-    {
-      return nullptr;
-    }
-
-    if (head.compare_exchange_weak(pos, (pos + 1) % capacity, std::memory_order_acq_rel))
-    {
-      break;
-    }
-  }
-
-  std::shared_ptr<Job> job = jobs[pos];
-
-  jobs[pos] = nullptr;
-
-  return job;
-}
-
-JobAllocator::JobAllocator(size_t maxPayloadSize, size_t capacity)
+JobAllocator::JobAllocator(size_t maxPayloadSize, size_t capacity) : freeList(), allocator(), payloadSize(maxPayloadSize)
 {
   assert(capacity >= 1);
   assert(maxPayloadSize >= sizeof(Job) + 1 * sizeof(size_t));
 
-  jobsBuffer = new char[maxPayloadSize * capacity];
-
-  freelist = (JobAllocatorFreeList *)jobsBuffer;
-
-  for (size_t i = 0; i < maxPayloadSize * capacity; i += maxPayloadSize)
+  for (size_t i = 0; i < capacity; i++)
   {
-    JobAllocatorFreeList *ptr = reinterpret_cast<JobAllocatorFreeList *>((char*)jobsBuffer + i);
-    ptr->next = (JobAllocatorFreeList *)(i + maxPayloadSize);
+    freeList.enqueue((void *)allocator.allocate(maxPayloadSize + sizeof(Job)));
+  }
+}
+
+JobAllocator::~JobAllocator()
+{
+  void *data = nullptr;
+
+  while (freeList.tryDequeue(data))
+  {
+    allocator.deallocate((char *)data);
+  }
+}
+
+std::shared_ptr<Job> JobAllocator::allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolId)
+{
+  void *free = nullptr;
+
+  if (!freeList.tryDequeue(free))
+  {
+    return nullptr;
   }
 
-  JobAllocatorFreeList *last = (JobAllocatorFreeList *)(jobsBuffer[maxPayloadSize * (capacity - 1)]);
-  last->next = nullptr;
-}
-JobAllocator::~JobAllocator() {
-    delete[] jobsBuffer;
+  fiber::Fiber *fiber = nullptr;
+  fiber = pool->acquire(handler, free);
+os::print("job = %p, fiber = %p\n", free, fiber);
+
+  return std::shared_ptr<Job>(
+      new (free) Job(fiber, poolId),
+      [this](Job *j)
+      {
+        os::print("deallocating %p\n", j);
+        // pool->release(fiber);
+        j->~Job();
+        this->deallocate(j);
+      });
 }
 
-std::shared_ptr<Job> JobAllocator::allocate()
+std::shared_ptr<Job> JobAllocator::currentThreadToJob()
 {
-  JobAllocatorFreeList *free;
+  void *free = nullptr;
 
-  do
+  freeList.tryDequeue(free);
+  if (free == nullptr)
   {
-    free = freelist.load();
+    return nullptr;
+  }
 
-    if (free == nullptr)
-    {
-      return nullptr;
-    }
+  fiber::Fiber *fiber = fiber::Fiber::currentThreadToFiber();
 
-  } while (freelist.compare_exchange_strong(free, free->next));
+  return std::shared_ptr<Job>(
+      new (free) Job(fiber, -1),
+      [this](Job *j)
+      {
+        os::print("deallocating thread %p\n", j);
+        j->~Job();
+        this->deallocate(j);
+      });
+}
 
-  return std::shared_ptr<Job>((Job *)(index), [this](Job* j) { deallocate(j); });
+uint64_t JobAllocator::getPayloadSize()
+{
+  return payloadSize;
 }
 
 void JobAllocator::deallocate(Job *job)
 {
-
-  JobAllocatorFreeList *free;
-  JobAllocatorFreeList *next = (JobAllocatorFreeList *)job;
-
-  do
-  {
-    free = freelist.load();
-
-    if (freelist == nullptr)
-    {
-      next->next = nullptr;
-
-      if (freelist.compare_exchange_strong(free, next))
-      {
-        break;
-      }
-    }
-
-    next->next = free;
-  } while (freelist.compare_exchange_strong(free, next));
+  freeList.enqueue((void *)job);
 }
 
 } // namespace jobsystem

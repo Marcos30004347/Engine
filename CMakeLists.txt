@@ -5,6 +5,7 @@ project(Engine)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set default build type to Debug" FORCE)
 endif()
+
 #set(SANITIZE_FLAGS "-fno-omit-frame-pointer -g")
 
 set(SANITIZE_FLAGS "-fsanitize=address -fno-omit-frame-pointer -g")
@@ -77,9 +78,9 @@ target_include_directories(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
 target_include_directories(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/o1heap)
 
 target_link_libraries(Engine 
-    PRIVATE fcontext
-    PRIVATE SDL3::SDL3
-    PRIVATE simdpp
+    PUBLIC fcontext
+    PUBLIC SDL3::SDL3
+    PUBLIC simdpp
 )
 
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/)

@@ -1,5 +1,8 @@
 #include "Fiber.hpp"
 
+#include "os/print.hpp"
+#include <cassert>
+
 using namespace jobsystem;
 using namespace jobsystem::fiber;
 
@@ -8,24 +11,22 @@ static thread_local Fiber *currentFiber = nullptr;
 static void fiber_entry(fcontext_transfer_t t)
 {
   Fiber *self = (Fiber *)t.data;
+
+  // if (!self || !self->from)
+  // {
+  //   std::cerr << "Invalid fiber or from pointer" << std::endl;
+  //   std::abort();
+  // }
+
   self->from->ctx = t.ctx;
 
   currentFiber = self;
 
   self->started = true;
-  self->run();
+  self->handler(self->userData, self);
   self->finished = true;
 
-  // threadSafePrintf("jump entry %p %p, %p %p\n", self, self->from);
-  // threadSafePrintf("finished resume %p\n", self);
-
   fcontext_transfer_t r = jump_fcontext(self->from->ctx, self);
-
-  abort();
-
-  // Fiber* self = (Fiber*)t.data;
-  // currentFiber = self;
-  // self->from->ctx = r.ctx;
 }
 
 Fiber *Fiber::current()
@@ -42,9 +43,10 @@ Fiber *Fiber::currentThreadToFiber()
 
 Fiber::Fiber()
 {
-  stack = create_fcontext_stack(1024 * 1024);
+  stack.ssize = 0; // create_fcontext_stack(1024 * 1024);
+  stack.sptr = NULL;
   ctx = NULL;
-  stack_size = 1024 * 1024;
+  stack_size = 0;
 }
 
 Fiber::Fiber(Handler handler, void *userData, size_t ssize)
@@ -72,15 +74,12 @@ void Fiber::reset(Handler handler, void *userData)
   this->handler = handler;
   this->userData = userData;
 
+  os::print("resetting %p\n", this);
+
   finished = false;
   started = false;
   from = nullptr;
   ctx = make_fcontext(stack.sptr, stack.ssize, fiber_entry);
-}
-
-void Fiber::run()
-{
-  handler(userData, this);
 }
 
 // fcontext_transfer_t yieldHandler(fcontext_transfer_t t)
@@ -94,22 +93,17 @@ void Fiber::run()
 
 void Fiber::switchTo(Fiber *other)
 {
-  fcontext_t old_ctx = currentFiber->ctx;
+  os::print("switching to %p\n", other);
 
+  
   Fiber *curr = currentFiber;
   other->from = currentFiber;
 
-  // threadSafePrintf("jump resume %p\n", other);
-
   fcontext_transfer_t r = jump_fcontext(other->ctx, other);
-
-  // threadSafePrintf("jump return %p\n", curr);
 
   Fiber *self = (Fiber *)r.data;
 
   self->from->ctx = r.ctx;
-
-  // threadSafePrintf("return %p %p\n",  curr, currentFiber);
 
   currentFiber = curr;
 }

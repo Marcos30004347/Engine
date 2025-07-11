@@ -7,4 +7,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/lib/ConcurrentListTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/lib/ConcurrentStackTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/lib/ConcurrentQueueTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/lib/ConcurrentPriorityQueueTests.cmake)
-#include(${CMAKE_CURRENT_SOURCE_DIR}/lib/CPQ.cmake)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/jobsystem/JobTests.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/jobsystem/JobSystemTests.cmake)

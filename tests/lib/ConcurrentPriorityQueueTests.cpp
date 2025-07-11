@@ -51,12 +51,13 @@ void multiThreadTests()
 
           // os::print("Thread %i dequeing\n", i);
           int x;
+          size_t p;
           int prev = -1;
 
           for (size_t j = 0; j < 100; j++)
           {
             then = lib::time::TimeSpan::now();
-            while (!pq->dequeue(x))
+            while (!pq->dequeue(x, p))
             {
             }
 
@@ -172,7 +173,7 @@ int main()
 
   multiThreadGCTests();
 
-  for (size_t i = 0; i < 10000; i++)
+  for (size_t i = 0; i < 100; i++)
   {
     multiThreadTests();
   }

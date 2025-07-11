@@ -4,17 +4,21 @@
 using namespace jobsystem;
 using namespace jobsystem::fiber;
 
-lib::ConcurrentQueue<Fiber *> FiberPool::pool;
-
-void FiberPool::init()
+FiberPool::FiberPool(uint64_t stackSize) : stackSize(stackSize), pool()
 {
 }
 
-void FiberPool::shutdown()
+FiberPool::~FiberPool()
 {
+  Fiber *fiber = nullptr;
+
+  while (pool.tryDequeue(fiber))
+  {
+    delete fiber;
+  }
 }
 
-Fiber *FiberPool::acquire(Fiber::Handler func, void *data, size_t stack_size)
+Fiber *FiberPool::acquire(Fiber::Handler func, void *data)
 {
   Fiber *fiber;
 
@@ -24,7 +28,7 @@ Fiber *FiberPool::acquire(Fiber::Handler func, void *data, size_t stack_size)
     return fiber;
   }
 
-  return new Fiber(func, data, stack_size);
+  return new Fiber(func, data, stackSize);
 }
 
 void FiberPool::release(Fiber *fiber)

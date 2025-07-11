@@ -3,8 +3,8 @@
 #include <memory>
 #include <utility>
 
-#include "Fiber.hpp"
-#include "lib/datastructure/ConcurrentVector.hpp"
+#include "Fiberpool.hpp"
+#include "lib/datastructure/ConcurrentQueue.hpp"
 
 namespace jobsystem
 {
@@ -14,43 +14,62 @@ class Job
   friend class JobSystem;
 
 private:
-  lib::ConcurrentVector<std::shared_ptr<Job>> waiters;
+  std::shared_ptr<Job> waiter;
   fiber::Fiber *fiber;
+  
+  uint32_t fiberPoolIndex;
 
-  std::atomic<bool> executed;
+  std::atomic<bool> finished;
   std::atomic_flag spinLock = ATOMIC_FLAG_INIT;
 
 public:
-  Job(fiber::Fiber *fiber) : executed(false), fiber(fiber), waiters()
+  Job(fiber::Fiber *fiber, uint32_t poolId) : finished(false), fiber(fiber), waiter(nullptr), fiberPoolIndex(poolId)
   {
   }
-
-  bool resolve()
+  ~Job()
   {
+  }
+  // void run()
+  // {
+  //   fiber->run();
+  // }
+
+  void resume()
+  {
+    assert(fiber != nullptr);
+    fiber::Fiber::switchTo(fiber);
+  }
+
+  bool resolve(std::shared_ptr<Job> &w)
+  {
+    // TODO: likelly dont need to return bool
     while (spinLock.test_and_set(std::memory_order_acquire))
     {
     }
 
     bool expected = false;
-    bool old = executed.compare_exchange_strong(expected, true, std::memory_order_acquire);
+    bool old = finished.compare_exchange_strong(expected, true, std::memory_order_acquire);
 
     spinLock.clear(std::memory_order_release);
+
+    w = std::move(waiter);
+    waiter = nullptr;
 
     return old;
   }
 
-  bool addWaiter(std::shared_ptr<Job> job)
+  bool setWaiter(std::shared_ptr<Job> &job)
   {
     while (spinLock.test_and_set(std::memory_order_acquire))
     {
     }
 
-    if (executed.load(std::memory_order_acquire))
+    if (finished.load(std::memory_order_acquire))
     {
       return false;
     }
 
-    waiters.pushBack(job);
+    waiter = std::move(job);
     spinLock.clear(std::memory_order_release);
     return true;
   }
@@ -106,9 +125,11 @@ template <typename T> class Promise
 {
   friend class JobSystem;
 
-private:
-  std::shared_ptr<Job> job;
+  // private:
 
+public:
+  std::shared_ptr<Job> job;
+  T *data;
   /*
   bool resolve(T &value)
   {
@@ -123,20 +144,24 @@ private:
     }
   */
 
-  bool wait(std::shared_ptr<Job> &p)
-  {
-    return job->addWaiter(p);
-  }
+  // bool wait(std::shared_ptr<Job> &p)
+  // {
+  //   return job->setWaiter(p);
+  // }
 
-  Promise(std::shared_ptr<Job> job) : job(job)
+  Promise(std::shared_ptr<Job> &&job, T *data) : job(job), data(data)
   {
   }
 
 public:
-  Promise(const Promise &) = default;
-  Promise &operator=(const Promise &) = default;
+  Promise() : job(nullptr), data(nullptr)
+  {
+  }
 
-  Promise(Promise &&other) noexcept : job(std::move(other.job))
+  Promise(const Promise &) = delete;
+  Promise &operator=(const Promise &) = delete;
+
+  Promise(Promise &&other) noexcept : job(std::move(other.job)), data(std::move(other.data))
   {
   }
 
@@ -145,7 +170,9 @@ public:
     if (this != &other)
     {
       job = std::move(other.job);
+      data = std::move(other.data);
     }
+
     return *this;
   }
 };
@@ -162,11 +189,15 @@ private:
       return job->resolve();
     }
   */
-  Promise(std::shared_ptr<Job> &job) : job(job)
+  Promise(std::shared_ptr<Job> &&job) : job(job)
   {
   }
 
 public:
+  Promise() : job(nullptr)
+  {
+  }
+
   Promise(const Promise &) = default;
   Promise &operator=(const Promise &) = default;
 
@@ -184,38 +215,22 @@ public:
   }
 };
 
-class JobQueue
-{
-public:
-  std::shared_ptr<Job> dequeue();
-  bool enqueue(std::shared_ptr<Job> ptr);
-  JobQueue(size_t capacity);
-  ~JobQueue();
-
-private:
-  size_t capacity;
-  std::shared_ptr<Job> *jobs;
-  std::atomic<size_t> head;
-  std::atomic<size_t> tail;
-};
-
-struct JobAllocatorFreeList
-{
-  JobAllocatorFreeList *next;
-};
-
 class JobAllocator
 {
 public:
   JobAllocator(size_t maxPayloadSize, size_t capacity);
   ~JobAllocator();
 
-  std::shared_ptr<Job> allocate();
+  std::shared_ptr<Job> allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolIndex);
+  std::shared_ptr<Job> currentThreadToJob();
+  uint64_t getPayloadSize();
 
 private:
   void deallocate(Job *);
-  std::atomic<JobAllocatorFreeList *> freelist;
-  char *jobsBuffer;
+
+  uint64_t payloadSize;
+  lib::memory::allocator::SystemAllocator<char> allocator;
+  lib::ConcurrentQueue<void *> freeList;
 };
 
 } // namespace jobsystem

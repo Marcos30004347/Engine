@@ -628,7 +628,7 @@ public:
     allocator.deallocate(root.load());
   }
 
-  bool enqueue(const T &value, P priority)
+  bool enqueue(const T value, P priority)
   {
     garbageCollector.openThreadContext();
 
@@ -740,7 +740,7 @@ public:
   //   n->freedBy = os::Thread::getCurrentThreadId();
   // }
 
-  bool dequeue(T &out)
+  bool dequeue(T &out, P &priority)
   {
     garbageCollector.openThreadContext();
 
@@ -764,7 +764,8 @@ public:
 
       if (!(getMark(xorNode) == DELETE_MARK))
       {
-        out = xorNode->value;
+        out = std::move(xorNode->value);
+        priority = xorNode->priority;
 
         xorNode->priority = 0;
 
@@ -936,7 +937,7 @@ public:
     }
   }
 
-  bool tryPeek(P &outPriority) const
+  bool tryPeek(P &outPriority) 
   {
     garbageCollector.openThreadContext();
 
@@ -950,6 +951,7 @@ public:
 
       if (!nextLeaf)
       {
+        garbageCollector.closeThreadContext();
         return false;
       }
 

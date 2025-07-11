@@ -11,13 +11,19 @@ namespace fiber
 class FiberPool
 {
 public:
-  static void init();
-  static void shutdown();
-  static Fiber *acquire(Fiber::Handler, void *userData, size_t stack_size);
-  static void release(Fiber *fiber);
+  FiberPool(uint64_t stackSize);
+  ~FiberPool();
+  Fiber *acquire(Fiber::Handler, void *userData);
+  void release(Fiber *fiber);
+  
+  inline uint64_t getStackSize()
+  {
+    return stackSize;
+  }
 
 private:
-  static lib::ConcurrentQueue<Fiber *> pool;
+  uint64_t stackSize;
+  lib::ConcurrentQueue<Fiber *> pool;
 };
 
 } // namespace fiber

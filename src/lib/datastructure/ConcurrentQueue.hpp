@@ -8,6 +8,16 @@
 #include <atomic>
 #include <cstddef>
 
+#include <type_traits>
+
+template <typename T> struct is_shared_ptr : std::false_type
+{
+};
+
+template <typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type
+{
+};
+
 namespace lib
 {
 namespace detail
@@ -75,6 +85,7 @@ public:
     ConcurrentQueueNode<T> *newNode = new ConcurrentQueueNode<T>(value);
     ConcurrentQueueNode<T> *oldHead = nullptr;
     HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
+    ConcurrentQueueNode<T> *currentTail = nullptr;
 
     while (true)
     {
@@ -104,9 +115,15 @@ public:
 
       if (currentTail->next.compare_exchange_strong(null, newNode))
       {
+        // if constexpr (is_shared_ptr<T>::value)
+        // {
+        //   os::print("enqueued %p in %p, %p\n", value.get(), newNode);
+        // }
         break;
       }
     }
+
+    tail.compare_exchange_strong(currentTail, newNode);
 
     size.fetch_add(1);
 
@@ -152,7 +169,12 @@ public:
         continue;
       }
 
-      value = next->get();
+      value = std::move(next->get());
+
+      // if constexpr (is_shared_ptr<T>::value)
+      // {
+      //   os::print("> got shared %p, from %p, %p -> %p\n", value.get(), this, h, next);
+      // }
 
       if (head.compare_exchange_strong(h, next))
       {
@@ -162,7 +184,7 @@ public:
 
     rec->retire(h);
     hazardAllocator.release(rec);
-
+    size.fetch_sub(1);
     return true;
   }
 
@@ -194,7 +216,7 @@ public:
 
       if (head.compare_exchange_strong(oldHead, newHead))
       {
-        value = oldHead->value;
+        value = std::move(oldHead->value);
 
         rec->retire(oldHead);
         hazardAllocator.release(rec);
@@ -231,6 +253,11 @@ public:
 
   void enqueue(T value)
   {
+    // if constexpr (is_shared_ptr<T>::value)
+    // {
+    //   os::print("queue enqueuing %p\n", value.get());
+    // }
+
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
 
     if (!localLists.get(local))
@@ -248,6 +275,7 @@ public:
 
   bool tryDequeue(T &value)
   {
+    // TODO: improve this
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
 
     localLists.get(local);
@@ -264,6 +292,10 @@ public:
 
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *node = local;
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *start = local;
+
+    // if(local->get()->size.load()) {
+    //   local->
+    // }
 
     for (size_t i = 0; i < (time % concurrencyLevel); i++)
     {
@@ -322,6 +354,14 @@ public:
     {
       if (lists[i]->tryDequeue(value))
       {
+        // if constexpr (std::is_pointer<T>::value)
+        // {
+        //   os::print("got %p\n", value);
+        // }
+        // if constexpr (is_shared_ptr<T>::value)
+        // {
+        //   os::print("got shared %p\n", value.get());
+        // }
         return true;
       }
     }
