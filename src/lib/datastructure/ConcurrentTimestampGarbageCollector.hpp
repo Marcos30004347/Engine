@@ -489,7 +489,6 @@ public:
             //     threadTimestamp,
             //     garbage.garbage[i]);
             allocator.deallocate(garbage.garbage[i]);
-            delete[] garbage.garbage;
           }
         }
 
