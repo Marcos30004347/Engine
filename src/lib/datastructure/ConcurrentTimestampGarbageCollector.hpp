@@ -402,6 +402,22 @@ public:
 
   ~ConcurrentTimestampGarbageCollector()
   {
+    uint64_t threadTimestamp = minActiveTimestamp.load();
+
+    GarbageRecord garbage;
+
+    while (garbageRecords.front(garbage))
+    {
+      if (garbageRecords.remove(garbage.timestamp, garbage))
+      {
+        for (size_t i = 0; i < garbage.size; i++)
+        {
+          allocator.deallocate(garbage.garbage[i]);
+        }
+
+        delete[] garbage.garbage;
+      }
+    }
   }
 
   void openThreadContext()
@@ -454,8 +470,8 @@ public:
   {
     return record.timestamp;
   }
-
-  void collect(void (*gc)(T *, uint64_t tts, uint64_t gts) = nullptr)
+  // void (*gc)(T *, uint64_t tts, uint64_t gts) = nullptr
+  void collect()
   {
     uint64_t threadTimestamp = minActiveTimestamp.load();
 
@@ -476,20 +492,20 @@ public:
 
         for (size_t i = 0; i < garbage.size; i++)
         {
-          if (gc)
-          {
-            gc(garbage.garbage[i], threadTimestamp, garbage.timestamp);
-          }
-          else
-          {
-            // os::print(
-            //     "Thread %u, garbage timestamp = %u, current timestamp = %u, freeing %p\n",
-            //     os::Thread::getCurrentThreadId(),
-            //     garbage.timestamp,
-            //     threadTimestamp,
-            //     garbage.garbage[i]);
-            allocator.deallocate(garbage.garbage[i]);
-          }
+          // if (gc)
+          // {
+          //   gc(garbage.garbage[i], threadTimestamp, garbage.timestamp);
+          // }
+          // else
+          // {
+          // os::print(
+          //     "Thread %u, garbage timestamp = %u, current timestamp = %u, freeing %p\n",
+          //     os::Thread::getCurrentThreadId(),
+          //     garbage.timestamp,
+          //     threadTimestamp,
+          //     garbage.garbage[i]);
+          allocator.deallocate(garbage.garbage[i]);
+          // }
         }
 
         delete[] garbage.garbage;
