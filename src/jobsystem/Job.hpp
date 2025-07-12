@@ -9,26 +9,121 @@
 namespace jobsystem
 {
 
+class Job;
+class JobAllocator
+{
+public:
+  JobAllocator(size_t maxPayloadSize, size_t capacity);
+  ~JobAllocator();
+
+  Job *allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolIndex);
+  Job *currentThreadToJob();
+  uint64_t getPayloadSize();
+  void deallocate(Job *);
+
+private:
+  uint64_t payloadSize;
+  lib::memory::allocator::SystemAllocator<char> allocator;
+  lib::ConcurrentQueue<void *> freeList;
+};
+
 class Job
 {
   friend class JobSystem;
+  template <typename T> friend class Promise;
+
+  static std::atomic<uint32_t> allocations;
+  static std::atomic<uint32_t> deallocations;
 
 private:
-  std::shared_ptr<Job> waiter;
+  std::atomic<uint32_t> refsInQueues;
+  std::atomic<uint32_t> refsInPromises;
+  std::atomic<uint32_t> refsInRuntime;
+  std::atomic<uint32_t> refsInJobs;
+
+  Job *waiter;
   fiber::Fiber *fiber;
-  
+
   uint32_t fiberPoolIndex;
 
   std::atomic<bool> finished;
   std::atomic_flag spinLock = ATOMIC_FLAG_INIT;
+  JobAllocator *allocator;
+  inline void checkForDeallocation()
+  {
+    if (refsInQueues.load() == 0 && refsInPromises.load() == 0 && refsInRuntime.load() == 0 && refsInJobs.load() == 0)
+    {
+      deallocations.fetch_add(1);
+      // os::print("deallocations at %p = %u, allocs = %u\n", this, deallocations.load(), allocations.load());
+      assert(deallocations.load() <= allocations.load());
+      allocator->deallocate(this);
+    }
+  }
 
 public:
-  Job(fiber::Fiber *fiber, uint32_t poolId) : finished(false), fiber(fiber), waiter(nullptr), fiberPoolIndex(poolId)
+  Job(fiber::Fiber *fiber, uint32_t poolId, JobAllocator *allocator)
+      : finished(false), fiber(fiber), waiter(nullptr), fiberPoolIndex(poolId), refsInQueues(0), refsInPromises(0), refsInRuntime(0), refsInJobs(0), allocator(allocator)
   {
+    allocations.fetch_add(1);
+    assert(deallocations.load() <= allocations.load());
+    // os::print("allocations at %p = %u\n", this, allocations.load());
   }
   ~Job()
   {
   }
+
+  uint32_t refInPromise()
+  {
+    return refsInPromises.fetch_add(1);
+  }
+
+  uint32_t refInQueue()
+  {
+    return refsInQueues.fetch_add(1);
+  }
+
+  uint32_t refInRuntime()
+  {
+    return refsInRuntime.fetch_add(1);
+  }
+
+  uint32_t refInJob()
+  {
+    return refsInJobs.fetch_add(1);
+  }
+
+  uint32_t derefInPromise()
+  {
+    uint32_t old = refsInPromises.fetch_sub(1);
+    assert(old > 0);
+    checkForDeallocation();
+    return old;
+  }
+
+  uint32_t derefInQueue()
+  {
+    uint32_t old = refsInQueues.fetch_sub(1);
+    assert(old > 0);
+    checkForDeallocation();
+    return old;
+  }
+
+  uint32_t derefInRuntime()
+  {
+    uint32_t old = refsInRuntime.fetch_sub(1);
+    assert(old > 0);
+    checkForDeallocation();
+    return old;
+  }
+
+  uint32_t derefInJob()
+  {
+    uint32_t old = refsInJobs.fetch_sub(1);
+    assert(old > 0);
+    checkForDeallocation();
+    return old;
+  }
+
   // void run()
   // {
   //   fiber->run();
@@ -40,38 +135,40 @@ public:
     fiber::Fiber::switchTo(fiber);
   }
 
-  bool resolve(std::shared_ptr<Job> &w)
+  bool resolve()
   {
-    // TODO: likelly dont need to return bool
-    while (spinLock.test_and_set(std::memory_order_acquire))
-    {
-    }
 
     bool expected = false;
     bool old = finished.compare_exchange_strong(expected, true, std::memory_order_acquire);
 
-    spinLock.clear(std::memory_order_release);
+    // w = waiter;
+    // waiter = nullptr;
 
-    w = std::move(waiter);
-    waiter = nullptr;
+    // uint32_t oldRefs = refInWaiters.fetch_add(1);
+    // assert(oldRefs == 0);
 
     return old;
   }
 
-  bool setWaiter(std::shared_ptr<Job> &job)
+  void lock()
   {
     while (spinLock.test_and_set(std::memory_order_acquire))
     {
     }
-
-    if (finished.load(std::memory_order_acquire))
-    {
-      return false;
-    }
-
-    waiter = std::move(job);
+  }
+  void unlock()
+  {
     spinLock.clear(std::memory_order_release);
-    return true;
+  }
+
+  void setWaiter(Job *&job)
+  {
+    job->refInJob();
+    // assert(waiter == nullptr);
+    waiter = job;
+    assert(job->refInJob() == 0);
+    // uint32_t oldRefs = refInWaiters.fetch_add(1);
+    // assert(oldRefs == 0);
   }
 };
 
@@ -81,46 +178,7 @@ template <typename T> size_t calculateOffset()
   size_t alignment = alignof(T);
   return (j_size + alignment - 1) / alignment * alignment;
 }
-/*
-template <typename T> std::shared_ptr<Job> allocateJob(fiber::Fiber *f)
-{
-  size_t offset = calculateOffset<T>();
-  size_t total_bytes = offset + sizeof(T);
 
-  char *buffer = new char[total_bytes];
-
-  Job *j_obj = new (buffer) Job(f);
-
-  return std::shared_ptr<T>(
-      j_obj,
-      [buffer, offset](Job *ptrToJob)
-      {
-        T *ptr_to_t = reinterpret_cast<T *>(reinterpret_cast<char *>(ptrToJob) + offset);
-
-        if (ptr_to_t)
-        {
-          ptr_to_t->~T();
-        }
-        if (ptrToJob)
-        {
-          ptrToJob->~Job();
-        }
-
-        delete[] buffer;
-      });
-}
-template <> std::shared_ptr<Job> allocateJob<void>(fiber::Fiber *f);
-*/
-/*
-template <typename T> T *getJobPayload(const std::shared_ptr<Job> &ptr)
-{
-  if (!ptr)
-  {
-    return nullptr;
-  }
-  return reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(ptr.get()) + calculateOffset<T>());
-}
-*/
 template <typename T> class Promise
 {
   friend class JobSystem;
@@ -128,29 +186,12 @@ template <typename T> class Promise
   // private:
 
 public:
-  std::shared_ptr<Job> job;
+  Job *job;
   T *data;
-  /*
-  bool resolve(T &value)
-  {
-    *getJobPayload(job) = std::move(value);
-    return job->resolve();
-  }
-*/
-  /*
-    T &get()
-    {
-      return *getJobPayload(job);
-    }
-  */
 
-  // bool wait(std::shared_ptr<Job> &p)
-  // {
-  //   return job->setWaiter(p);
-  // }
-
-  Promise(std::shared_ptr<Job> &&job, T *data) : job(job), data(data)
+  Promise(Job *job, T *data) : job(job), data(data)
   {
+    job->refInPromise();
   }
 
 public:
@@ -158,21 +199,39 @@ public:
   {
   }
 
+  ~Promise()
+  {
+    if (job)
+    {
+      assert(job->refsInPromises.load() == 1);
+      job->derefInPromise();
+      assert(job->refsInPromises.load() == 0);
+    }
+  }
+
   Promise(const Promise &) = delete;
   Promise &operator=(const Promise &) = delete;
 
   Promise(Promise &&other) noexcept : job(std::move(other.job)), data(std::move(other.data))
   {
+    other.job = nullptr;
+    other.data = nullptr;
+
+    assert(job->refsInPromises.load() == 1);
   }
 
   Promise &operator=(Promise &&other) noexcept
   {
     if (this != &other)
     {
+      assert(other.job->refsInPromises.load() == 1);
       job = std::move(other.job);
+      other.job = nullptr;
       data = std::move(other.data);
+      other.data = nullptr;
     }
 
+    assert(job->refsInPromises.load() == 1);
     return *this;
   }
 };
@@ -182,15 +241,17 @@ template <> class Promise<void>
   friend class JobSystem;
 
 private:
-  std::shared_ptr<Job> job;
+  Job *job;
   /*
     bool resolve()
     {
       return job->resolve();
     }
   */
-  Promise(std::shared_ptr<Job> &&job) : job(job)
+  Promise(Job *j) : job(j)
   {
+    job->refInPromise();
+    // os::print("creating this %p and increasing promise refs %u\n", this, job->refInPromises.load());
   }
 
 public:
@@ -198,39 +259,39 @@ public:
   {
   }
 
+  ~Promise()
+  {
+    if (job)
+    {
+      assert(job->refsInPromises.load() == 1);
+      job->derefInPromise(); // refInPromises.fetch_sub(1);
+      assert(job->refsInPromises.load() == 0);
+    }
+  }
+
   Promise(const Promise &) = default;
   Promise &operator=(const Promise &) = default;
 
   Promise(Promise &&other) noexcept : job(std::move(other.job))
   {
+    other.job = nullptr;
+    assert(job->refsInPromises.load() == 1);
   }
 
   Promise &operator=(Promise &&other) noexcept
   {
+    // os::print("assigning void promise rf = %u\n", other.job->refInPromises.load());
     if (this != &other)
     {
+      assert(other.job->refsInPromises.load() == 1);
       job = std::move(other.job);
+      other.job = nullptr;
     }
+
+    assert(job->refsInPromises.load() == 1);
+
     return *this;
   }
-};
-
-class JobAllocator
-{
-public:
-  JobAllocator(size_t maxPayloadSize, size_t capacity);
-  ~JobAllocator();
-
-  std::shared_ptr<Job> allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolIndex);
-  std::shared_ptr<Job> currentThreadToJob();
-  uint64_t getPayloadSize();
-
-private:
-  void deallocate(Job *);
-
-  uint64_t payloadSize;
-  lib::memory::allocator::SystemAllocator<char> allocator;
-  lib::ConcurrentQueue<void *> freeList;
 };
 
 } // namespace jobsystem

@@ -1,8 +1,8 @@
 #include "jobsystem/Job.hpp"
 #include "lib/time/TimeSpan.hpp"
 
-std::shared_ptr<jobsystem::Job> mainJob;
-std::shared_ptr<jobsystem::Job> funcJob;
+jobsystem::Job* mainJob;
+jobsystem::Job* funcJob;
 
 lib::time::TimeSpan prev;
 lib::time::TimeSpan totalTime;
@@ -41,8 +41,8 @@ int main()
   funcJob->resume();
   assert(counter++ == 4);
 
-  funcJob = nullptr;
-  mainJob = nullptr;
+  allocator->deallocate(mainJob);
+  allocator->deallocate(funcJob);
 
   return 0;
 }

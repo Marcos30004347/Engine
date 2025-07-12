@@ -74,8 +74,6 @@ void Fiber::reset(Handler handler, void *userData)
   this->handler = handler;
   this->userData = userData;
 
-  os::print("resetting %p\n", this);
-
   finished = false;
   started = false;
   from = nullptr;
@@ -93,7 +91,7 @@ void Fiber::reset(Handler handler, void *userData)
 
 void Fiber::switchTo(Fiber *other)
 {
-  os::print("switching to %p\n", other);
+  // os::print("switching to %p\n", other);
 
   
   Fiber *curr = currentFiber;

@@ -12,6 +12,26 @@
 namespace lib
 {
 
+// TODO: get rid of this
+struct SpinLock
+{
+  std::atomic_flag flag = ATOMIC_FLAG_INIT;
+  void lock()
+  {
+    while (flag.test_and_set(std::memory_order_acquire))
+    {
+      os::print("....locked\n");
+
+      assert(false);
+    }
+  }
+
+  void unlock()
+  {
+    flag.clear(std::memory_order_release);
+  }
+};
+
 template <size_t K, typename T, typename Allocator = memory::allocator::SystemAllocator<T>> class HazardPointer
 {
 public:
@@ -19,6 +39,7 @@ public:
   {
     const int R = 16;
     friend class HazardPointer;
+    SpinLock retiredLock;
 
     HazardPointer *manager;
     Record *next;
@@ -26,7 +47,7 @@ public:
     std::atomic_flag isActive;
     void *pointers[K];
 
-    Vector<void *> retiredList;
+    std::vector<void *> retiredList;
     Allocator &allocator;
 
     Record(HazardPointer *manager, Allocator &allocator) : allocator(allocator), retiredList(), isActive(false), next(nullptr), manager(manager)
@@ -41,8 +62,10 @@ public:
     {
       for (size_t i = 0; i < retiredList.size(); i++)
       {
-        allocator.deallocate((T*)retiredList[i]);
+        allocator.deallocate((T *)retiredList[i]);
       }
+
+      retiredList.clear();
     }
 
     void helpScan()
@@ -59,19 +82,21 @@ public:
         {
           continue;
         }
+        hprec->retiredLock.lock();
 
         while (hprec->retiredList.size() > 0)
         {
           void *node = hprec->retiredList[hprec->retiredList.size() - 1];
-          hprec->retiredList.popBack();
 
-          retiredList.pushBack(node);
+          hprec->retiredList.pop_back();
+          retiredList.push_back(node);
 
           if (retiredList.size() > R)
           {
             scan(manager->head.load());
           }
         }
+        hprec->retiredLock.unlock();
 
         hprec->isActive.clear();
       }
@@ -79,7 +104,7 @@ public:
 
     void scan(Record *h)
     {
-      lib::Vector<void *> hp;
+      std::vector<void *> hp;
       size_t i = 0;
 
       while (h)
@@ -88,18 +113,19 @@ public:
         {
           if (h->pointers[k] != nullptr && h->isActive.test())
           {
-            hp.pushBack(h->pointers[k]);
+            hp.push_back(h->pointers[k]);
           }
         }
 
         h = h->next;
       }
 
-      lib::algorithm::sort::quickSort(hp.buffer(), hp.size());
+      lib::algorithm::sort::quickSort(hp.data(), hp.size());
+      retiredLock.lock();
 
       for (size_t i = 0; i < retiredList.size();)
       {
-        size_t index = lib::algorithm::search::binarySearch(hp.buffer(), retiredList[i], hp.size());
+        size_t index = lib::algorithm::search::binarySearch(hp.data(), retiredList[i], hp.size());
 
         if (index == hp.size()) // not found
         {
@@ -113,13 +139,14 @@ public:
             retiredList[retiredList.size() - 1] = nullptr;
           }
 
-          retiredList.popBack();
+          retiredList.pop_back();
         }
         else
         {
           i++;
         }
       }
+      retiredLock.unlock();
     }
 
   public:
@@ -154,11 +181,12 @@ public:
 
     void retire(void *ptr)
     {
-      retiredList.pushBack(ptr);
+      retiredLock.lock();
+      retiredList.push_back(ptr);
+      bool needScan = retiredList.size() >= R;
+      retiredLock.unlock();
 
-      // os::print("retiring %p\n", ptr);
-
-      if (retiredList.size() >= R)
+      if (needScan)
       {
         scan(manager->head);
         helpScan();

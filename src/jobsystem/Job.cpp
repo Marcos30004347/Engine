@@ -3,12 +3,9 @@
 
 namespace jobsystem
 {
-/*
-template <> std::shared_ptr<Job> allocateJob<void>(fiber::Fiber *f)
-{
-return std::make_shared<Job>(f);
-}
-*/
+
+std::atomic<uint32_t> Job::allocations(0);
+std::atomic<uint32_t> Job::deallocations(0);
 
 JobAllocator::JobAllocator(size_t maxPayloadSize, size_t capacity) : freeList(), allocator(), payloadSize(maxPayloadSize)
 {
@@ -31,7 +28,7 @@ JobAllocator::~JobAllocator()
   }
 }
 
-std::shared_ptr<Job> JobAllocator::allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolId)
+Job *JobAllocator::allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolId)
 {
   void *free = nullptr;
 
@@ -42,20 +39,12 @@ std::shared_ptr<Job> JobAllocator::allocate(fiber::Fiber::Handler handler, fiber
 
   fiber::Fiber *fiber = nullptr;
   fiber = pool->acquire(handler, free);
-os::print("job = %p, fiber = %p\n", free, fiber);
+  // os::print("job = %p, fiber = %p\n", free, fiber);
 
-  return std::shared_ptr<Job>(
-      new (free) Job(fiber, poolId),
-      [this](Job *j)
-      {
-        os::print("deallocating %p\n", j);
-        // pool->release(fiber);
-        j->~Job();
-        this->deallocate(j);
-      });
+  return new (free) Job(fiber, poolId, this);
 }
 
-std::shared_ptr<Job> JobAllocator::currentThreadToJob()
+Job *JobAllocator::currentThreadToJob()
 {
   void *free = nullptr;
 
@@ -67,14 +56,7 @@ std::shared_ptr<Job> JobAllocator::currentThreadToJob()
 
   fiber::Fiber *fiber = fiber::Fiber::currentThreadToFiber();
 
-  return std::shared_ptr<Job>(
-      new (free) Job(fiber, -1),
-      [this](Job *j)
-      {
-        os::print("deallocating thread %p\n", j);
-        j->~Job();
-        this->deallocate(j);
-      });
+  return new (free) Job(fiber, -1, this);
 }
 
 uint64_t JobAllocator::getPayloadSize()

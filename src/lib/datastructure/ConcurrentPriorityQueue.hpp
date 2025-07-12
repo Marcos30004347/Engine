@@ -628,7 +628,7 @@ public:
     allocator.deallocate(root.load());
   }
 
-  bool enqueue(const T value, P priority)
+  bool enqueue(const T &value, P priority)
   {
     garbageCollector.openThreadContext();
 
@@ -740,7 +740,7 @@ public:
   //   n->freedBy = os::Thread::getCurrentThreadId();
   // }
 
-  bool dequeue(T &out, P &priority)
+  bool dequeue(T &out)
   {
     garbageCollector.openThreadContext();
 
@@ -764,8 +764,7 @@ public:
 
       if (!(getMark(xorNode) == DELETE_MARK))
       {
-        out = std::move(xorNode->value);
-        priority = xorNode->priority;
+        out = xorNode->value;
 
         xorNode->priority = 0;
 
@@ -801,11 +800,11 @@ public:
     }
   }
 
-  bool tryDequeue(T &outValue, int i = 0)
+  bool tryDequeue(T &outValue, P& priority)
   {
     garbageCollector.openThreadContext();
 
-    outValue = -1;
+    // outValue = -1;
     Node *h; // = head.load(std::memory_order_acquire);
     LOAD(h, head.load());
 
@@ -864,9 +863,11 @@ public:
 
       if (!getMark(xorNode))
       {
-        os::print("Thread %u moving %u\n", i, xorNode->value);
+        // os::print("Thread %u moving %u\n", i, xorNode->value);
         outValue = std::move(xorNode->value);
-        os::print("Thread %u moved %u, %u\n", i, xorNode->value, outValue);
+        priority = std::move(xorNode->priority);
+        
+        // os::print("Thread %u moved %u, %u\n", i, xorNode->value, outValue);
 
         // previousDummy.set(xorNode);
 
@@ -937,7 +938,7 @@ public:
     }
   }
 
-  bool tryPeek(P &outPriority) 
+  bool tryPeek(P &outPriority) const
   {
     garbageCollector.openThreadContext();
 
@@ -951,7 +952,6 @@ public:
 
       if (!nextLeaf)
       {
-        garbageCollector.closeThreadContext();
         return false;
       }
 

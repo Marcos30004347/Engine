@@ -4,23 +4,23 @@ using namespace jobsystem;
 using namespace jobsystem::fiber;
 
 // static thread_local fiber::Fiber *workerFiber = nullptr;
-thread_local std::shared_ptr<Job> JobSystem::workerJob = nullptr;
-thread_local std::shared_ptr<Job> JobSystem::currentJob = nullptr;
-thread_local std::shared_ptr<Job> JobSystem::yieldedJob = nullptr;
-thread_local std::shared_ptr<Job> JobSystem::runningJob = nullptr;
-thread_local std::shared_ptr<Job> JobSystem::waitedJob = nullptr;
+thread_local Job *JobSystem::workerJob = nullptr;
+thread_local Job *JobSystem::currentJob = nullptr;
+thread_local Job *JobSystem::yieldedJob = nullptr;
+thread_local Job *JobSystem::runningJob = nullptr;
+thread_local Job *JobSystem::waitedJob = nullptr;
 thread_local uint64_t JobSystem::waitingTime;
 
 // static thread_local uint64_t tickCount;
 
 std::vector<std::thread> JobSystem::workerThreads;
-std::vector<lib::ConcurrentQueue<std::shared_ptr<Job>> *> JobSystem::jobQueues;
+std::vector<lib::ConcurrentQueue<Job *> *> JobSystem::jobQueues;
 std::vector<JobAllocator *> JobSystem::jobAllocators;
 std::vector<FiberPool *> JobSystem::pools;
 uint64_t JobSystem::pendingQueueIndex;
 std::atomic<bool> JobSystem::isRunning(false);
 std::vector<JobQueueInfo> JobSystem::jobQueuesInfo;
-lib::ConcurrentPriorityQueue<std::shared_ptr<Job>, uint64_t> *JobSystem::waitingQueue = nullptr;
+lib::ConcurrentPriorityQueue<Job *, uint64_t> *JobSystem::waitingQueue = nullptr;
 
 void JobSystem::init(void (*entry)(), JobSystemSettings *settings)
 {
@@ -43,13 +43,13 @@ void JobSystem::init(void (*entry)(), JobSystemSettings *settings)
     // jobQueuesInfo[jobQueuesInfo.size() - 1].dequeuesInCurrentTick.store(0);
     // jobQueuesInfo[jobQueuesInfo.size() - 1].maxExecutionsBeforeReset = settings->jobQueueSettings[i].maxExecutionsBeforeReset;
 
-    jobQueues.push_back(new lib::ConcurrentQueue<std::shared_ptr<Job>>());
+    jobQueues.push_back(new lib::ConcurrentQueue<Job *>());
   }
 
   pendingQueueIndex = jobQueues.size();
-  jobQueues.push_back(new lib::ConcurrentQueue<std::shared_ptr<Job>>());
+  jobQueues.push_back(new lib::ConcurrentQueue<Job *>());
 
-  waitingQueue = new lib::ConcurrentPriorityQueue<std::shared_ptr<Job>, uint64_t>();
+  waitingQueue = new lib::ConcurrentPriorityQueue<Job *, uint64_t>();
 
   isRunning = true;
 
@@ -137,13 +137,24 @@ void JobSystem::processYieldedJobs()
   if (runningJob)
   {
     assert(yieldedJob != nullptr);
+    runningJob->lock();
 
-    if (!runningJob->setWaiter(yieldedJob))
+    if (runningJob->finished.load())
     {
-      os::print("enqueuing %p because cant wait %p\n", yieldedJob.get(), runningJob.get());
-      assert(yieldedJob.get() != workerJob.get());
+      assert(yieldedJob != workerJob);
+
+      os::print("enqueuing %p because cant wait %p\n", yieldedJob, runningJob);
+
+      yieldedJob->refInQueue();
       jobQueues[pendingQueueIndex]->enqueue(yieldedJob);
     }
+    else
+    {
+
+      runningJob->setWaiter(yieldedJob);
+    }
+
+    runningJob->unlock();
 
     runningJob = nullptr;
     yieldedJob = nullptr;
@@ -151,7 +162,8 @@ void JobSystem::processYieldedJobs()
 
   if (yieldedJob != nullptr)
   {
-    assert(yieldedJob.get() != workerJob.get());
+    assert(yieldedJob != workerJob);
+    yieldedJob->refInQueue();
     jobQueues[pendingQueueIndex]->enqueue(yieldedJob);
   }
 
@@ -160,9 +172,9 @@ void JobSystem::processYieldedJobs()
   if (waitedJob)
   {
     assert(waitingTime != UINT64_MAX);
+    assert(waitedJob != workerJob);
 
-    assert(waitedJob.get() != workerJob.get());
-
+    waitedJob->refInQueue();
     waitingQueue->enqueue(waitedJob, waitingTime);
     waitingTime = UINT64_MAX;
   }
@@ -173,93 +185,114 @@ void JobSystem::processYieldedJobs()
 void JobSystem::workerLoop()
 {
   workerJob = jobAllocators[0]->currentThreadToJob();
+  workerJob->refInRuntime();
 
   while (JobSystem::isRunning)
   {
-    // uint64_t priority, dequeuedPriority;
+    uint64_t priority, dequeuedPriority;
 
-    // if (waitingQueue->tryPeek(priority))
-    // {
-    //   if (priority <= lib::time::TimeSpan::now().nanoseconds())
-    //   {
-    //     waitingQueue->dequeue(currentJob, dequeuedPriority);
-    //     if (dequeuedPriority > lib::time::TimeSpan::now().nanoseconds())
-    //     {
-    //       waitingQueue->enqueue(currentJob, dequeuedPriority);
-    //       currentJob = nullptr;
-    //     }
-    //     else
-    //     {
-    //       currentJob->resume();
-    //       processYieldedJobs();
-    //       currentJob = nullptr;
-    //     }
-    //   }
-    // }
+    Job *nextJob = nullptr;
 
-    for (size_t i = 0; i < jobQueues.size(); i++)
+    if (waitingQueue->tryDequeue(nextJob, dequeuedPriority))
     {
-      std::shared_ptr<Job> nextJob = nullptr;
-      while (jobQueues[i]->tryDequeue(nextJob))
+      if (dequeuedPriority > lib::time::TimeSpan::now().nanoseconds())
       {
-        // os::print("p = %p\n", currentJob.get());
-        assert(nextJob.use_count() >= 1);
-        assert(nextJob.get()->fiber != nullptr);
-
-        os::print("thread %u executing %p, refconut = %u\n", os::Thread::getCurrentThreadId(), nextJob.get(), nextJob.use_count());
+        waitingQueue->enqueue(nextJob, dequeuedPriority);
+      }
+      else
+      {
+        nextJob->refInRuntime();
+        nextJob->derefInQueue();
 
         currentJob = nextJob;
+
         nextJob->resume();
 
-        if (nextJob.get()->finished.load())
+        assert(currentJob == nextJob);
+
+        if (nextJob->finished.load())
         {
-          pools[nextJob.get()->fiberPoolIndex]->release(nextJob.get()->fiber);
-          nextJob.get()->fiber = nullptr;
+          pools[nextJob->fiberPoolIndex]->release(nextJob->fiber);
+          nextJob->fiber = nullptr;
         }
 
         processYieldedJobs();
 
-        assert(workerJob.use_count() == 1);
-        assert(nextJob.use_count() >= 2);
+        nextJob->derefInRuntime();
       }
     }
 
-    currentJob = nullptr;
+    for (size_t i = 0; i < jobQueues.size(); i++)
+    {
+      Job *nextJob = nullptr;
+
+      while (jobQueues[i]->tryDequeue(nextJob))
+      {
+        nextJob->refInRuntime();
+        nextJob->derefInQueue();
+
+        assert(nextJob->fiber != nullptr);
+
+        os::print(
+            "thread %u executing %p, p=%u q=%u r=%u\n",
+            os::Thread::getCurrentThreadId(),
+            nextJob,
+            nextJob->refsInPromises.load(),
+            nextJob->refsInQueues.load(),
+            nextJob->refsInRuntime.load());
+
+        currentJob = nextJob;
+        nextJob->resume();
+
+        assert(currentJob == nextJob);
+
+        if (nextJob->finished.load())
+        {
+          pools[nextJob->fiberPoolIndex]->release(nextJob->fiber);
+          nextJob->fiber = nullptr;
+        }
+
+        processYieldedJobs();
+
+        os::print("worker runtime refs of %p p=%u q=%u r=%u\n", nextJob, nextJob->refsInPromises.load(), nextJob->refsInQueues.load(), nextJob->refsInRuntime.load());
+
+        currentJob->derefInRuntime();
+      }
+    }
   }
 
-  // yieldedJob = nullptr;
-  // runningJob = nullptr;
-  // waitedJob = nullptr;
-  workerJob = nullptr;
-  // delete workerFiber;
+  workerJob->derefInRuntime();
 }
 
 void JobSystem::yield()
 {
-  std::shared_ptr<Job> curr = currentJob;
-
+  Job *curr = currentJob;
   yieldedJob = currentJob;
   workerJob->resume();
-  // fiber::Fiber::switchTo(workerFiber);
   currentJob = curr;
 }
 
-void JobSystem::sleepAndWakeOnPromiseResolve(std::shared_ptr<Job> &job)
+void JobSystem::sleepAndWakeOnPromiseResolve(Job *&job)
 {
-  std::shared_ptr<Job> curr = currentJob;
-  // currentJob->setWaiter();
+  if (job->finished.load())
+  {
+    return;
+  }
+  // uint32_t jobCurrent = job->refInRuntime.load();
+
+  // do {
+  // } while();
+
   runningJob = job;
   yieldedJob = currentJob;
   workerJob->resume();
-  currentJob = curr;
 }
 
 void JobSystem::delay(lib::time::TimeSpan span)
 {
-  std::shared_ptr<Job> curr = currentJob;
-
   waitingTime = lib::time::TimeSpan::now().nanoseconds() + span.nanoseconds();
+
   waitedJob = currentJob;
+
   workerJob->resume();
-  currentJob = curr;
 }

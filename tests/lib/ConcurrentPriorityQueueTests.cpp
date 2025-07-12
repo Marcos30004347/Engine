@@ -57,7 +57,7 @@ void multiThreadTests()
           for (size_t j = 0; j < 100; j++)
           {
             then = lib::time::TimeSpan::now();
-            while (!pq->dequeue(x, p))
+            while (!pq->tryDequeue(x, p))
             {
             }
 
