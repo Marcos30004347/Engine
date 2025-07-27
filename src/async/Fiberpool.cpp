@@ -1,10 +1,10 @@
 #include "Fiberpool.hpp"
-#include "JobSystem.hpp"
+#include "AsyncManager.hpp"
 
 #include "lib/time/TimeSpan.hpp"
 
-using namespace jobsystem;
-using namespace jobsystem::fiber;
+using namespace async;
+using namespace async::fiber;
 
 FiberPool::FiberPool(uint64_t stackSize, uint64_t threadCacheSize, uint64_t maxThreads)
     : stackSize(stackSize), threadCacheSize(threadCacheSize), maxThreads(maxThreads), cache(os::Thread::getHardwareConcurrency())
@@ -26,7 +26,7 @@ void FiberPool::initializeThread()
 
   assert(inserted);
 
-  Stack<jobsystem::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
+  Stack<async::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
   
   if (!local)
   {
@@ -43,7 +43,7 @@ void FiberPool::initializeThread()
 
 void FiberPool::deinitializeThread()
 {
-  Stack<jobsystem::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
+  Stack<async::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
 
   Fiber *curr = nullptr;
 
@@ -59,7 +59,7 @@ FiberPool::~FiberPool()
 
 Fiber *FiberPool::acquire(Fiber::Handler func, void *data)
 {
-  Stack<jobsystem::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
+  Stack<async::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
 
   assert(local != nullptr);
 
@@ -79,7 +79,7 @@ Fiber *FiberPool::acquire(Fiber::Handler func, void *data)
 
 void FiberPool::release(Fiber *fiber)
 {
-  Stack<jobsystem::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
+  Stack<async::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
 
   assert(local != nullptr);
 

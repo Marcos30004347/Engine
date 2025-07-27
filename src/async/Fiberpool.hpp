@@ -8,7 +8,7 @@
 #include "ThreadCache.hpp"
 #include "Stack.hpp"
 
-namespace jobsystem
+namespace async
 {
 namespace fiber
 {
@@ -40,4 +40,4 @@ private:
 };
 
 } // namespace fiber
-} // namespace jobsystem
+} // namespace async

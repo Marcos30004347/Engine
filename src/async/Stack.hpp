@@ -2,7 +2,7 @@
 
 #include "lib/memory/allocator/SystemAllocator.hpp"
 
-namespace jobsystem
+namespace async
 {
 template <typename T> class Stack
 {
@@ -24,8 +24,8 @@ public:
       return false;
     }
 
-    new (&data[head]) T(std::forward<U>(value));
-    ++head;
+    new (&data[head++]) T(std::forward<U>(value));
+
     return true;
   }
 
@@ -39,6 +39,7 @@ public:
     out = std::move(data[--head]);
     return true;
   }
+
   inline uint32_t size()
   {
     return head;
@@ -49,4 +50,4 @@ private:
   uint32_t capacity;
   uint32_t head;
 };
-} // namespace jobsystem
+} // namespace async

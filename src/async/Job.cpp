@@ -2,7 +2,7 @@
 #include <assert.h>
 
 #include "os/print.hpp"
-namespace jobsystem
+namespace async
 {
 
 std::atomic<uint32_t> Job::allocations(0);
@@ -11,7 +11,7 @@ std::atomic<uint32_t> Job::deallocations(0);
 JobAllocator::JobAllocator(size_t maxPayloadSize, size_t reserve) : cache(os::Thread::getHardwareConcurrency()), allocator(), payloadSize(maxPayloadSize), cacheSize(reserve)
 {
   assert(reserve >= 1);
-  assert(maxPayloadSize >= sizeof(Job) + 1 * sizeof(size_t));
+  // assert(maxPayloadSize >= sizeof(Job) + 1 * sizeof(size_t));
 }
 
 void JobAllocator::initializeThread()
@@ -26,13 +26,15 @@ void JobAllocator::initializeThread()
 
   for (size_t i = 0; i < cacheSize; i++)
   {
-    local->push((void *)allocator.allocate(payloadSize + sizeof(Job)));
+    void *ptr = (void *)allocator.allocate(payloadSize + sizeof(Job));
+
+    bool pushed = local->push(ptr);
+    assert(pushed);
   }
 }
 
 void JobAllocator::deinitializeThread()
 {
-  // os::print("Thread %u deinitializing job pool\n", os::Thread::getCurrentThreadId());
   Stack<void *> *local = cache.get(os::Thread::getCurrentThreadId());
 
   void *curr = nullptr;
@@ -72,7 +74,7 @@ Job *JobAllocator::allocate(fiber::Fiber::Handler handler, fiber::FiberPool *poo
   return j;
 }
 
-volatile Job *JobAllocator::currentThreadToJob()
+Job *JobAllocator::currentThreadToJob()
 {
   void *free = nullptr;
 
@@ -81,10 +83,11 @@ volatile Job *JobAllocator::currentThreadToJob()
   if (!local->pop(free))
   {
     free = (void *)allocator.allocate(payloadSize + sizeof(Job));
+
     assert(free != nullptr);
   }
 
-  volatile fiber::Fiber *fiber = fiber::Fiber::currentThreadToFiber();
+  fiber::Fiber *fiber = fiber::Fiber::currentThreadToFiber();
   // os::print("Thread %u fib = %p\n", os::Thread::getCurrentThreadId(), fiber);
 
   return new (free) Job(fiber, -1, this);
@@ -95,7 +98,7 @@ uint64_t JobAllocator::getPayloadSize()
   return payloadSize;
 }
 
-void JobAllocator::deallocate(volatile Job *job)
+void JobAllocator::deallocate(Job *job)
 {
   Stack<void *> *local = cache.get(os::Thread::getCurrentThreadId());
   // uint32_t s = local->size();
@@ -108,4 +111,4 @@ void JobAllocator::deallocate(volatile Job *job)
   // // os::print("job pool deallocated %u\n", s);
 }
 
-} // namespace jobsystem
+} // namespace async

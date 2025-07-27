@@ -1,8 +1,8 @@
-#include "jobsystem/Job.hpp"
+#include "async/Job.hpp"
 #include "lib/time/TimeSpan.hpp"
 
-static thread_local volatile jobsystem::Job *mainJob = nullptr;
-static thread_local volatile jobsystem::Job *funcJob = nullptr;
+static thread_local async::Job *mainJob = nullptr;
+static thread_local async::Job *funcJob = nullptr;
 
 static thread_local int counter = 0;
 static thread_local lib::time::TimeSpan prev;
@@ -15,7 +15,7 @@ static thread_local double allocations = 0;
 static thread_local double invocations = 0;
 static thread_local double resumes = 0;
 
-void handler0(void *data, jobsystem::fiber::Fiber *fiber)
+void handler0(void *data, async::fiber::Fiber *fiber)
 {
   invocations += 1;
   invocationTimes += (lib::time::TimeSpan::now() - prev).nanoseconds();
@@ -36,12 +36,12 @@ void handler0(void *data, jobsystem::fiber::Fiber *fiber)
 
 int multithreadTests()
 {
-  jobsystem::fiber::Fiber::initializeSubSystems();
+  async::fiber::Fiber::initializeSubSystems();
 
   uint32_t invocations = 1000;
 
-  jobsystem::fiber::FiberPool *fiberpool = new jobsystem::fiber::FiberPool(32768, invocations, os::Thread::getHardwareConcurrency());
-  jobsystem::JobAllocator *allocator = new jobsystem::JobAllocator(sizeof(uint8_t) * 256, os::Thread::getHardwareConcurrency() * invocations);
+  async::fiber::FiberPool *fiberpool = new async::fiber::FiberPool(32768, invocations, os::Thread::getHardwareConcurrency());
+  async::JobAllocator *allocator = new async::JobAllocator(sizeof(uint8_t) * 256, os::Thread::getHardwareConcurrency() * invocations);
 
   std::atomic<uint32_t> started(0);
 
@@ -92,11 +92,11 @@ int multithreadTests()
 
             assert(counter++ == 4);
           
-            fiberpool->release((jobsystem::fiber::Fiber *)funcJob->getFiber());
+            fiberpool->release((async::fiber::Fiber *)funcJob->getFiber());
             allocator->deallocate(funcJob);
           }
 
-          fiberpool->release((jobsystem::fiber::Fiber *)mainJob->getFiber());
+          fiberpool->release((async::fiber::Fiber *)mainJob->getFiber());
           allocator->deallocate(mainJob);
 
           mainJob = nullptr;
@@ -116,7 +116,7 @@ int multithreadTests()
   }
   delete allocator;
   delete fiberpool;
-  jobsystem::fiber::Fiber::deinitializeSubSystems();
+  async::fiber::Fiber::deinitializeSubSystems();
 
   return 0;
 }

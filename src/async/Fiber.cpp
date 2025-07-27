@@ -5,17 +5,32 @@
 
 #include <cassert>
 
-namespace jobsystem
+namespace async
 {
 namespace fiber
 {
 
 #if _WIN32
-static size_t getPageSize()
+size_t Fiber::getPageSize()
 {
   SYSTEM_INFO si;
   GetSystemInfo(&si);
   return (size_t)si.dwPageSize;
+}
+
+size_t Fiber::getMinSize()
+{
+  return MINSIGSTKSZ;
+}
+
+size_t Fiber::getMaxSize()
+{
+  return 1 * 1024 * 1024 * 1024; /* 1GB */
+}
+
+size_t Fiber::getDefaultSize()
+{
+  return 131072; // 128kb
 }
 #endif
 
@@ -25,32 +40,36 @@ static size_t getPageSize()
 #endif
 
 #if defined(_HAVE_POSIX)
-static size_t getPageSize()
+
+size_t Fiber::getPageSize()
 {
   return (size_t)sysconf(_SC_PAGESIZE);
 }
 
-static size_t getMinSize()
+size_t Fiber::getMinSize()
 {
   return MINSIGSTKSZ;
 }
 
-static size_t getMaxSize()
+size_t Fiber::getMaxSize()
 {
   struct rlimit limit;
   getrlimit(RLIMIT_STACK, &limit);
-
   return (size_t)limit.rlim_max;
 }
 
+size_t Fiber::getDefaultSize()
+{
+  return SIGSTKSZ;
+}
 #endif
 
-ThreadCache<volatile Fiber *> *Fiber::currentThreadFiber = nullptr;
-// thread_local volatile Fiber *Fiber::current() = nullptr;
+ThreadCache<Fiber *> *Fiber::currentThreadFiber = nullptr;
+// thread_local  Fiber *Fiber::current() = nullptr;
 
 void Fiber::initializeSubSystems(size_t threads)
 {
-  currentThreadFiber = new ThreadCache<volatile Fiber *>(threads);
+  currentThreadFiber = new ThreadCache<Fiber *>(threads);
 }
 
 void Fiber::deinitializeSubSystems()
@@ -60,7 +79,7 @@ void Fiber::deinitializeSubSystems()
 
 static void fiber_entry(fcontext_transfer_t t)
 {
-  volatile Fiber *self = (volatile Fiber *)t.data;
+  Fiber *self = (Fiber *)t.data;
 
   self->from->ctx = t.ctx;
 
@@ -74,9 +93,9 @@ static void fiber_entry(fcontext_transfer_t t)
   Fiber::switchTo(self->from);
 }
 
-volatile Fiber *Fiber::current()
+Fiber *Fiber::current()
 {
-  volatile Fiber *curr = *currentThreadFiber->get(os::Thread::getCurrentThreadId());
+  Fiber *curr = *currentThreadFiber->get(os::Thread::getCurrentThreadId());
   if (!curr)
   {
     abort();
@@ -85,7 +104,7 @@ volatile Fiber *Fiber::current()
   return curr;
 }
 
-volatile Fiber *Fiber::currentThreadToFiber()
+Fiber *Fiber::currentThreadToFiber()
 {
   Fiber *f = new Fiber();
 
@@ -108,14 +127,16 @@ Fiber::Fiber()
 
 static void pre_fault_stack(void *stack_top, size_t size)
 {
-  if (size <= getPageSize())
+  size_t page = Fiber::getPageSize();
+
+  if (size <= page)
   {
     return;
   }
 
-  size_t page = getPageSize();
-  volatile char *bottom = (char *)stack_top - size;
-  volatile char *p = bottom + page;
+  char *bottom = (char *)stack_top - size;
+  char *p = bottom + page;
+
   size_t usable = size - page;
 
   for (size_t off = 0; off < usable; off += page)
@@ -158,15 +179,15 @@ void Fiber::reset(Handler handler, void *userData)
   ctx = make_fcontext(stack.sptr, stack.ssize, fiber_entry);
 }
 
-void Fiber::switchTo(volatile Fiber *other)
+void Fiber::switchTo(Fiber *other)
 {
   assert(other);
 
-  volatile Fiber *curr = Fiber::current();
+  Fiber *curr = Fiber::current();
   other->from = curr;
 
   currentThreadFiber->update(os::Thread::getCurrentThreadId(), other);
- 
+
   fcontext_transfer_t r = jump_fcontext(other->ctx, (void *)other);
 
   Fiber *self = (Fiber *)r.data;
@@ -176,4 +197,4 @@ void Fiber::switchTo(volatile Fiber *other)
 }
 
 } // namespace fiber
-} // namespace jobsystem
+} // namespace async

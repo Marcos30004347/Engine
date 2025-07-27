@@ -10,7 +10,7 @@
 
 #include "Stack.hpp"
 #include "ThreadCache.hpp"
-namespace jobsystem
+namespace async
 {
 
 class Job;
@@ -22,9 +22,9 @@ public:
 
   Job *allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolIndex);
 
-  volatile Job *currentThreadToJob();
+  Job *currentThreadToJob();
   uint64_t getPayloadSize();
-  void deallocate(volatile Job *);
+  void deallocate(Job *);
   void initializeThread();
   void deinitializeThread();
 
@@ -38,7 +38,7 @@ private:
 
 class Job
 {
-  friend class JobSystem;
+  friend class AsyncManager;
   template <typename T> friend class Promise;
 
   static std::atomic<uint32_t> allocations;
@@ -52,8 +52,8 @@ public:
 
   std::atomic<uint32_t> refs;
 
-  volatile Job *waiter;
-  volatile fiber::Fiber *fiber;
+  Job *waiter;
+  fiber::Fiber *fiber;
 
   uint32_t fiberPoolIndex;
 
@@ -62,8 +62,7 @@ public:
   JobAllocator *allocator;
 
 public:
-  Job(volatile fiber::Fiber *fiber, uint32_t poolId, JobAllocator *allocator)
-      : finished(false), fiber(fiber), waiter(nullptr), fiberPoolIndex(poolId), refs(0), allocator(allocator)
+  Job(fiber::Fiber *fiber, uint32_t poolId, JobAllocator *allocator) : finished(false), fiber(fiber), waiter(nullptr), fiberPoolIndex(poolId), refs(0), allocator(allocator)
   {
     // allocations.fetch_add(1);
 
@@ -74,26 +73,24 @@ public:
   {
   }
 
-  void ref() volatile
+  void ref()
   {
     refs.fetch_add(1);
   }
 
-  void deref(const char *place) volatile
+  void deref(const char *place)
   {
     // os::print("derefing job %p (%u) - %s\n", this, refs.load(), place != nullptr ? place : "");
     if (refs.fetch_sub(1) == 1)
     {
-      // os::print("deallocating %p\n", this);
+      // deallocations.fetch_add(1);
 
-      deallocations.fetch_add(1);
-
-      uint32_t deallocs = deallocations.load();
-      uint32_t allocs = allocations.load();
+      // uint32_t deallocs = deallocations.load();
+      // uint32_t allocs = allocations.load();
 
       // if (deallocs > allocs)
       // {
-      //   os::print("deallocations at %p = %u, allocs = %u\n", this, deallocs, allocs);
+      // os::print("deallocations at %p = %u, allocs = %u\n", this, deallocs, allocs);
       //   assert(deallocs <= allocs);
       // }
       // os::print("%p deallocated by %i - %u %u %u %u = %u\n", this, src, refsInQueues.load(), refsInPromises.load(), refsInRuntime.load(), refsInJobs.load(), refs.load());
@@ -102,13 +99,13 @@ public:
     }
   }
 
-  void resume() volatile
+  void resume()
   {
     assert(fiber != nullptr);
     fiber::Fiber::switchTo(fiber);
   }
 
-  bool resolve() volatile
+  bool resolve()
   {
     bool expected = false;
     bool old = finished.compare_exchange_strong(expected, true, std::memory_order_acquire);
@@ -121,7 +118,7 @@ public:
     return old;
   }
 
-  void lock() volatile
+  void lock()
   {
     while (spinLock.test_and_set(std::memory_order_acquire))
     {
@@ -129,19 +126,19 @@ public:
     // os::print("Thread %u locking %p %p\n", os::Thread::getCurrentThreadId(), this, fiber);
   }
 
-  void unlock() volatile
+  void unlock()
   {
     // os::print("Thread %u unlocking %p %p\n", os::Thread::getCurrentThreadId(), this, fiber);
 
     spinLock.clear(std::memory_order_release);
   }
 
-  volatile fiber::Fiber *getFiber() volatile
+  fiber::Fiber *getFiber()
   {
     return fiber;
   }
 
-  void setWaiter(volatile Job *job) volatile
+  void setWaiter(Job *job)
   {
     waiter = job;
     // os::print("thread %u waiting refs = %u - fiber = %p\n", os::Thread::getCurrentThreadId(), job->refs.load(), fiber);
@@ -157,7 +154,7 @@ template <typename T> size_t calculateOffset()
 
 template <typename T> class Promise
 {
-  friend class JobSystem;
+  friend class AsyncManager;
 
   // private:
 
@@ -200,6 +197,8 @@ public:
   {
     if (this != &other)
     {
+      this->~Promise();
+
       job = std::move(other.job);
       data = std::move(other.data);
 
@@ -216,7 +215,7 @@ public:
 
 template <> class Promise<void>
 {
-  friend class JobSystem;
+  friend class AsyncManager;
 
 private:
   Job *job;
@@ -260,6 +259,8 @@ public:
     // os::print("assigning void promise rf = %u\n", other.job->refInPromises.load());
     if (this != &other)
     {
+      this->~Promise();
+
       assert(other.job->refs.load() >= 1);
       job = std::move(other.job);
       other.job = nullptr;
@@ -271,4 +272,4 @@ public:
   }
 };
 
-} // namespace jobsystem
+} // namespace async

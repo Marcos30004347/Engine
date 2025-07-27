@@ -9,8 +9,7 @@
 
 #include "ThreadCache.hpp"
 
-
-namespace jobsystem
+namespace async
 {
 namespace fiber
 {
@@ -18,7 +17,7 @@ struct Fiber
 {
   typedef void (*Handler)(void *, Fiber *);
 
-  volatile Fiber *from;
+  Fiber *from;
   size_t stack_size;
 
   fcontext_t ctx = nullptr;
@@ -35,20 +34,25 @@ struct Fiber
   ~Fiber();
 
   void reset(Handler, void *userData);
-  static void switchTo(volatile Fiber *);
+  static void switchTo(Fiber *);
 
-  static volatile Fiber *current();
-  static volatile Fiber *currentThreadToFiber();
+  static Fiber *current();
+  static Fiber *currentThreadToFiber();
   size_t getStackSize();
 
-  // static thread_local volatile Fiber *currentFiber;
+  // static thread_local  Fiber *currentFiber;
   static void initializeSubSystems(size_t threads = 2 * os::Thread::getHardwareConcurrency());
   static void deinitializeSubSystems();
-  static ThreadCache<volatile Fiber *> *currentThreadFiber;
+  static ThreadCache<Fiber *> *currentThreadFiber;
+
+  static size_t getPageSize();
+  static size_t getMinSize();
+  static size_t getMaxSize();
+  static size_t getDefaultSize();
 
 private:
   Fiber();
 };
 
 } // namespace fiber
-} // namespace jobsystem
+} // namespace async

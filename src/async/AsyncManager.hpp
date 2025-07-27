@@ -12,43 +12,54 @@
 // #include "Promise.hpp"
 #include "Job.hpp"
 
-namespace jobsystem
+namespace async
 {
 
-struct JobAllocatorSettings
+struct AsyncAllocatorSettings
 {
   size_t payloadSize;
   size_t capacity;
 };
 
-struct JobQueueSettings
+struct AsyncQueueSettings
 {
   // uint64_t maxExecutionsBeforeReset = UINT64_MAX;
 };
 
-struct JobStackSettings
+struct AsyncStackSettings
 {
   size_t stackSize;
   size_t cacheSize;
 };
 
-struct JobEnqueueData
+struct AsyncEnqueueData
 {
   uint64_t queueIndex = 0;
   uint64_t allocatorIndex = 0;
   uint64_t stackSize = 0;
+
+  inline static size_t getMinStackSize()
+  {
+    return fiber::Fiber::getMinSize();
+  }
+
+  inline static size_t getMaxStackSize()
+  {
+    return fiber::Fiber::getMaxSize();
+  }
 };
-struct JobSystemSettings
+
+struct SystemSettings
 {
   size_t threadsCount;
 
-  JobAllocatorSettings *jobAllocatorsSettings;
+  AsyncAllocatorSettings *jobAllocatorsSettings;
   size_t jobAllocatorSettingsCount;
 
-  JobQueueSettings *jobQueueSettings;
+  AsyncQueueSettings *jobQueueSettings;
   size_t jobQueueSettingsCount;
 
-  JobStackSettings *jobStackSettings;
+  AsyncStackSettings *jobStackSettings;
   size_t jobStackSettingsCount;
 };
 
@@ -58,14 +69,14 @@ struct JobQueueInfo
   // uint64_t maxExecutionsBeforeReset;
 };
 
-class JobSystem
+class AsyncManager
 {
 public:
-  static void init(void (*entry)(), JobSystemSettings *settings);
+  static void init(void (*entry)(), SystemSettings *settings);
   static void shutdown();
 
-  template <typename F, typename... Args> static auto enqueue(JobEnqueueData *data, F &&f, Args &&...args);
-  template <typename F, typename... Args> static auto enqueue(JobEnqueueData *data, std::result_of_t<F && (Args && ...)> *output, F &&f, Args &&...args);
+  template <typename F, typename... Args> static auto enqueue(AsyncEnqueueData *data, F &&f, Args &&...args);
+  template <typename F, typename... Args> static auto enqueue(AsyncEnqueueData *data, std::result_of_t<F && (Args && ...)> *output, F &&f, Args &&...args);
 
   template <typename T> static T &wait(Promise<T> &promise);
   template <typename T> static T &wait(Promise<T> &&promise);
@@ -78,31 +89,33 @@ public:
 
   // private:
   static void workerLoop();
-  static void sleepAndWakeOnPromiseResolve(volatile Job *job);
+  static void sleepAndWakeOnPromiseResolve(Job *job);
   static void processYieldedJobs();
 
   template <typename F, typename... Args> static void dispatch(void *data, fiber::Fiber *self);
   static std::vector<os::Thread> workerThreads;
 
-  static thread_local volatile Job *workerJob;
-  static thread_local volatile Job *currentJob;
-  static thread_local volatile Job *yieldedJob;
-  static thread_local volatile Job *runningJob;
-  static thread_local volatile Job *waitedJob;
+  static thread_local Job *workerJob;
+  static thread_local Job *currentJob;
+  static thread_local Job *yieldedJob;
+  static thread_local Job *runningJob;
+  static thread_local Job *waitedJob;
 
   static thread_local uint64_t waitingTime;
 
   static uint64_t pendingQueueIndex;
-  static std::vector<lib::ConcurrentQueue<volatile Job *> *> jobQueues;
+  static std::vector<lib::ConcurrentQueue<Job *> *> jobQueues;
   static std::vector<JobQueueInfo> jobQueuesInfo;
   static std::vector<JobAllocator *> jobAllocators;
   static std::atomic<bool> isRunning;
   static std::vector<fiber::FiberPool *> pools;
-  static lib::ConcurrentPriorityQueue<volatile Job *, uint64_t> *waitingQueue;
+  static lib::ConcurrentPriorityQueue<Job *, uint64_t> *waitingQueue;
 };
+
 struct EmptyResultTag
 {
 };
+
 template <typename Function, typename... Args> struct JobData
 {
   using Return = std::invoke_result_t<Function, Args...>;
@@ -115,7 +128,7 @@ template <typename Function, typename... Args> struct JobData
   ResultType *result;
 };
 
-template <typename F, typename... Args> void JobSystem::dispatch(void *data, fiber::Fiber *self)
+template <typename F, typename... Args> void AsyncManager::dispatch(void *data, fiber::Fiber *self)
 {
   using Ret = std::invoke_result_t<F, Args...>;
 
@@ -131,12 +144,6 @@ template <typename F, typename... Args> void JobSystem::dispatch(void *data, fib
 
   uint64_t poolIndex = jobData->poolIndex;
 
-  // if (job->fiber != fiber::Fiber::current())
-  // {
-  //   // os::print("Thread %u inconsistent fiber start dispatch %p %p\n", os::Thread::getCurrentThreadId(), job->fiber, fiber::Fiber::current());
-  //   *(int *)(0) = 3;
-  // }
-
   if constexpr (std::is_void_v<Ret>)
   {
     std::apply(jobData->handler, jobData->payload);
@@ -146,33 +153,24 @@ template <typename F, typename... Args> void JobSystem::dispatch(void *data, fib
     *jobData->result = std::apply(jobData->handler, jobData->payload);
   }
 
-  // if (job->fiber != fiber::Fiber::current())
-  // {
-  //   *(int *)(0) = 3;
-  // }
-
   assert(job->refs.load() >= 1);
 
   job->lock();
-
-  bool resolved = job->resolve();
-
-  assert(resolved);
-
-  volatile jobsystem::Job *waiter = job->waiter;
+  job->resolve();
+  async::Job *waiter = job->waiter;
   job->waiter = nullptr;
+  job->unlock();
 
   if (waiter)
   {
     jobQueues[pendingQueueIndex]->enqueue(waiter);
   }
-
-  job->unlock();
 }
 
-template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *data, F &&f, Args &&...args)
+template <typename F, typename... Args> auto AsyncManager::enqueue(AsyncEnqueueData *data, F &&f, Args &&...args)
 {
   using Ret = std::invoke_result_t<F, Args...>;
+
   uint64_t i = 0;
 
   for (i = 0; i < pools.size(); i++)
@@ -189,14 +187,15 @@ template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *
   }
 
   size_t retSize = 0;
+
   if constexpr (!std::is_void_v<Ret>)
   {
     retSize = sizeof(Ret);
   }
 
-  if (sizeof(JobData<F, Args...>) + sizeof(Job) + retSize > jobAllocators[data->allocatorIndex]->getPayloadSize())
+  if (retSize + sizeof(JobData<F, Args...>)> jobAllocators[data->allocatorIndex]->getPayloadSize())
   {
-    throw std::runtime_error(formatString("allocator can't support the payload size of %u", sizeof(JobData<F, Args...>) + retSize));
+    throw std::runtime_error(formatString("allocator can't support the payload size of %u", retSize + sizeof(JobData<F, Args...>)));
   }
 
   Job *job = jobAllocators[data->allocatorIndex]->allocate(&dispatch<F, Args...>, pools[i], i);
@@ -206,8 +205,7 @@ template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *
     throw std::runtime_error("error allocating job");
   }
 
-  size_t offset = calculateOffset<JobData<F, Args...>>();
-  void *buffer = (void *)(reinterpret_cast<char *>(job) + offset);
+  void *buffer = (void *)(reinterpret_cast<char *>(job) + calculateOffset<JobData<F, Args...>>());
 
   JobData<F, Args...> *jobData = new (buffer) JobData<F, Args...>{std::forward<F>(f), std::make_tuple(std::forward<Args>(args)...), i};
 
@@ -216,8 +214,8 @@ template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *
     jobData->result = (Ret *)(reinterpret_cast<char *>(jobData) + sizeof(JobData<F, Args...>));
   }
 
-  job->ref();
-  job->ref();
+  job->ref(); // for promise, deref at promise destructor
+  job->ref(); // for runtime, deref at job completion
 
   assert(job->refs.load() == 2);
 
@@ -233,7 +231,7 @@ template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *
   }
 }
 
-template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *data, std::result_of_t<F && (Args && ...)> *ret, F &&f, Args &&...args)
+template <typename F, typename... Args> auto AsyncManager::enqueue(AsyncEnqueueData *data, std::result_of_t<F && (Args && ...)> *ret, F &&f, Args &&...args)
 {
   using Ret = std::invoke_result_t<F, Args...>;
 
@@ -252,7 +250,12 @@ template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *
     throw std::runtime_error(formatString("No job pool supports required stack size of %u, create a new pool or try a different stack size", data->stackSize));
   }
 
-  if (sizeof(JobData<F, Args...>) + sizeof(Job) > jobAllocators[data->allocatorIndex]->getPayloadSize())
+  // size_t size = sizeof(JobData<F, Args...>) + sizeof(Job);
+  // if (retSize > jobAllocators[data->allocatorIndex]->getPayloadSize())
+  // {
+  //   throw std::runtime_error(formatString("allocator can't support the payload size of %u, requires %u", sizeof(JobData<F, Args...>), size));
+  // }
+  if (sizeof(JobData<F, Args...>) > jobAllocators[data->allocatorIndex]->getPayloadSize())
   {
     throw std::runtime_error(formatString("allocator can't support the payload size of %u", sizeof(JobData<F, Args...>)));
   }
@@ -287,26 +290,26 @@ template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *
   }
 }
 
-template <typename T> inline T &JobSystem::wait(Promise<T> &promise)
+template <typename T> inline T &AsyncManager::wait(Promise<T> &promise)
 {
   sleepAndWakeOnPromiseResolve(promise.job);
   return *(promise.data);
 }
 
-template <typename T> inline T &JobSystem::wait(Promise<T> &&promise)
+template <typename T> inline T &AsyncManager::wait(Promise<T> &&promise)
 {
   sleepAndWakeOnPromiseResolve(promise.job);
   return *(promise.data);
 }
 
-inline void JobSystem::wait(Promise<void> &promise)
+inline void AsyncManager::wait(Promise<void> &promise)
 {
   sleepAndWakeOnPromiseResolve(promise.job);
 }
 
-inline void JobSystem::wait(Promise<void> &&promise)
+inline void AsyncManager::wait(Promise<void> &&promise)
 {
   sleepAndWakeOnPromiseResolve(promise.job);
 }
 
-} // namespace jobsystem
+} // namespace async

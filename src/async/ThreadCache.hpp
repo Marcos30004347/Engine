@@ -9,7 +9,7 @@
 #include <atomic> // For spinlock
 #include <thread> // For std::this_thread::yield()
 
-namespace jobsystem
+namespace async
 {
 template <typename T> class ThreadCache
 {
@@ -228,4 +228,4 @@ private:
 
   std::atomic_flag lock = ATOMIC_FLAG_INIT;
 };
-} // namespace jobsystem
+} // namespace async

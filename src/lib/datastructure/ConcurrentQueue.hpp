@@ -10,8 +10,8 @@
 
 #include <type_traits>
 
-// #include "jobsystem/Fiber.hpp"
-// #include "jobsystem/JobSystem.hpp"
+// #include "async/Fiber.hpp"
+// #include "async/AsyncManager.hpp"
 
 template <typename T> struct is_shared_ptr : std::false_type
 {
@@ -279,21 +279,21 @@ public:
   bool tryDequeue(T &value)
   {
     // TODO: improve this
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 1\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 1\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
 
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
 
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 2\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 2\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
 
     localLists.get(local);
 
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 3\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 3\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
 
     if (local == nullptr)
     {
       local = threadLists.head.load(std::memory_order_acquire);
     }
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 4\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 4\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
 
     if (local == nullptr)
     {
@@ -302,7 +302,7 @@ public:
 
     // detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *node = local;
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *start = local;
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 5\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 5\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
 
     // if(local->get()->size.load()) {
     //   local->
@@ -327,7 +327,7 @@ public:
 
     for (size_t iter = 0; iter < 2; iter++)
     {
-      // os::print("Thread %u wf=%p cf=%p, inside queue part 6\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+      // os::print("Thread %u wf=%p cf=%p, inside queue part 6\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
 
       while (local)
       {
@@ -342,11 +342,11 @@ public:
 
         if (size > 0)
         {
-          // os::print("Thread %u wf=%p cf=%p, inside queue part 8\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+          // os::print("Thread %u wf=%p cf=%p, inside queue part 8\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
  
           if (local->get()->tryDequeue(value))
           {
-            // os::print("Thread %u wf=%p cf=%p, inside queue part 9\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+            // os::print("Thread %u wf=%p cf=%p, inside queue part 9\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
             return true;
           }
         }
@@ -359,7 +359,7 @@ public:
         looping = true;
         local = threadLists.head.load(std::memory_order_relaxed);
       }
-      // os::print("Thread %u wf=%p cf=%p, inside queue part 7\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+      // os::print("Thread %u wf=%p cf=%p, inside queue part 7\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
     }
 
     // if (listsCount == 0)

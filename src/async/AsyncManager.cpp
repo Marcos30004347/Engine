@@ -1,28 +1,28 @@
-#include "JobSystem.hpp"
+#include "AsyncManager.hpp"
 
-using namespace jobsystem;
-using namespace jobsystem::fiber;
+using namespace async;
+using namespace async::fiber;
 
 // static thread_local fiber::Fiber *workerFiber = nullptr;
-thread_local volatile Job *JobSystem::workerJob = nullptr;
-thread_local volatile Job *JobSystem::currentJob = nullptr;
-thread_local volatile Job *JobSystem::yieldedJob = nullptr;
-thread_local volatile Job *JobSystem::runningJob = nullptr;
-thread_local volatile Job *JobSystem::waitedJob = nullptr;
-thread_local uint64_t JobSystem::waitingTime;
+thread_local Job *AsyncManager::workerJob = nullptr;
+thread_local Job *AsyncManager::currentJob = nullptr;
+thread_local Job *AsyncManager::yieldedJob = nullptr;
+thread_local Job *AsyncManager::runningJob = nullptr;
+thread_local Job *AsyncManager::waitedJob = nullptr;
+thread_local uint64_t AsyncManager::waitingTime;
 
 // static thread_local uint64_t tickCount;
 
-std::vector<os::Thread> JobSystem::workerThreads;
-std::vector<lib::ConcurrentQueue<volatile Job *> *> JobSystem::jobQueues;
-std::vector<JobAllocator *> JobSystem::jobAllocators;
-std::vector<FiberPool *> JobSystem::pools;
-uint64_t JobSystem::pendingQueueIndex;
-std::atomic<bool> JobSystem::isRunning(false);
-std::vector<JobQueueInfo> JobSystem::jobQueuesInfo;
-lib::ConcurrentPriorityQueue<volatile Job *, uint64_t> *JobSystem::waitingQueue = nullptr;
+std::vector<os::Thread> AsyncManager::workerThreads;
+std::vector<lib::ConcurrentQueue<Job *> *> AsyncManager::jobQueues;
+std::vector<JobAllocator *> AsyncManager::jobAllocators;
+std::vector<FiberPool *> AsyncManager::pools;
+uint64_t AsyncManager::pendingQueueIndex;
+std::atomic<bool> AsyncManager::isRunning(false);
+std::vector<JobQueueInfo> AsyncManager::jobQueuesInfo;
+lib::ConcurrentPriorityQueue<Job *, uint64_t> *AsyncManager::waitingQueue = nullptr;
 
-void JobSystem::init(void (*entry)(), JobSystemSettings *settings)
+void AsyncManager::init(void (*entry)(), SystemSettings *settings)
 {
   isRunning.store(false);
 
@@ -41,17 +41,17 @@ void JobSystem::init(void (*entry)(), JobSystemSettings *settings)
   for (size_t i = 0; i < settings->jobQueueSettingsCount; i++)
   {
     jobQueuesInfo.push_back(JobQueueInfo());
-    jobQueues.push_back(new lib::ConcurrentQueue<volatile Job *>());
+    jobQueues.push_back(new lib::ConcurrentQueue<Job *>());
   }
 
   pendingQueueIndex = jobQueues.size();
-  jobQueues.push_back(new lib::ConcurrentQueue<volatile Job *>());
+  jobQueues.push_back(new lib::ConcurrentQueue<Job *>());
 
-  waitingQueue = new lib::ConcurrentPriorityQueue<volatile Job *, uint64_t>();
+  waitingQueue = new lib::ConcurrentPriorityQueue<Job *, uint64_t>();
 
   isRunning = true;
 
-  JobEnqueueData data;
+  AsyncEnqueueData data;
 
   data.allocatorIndex = 0;
   data.queueIndex = pendingQueueIndex;
@@ -122,12 +122,12 @@ void JobSystem::init(void (*entry)(), JobSystemSettings *settings)
   Fiber::deinitializeSubSystems();
 }
 
-void JobSystem::stop()
+void AsyncManager::stop()
 {
   isRunning.store(false);
 }
 
-void JobSystem::shutdown()
+void AsyncManager::shutdown()
 {
   workerThreads.clear();
 
@@ -155,7 +155,7 @@ void JobSystem::shutdown()
   pools.clear();
 }
 
-void JobSystem::processYieldedJobs()
+void AsyncManager::processYieldedJobs()
 {
   if (runningJob)
   {
@@ -203,12 +203,12 @@ void JobSystem::processYieldedJobs()
   waitedJob = nullptr;
 }
 
-void JobSystem::workerLoop()
+void AsyncManager::workerLoop()
 {
   workerJob = jobAllocators[0]->currentThreadToJob();
   workerJob->ref();
 
-  while (JobSystem::isRunning)
+  while (AsyncManager::isRunning)
   {
     // uint64_t priority, dequeuedPriority;
 
@@ -267,39 +267,34 @@ void JobSystem::workerLoop()
     }
   }
 
+  pools[0]->release((Fiber *)workerJob->fiber);
+  // os::print("worker job ref = %u\n", workerJob->refs.load());
   workerJob->deref("worker");
 }
 
-void JobSystem::yield()
+void AsyncManager::yield()
 {
-  volatile Job *curr = currentJob;
+  Job *curr = currentJob;
   yieldedJob = currentJob;
   workerJob->resume();
   currentJob = curr;
 }
 
-void JobSystem::sleepAndWakeOnPromiseResolve(volatile Job *job)
+void AsyncManager::sleepAndWakeOnPromiseResolve(Job *job)
 {
   if (job->finished.load())
   {
     return;
   }
 
-
   runningJob = job;
   yieldedJob = currentJob;
-
-  // if (currentJob->fiber != Fiber::current())
-  // {
-  //   // os::print("Thread %u inconsistent sleep\n", os::Thread::getCurrentThreadId());
-  //   *(int *)(0) = 3;
-  // }
 
   assert(currentJob->fiber == Fiber::current());
   workerJob->resume();
 }
 
-void JobSystem::delay(lib::time::TimeSpan span)
+void AsyncManager::delay(lib::time::TimeSpan span)
 {
   waitingTime = lib::time::TimeSpan::now().nanoseconds() + span.nanoseconds();
 

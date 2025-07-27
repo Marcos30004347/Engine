@@ -1,5 +1,5 @@
-#include "jobsystem/JobSystem.hpp"
-#include "jobsystem/Job.hpp"
+#include "async/AsyncManager.hpp"
+#include "async/Job.hpp"
 
 #include "lib/datastructure/ConcurrentPriorityQueue.hpp"
 #include "lib/datastructure/ConcurrentQueue.hpp"
@@ -14,7 +14,7 @@
 #include <cstdio>
 
 using namespace window;
-using namespace jobsystem;
+using namespace async;
 using namespace lib;
 
 // void push_to_list(uint32_t count, lib::parallel::List<uint32_t> *l)
@@ -54,15 +54,15 @@ using namespace lib;
 // {
 //   lib::parallel::List<uint32_t> *l = new lib::parallel::List<uint32_t>();
 
-//   auto p0 = JobSystem::enqueue(push_to_list, 10000, l);
-//   auto p1 = JobSystem::enqueue(push_to_list, 10000, l);
-//   auto p2 = JobSystem::enqueue(push_to_list, 10000, l);
-//   auto p3 = JobSystem::enqueue(push_to_list, 10000, l);
+//   auto p0 = AsyncManager::enqueue(push_to_list, 10000, l);
+//   auto p1 = AsyncManager::enqueue(push_to_list, 10000, l);
+//   auto p2 = AsyncManager::enqueue(push_to_list, 10000, l);
+//   auto p3 = AsyncManager::enqueue(push_to_list, 10000, l);
 
-//   JobSystem::wait(p0);
-//   JobSystem::wait(p1);
-//   JobSystem::wait(p2);
-//   JobSystem::wait(p3);
+//   AsyncManager::wait(p0);
+//   AsyncManager::wait(p1);
+//   AsyncManager::wait(p2);
+//   AsyncManager::wait(p3);
 
 //   delete l;
 // }
@@ -104,15 +104,15 @@ void enqueue_queue_pushes_and_pops()
 {
   lib::ConcurrentQueue<uint32_t> *l = new lib::ConcurrentQueue<uint32_t>();
 
-  auto p0 = JobSystem::enqueue(push_to_queue, 10000, l);
-  auto p1 = JobSystem::enqueue(push_to_queue, 10000, l);
-  auto p2 = JobSystem::enqueue(push_to_queue, 10000, l);
-  auto p3 = JobSystem::enqueue(push_to_queue, 10000, l);
+  auto p0 = AsyncManager::enqueue(push_to_queue, 10000, l);
+  auto p1 = AsyncManager::enqueue(push_to_queue, 10000, l);
+  auto p2 = AsyncManager::enqueue(push_to_queue, 10000, l);
+  auto p3 = AsyncManager::enqueue(push_to_queue, 10000, l);
 
-  JobSystem::wait(p0);
-  JobSystem::wait(p1);
-  JobSystem::wait(p2);
-  JobSystem::wait(p3);
+  AsyncManager::wait(p0);
+  AsyncManager::wait(p1);
+  AsyncManager::wait(p2);
+  AsyncManager::wait(p3);
 
   delete l;
 }
@@ -167,33 +167,33 @@ void enqueue_priority_queue_pushes_and_pops()
   
   os::print("Start enqueue\n");
 
-  auto p0 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
-  //auto p1 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
-  //auto p2 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
- // auto p3 = JobSystem::enqueue(push_to_priority_queue, 10000, l);
+  auto p0 = AsyncManager::enqueue(push_to_priority_queue, 10000, l);
+  //auto p1 = AsyncManager::enqueue(push_to_priority_queue, 10000, l);
+  //auto p2 = AsyncManager::enqueue(push_to_priority_queue, 10000, l);
+ // auto p3 = AsyncManager::enqueue(push_to_priority_queue, 10000, l);
 
   os::print("End enqueues\n");
 
-  JobSystem::wait(p0);
-//  JobSystem::wait(p1);
- // JobSystem::wait(p2);
- // JobSystem::wait(p3);
+  AsyncManager::wait(p0);
+//  AsyncManager::wait(p1);
+ // AsyncManager::wait(p2);
+ // AsyncManager::wait(p3);
   delete l;
 }
 
 void entry()
 {
-  //   auto p = JobSystem::enqueueGroup(group_example, ARRAY_SIZE, 16, a);
+  //   auto p = AsyncManager::enqueueGroup(group_example, ARRAY_SIZE, 16, a);
   //   Window *appWindow = createWindow(WindowBackend::WindowBackend_SDL3, WindowSurfaceType::WindowSurface_Vulkan, "Engine");
   // threadSafePrintf("list\n");
-  // auto p0 = JobSystem::enqueue(enqueue_list_pushes_and_pops);
-  // JobSystem::wait(p0);
+  // auto p0 = AsyncManager::enqueue(enqueue_list_pushes_and_pops);
+  // AsyncManager::wait(p0);
   os::print("queue\n");
-  JobSystem::wait(JobSystem::enqueue(enqueue_queue_pushes_and_pops));
+  AsyncManager::wait(AsyncManager::enqueue(enqueue_queue_pushes_and_pops));
   //os::threadSafePrintf("priority queue\n");
-  //JobSystem::wait(JobSystem::enqueue(enqueue_priority_queue_pushes_and_pops));
+  //AsyncManager::wait(AsyncManager::enqueue(enqueue_priority_queue_pushes_and_pops));
 
-  JobSystem::stop();
+  AsyncManager::stop();
 }
 
 
@@ -201,8 +201,8 @@ void entry()
 int main()
 {
   lib::memory::SystemMemoryManager::init();
-  JobSystemSettings settings;
-  JobSystem::init(entry, settings);
+  SystemSettings settings;
+  AsyncManager::init(entry, settings);
   
   //   rhi::DeviceRequiredLimits limits;
 
@@ -228,7 +228,7 @@ int main()
 
   //   delete device;
 
-  JobSystem::shutdown();
+  AsyncManager::shutdown();
   lib::memory::SystemMemoryManager::shutdown();
   
   return 0;

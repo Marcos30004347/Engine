@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Engine)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set default build type to Debug" FORCE)
-endif()
+# if(NOT CMAKE_BUILD_TYPE)
+#   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set default build type to Debug" FORCE)
+# endif()
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined -fno-omit-frame-pointer -g -O0")
@@ -13,7 +13,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address,undefined -fno-omit-frame
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -g -O0")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -g -O0")
 
-# Comment this for debug builds
+#Comment this for debug builds
 # if(NOT CMAKE_BUILD_TYPE)
 #   set(CMAKE_BUILD_TYPE Release CACHE STRING "Set default build type to Release" FORCE)
 # endif()

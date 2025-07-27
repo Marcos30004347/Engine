@@ -1,4 +1,4 @@
-#include "jobsystem/ThreadCache.hpp"
+#include "async/ThreadCache.hpp"
 #include "lib/memory/SystemMemoryManager.hpp"
 #include "lib/time/TimeSpan.hpp"
 
@@ -12,7 +12,7 @@ void multiThreadTests()
 
   size_t totalThreads = 128; // os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
-  jobsystem::ThreadCache<size_t> *storage = new jobsystem::ThreadCache<size_t>(totalThreads * 2);
+  async::ThreadCache<size_t> *storage = new async::ThreadCache<size_t>(totalThreads * 2);
 
   for (size_t i = 0; i < totalThreads; i++)
   {
