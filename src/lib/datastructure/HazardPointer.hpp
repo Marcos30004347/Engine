@@ -3,7 +3,6 @@
 #include "lib/algorithm/search.hpp"
 #include "lib/algorithm/sort.hpp"
 #include "lib/datastructure/ThreadLocalStorage.hpp"
-#include "lib/datastructure/Vector.hpp"
 #include "lib/memory/allocator/SystemAllocator.hpp"
 
 #include <atomic>
@@ -16,13 +15,13 @@ namespace lib
 struct SpinLock
 {
   std::atomic_flag flag = ATOMIC_FLAG_INIT;
+
   void lock()
   {
     while (flag.test_and_set(std::memory_order_acquire))
     {
       os::print("....locked\n");
-
-      assert(false);
+      // assert(false);
     }
   }
 
@@ -39,18 +38,21 @@ public:
   {
     const int R = 16;
     friend class HazardPointer;
+
+    std::atomic<uint32_t> refs;
+
     SpinLock retiredLock;
 
     HazardPointer *manager;
     Record *next;
 
-    std::atomic_flag isActive;
+    std::atomic<bool> isActive;
     void *pointers[K];
 
     std::vector<void *> retiredList;
     Allocator &allocator;
 
-    Record(HazardPointer *manager, Allocator &allocator) : allocator(allocator), retiredList(), isActive(false), next(nullptr), manager(manager)
+    Record(HazardPointer *manager, Allocator &allocator) : allocator(allocator), retiredList(), isActive(false), next(nullptr), manager(manager), refs(0)
     {
       for (size_t i = 0; i < K; i++)
       {
@@ -73,15 +75,13 @@ public:
       // Accumulate retired nodes from inactive records
       for (Record *hprec = manager->head.load(); hprec != nullptr; hprec = hprec->next)
       {
-        if (hprec->isActive.test())
+        bool expected = false;
+
+        if (!hprec->isActive.compare_exchange_strong(expected, true))
         {
           continue;
         }
 
-        if (hprec->isActive.test_and_set(std::memory_order_acquire))
-        {
-          continue;
-        }
         hprec->retiredLock.lock();
 
         while (hprec->retiredList.size() > 0)
@@ -98,7 +98,10 @@ public:
         }
         hprec->retiredLock.unlock();
 
-        hprec->isActive.clear();
+        expected = true;
+
+        bool exchanged = hprec->isActive.compare_exchange_strong(expected, false);
+        assert(exchanged);
       }
     }
 
@@ -111,7 +114,7 @@ public:
       {
         for (size_t k = 0; k < K; k++)
         {
-          if (h->pointers[k] != nullptr && h->isActive.test())
+          if (h->pointers[k] != nullptr && h->isActive.load())
           {
             hp.push_back(h->pointers[k]);
           }
@@ -182,6 +185,7 @@ public:
     void retire(void *ptr)
     {
       retiredLock.lock();
+
       retiredList.push_back(ptr);
       bool needScan = retiredList.size() >= R;
       retiredLock.unlock();
@@ -217,12 +221,15 @@ public:
 
     for (; p; p = p->next)
     {
-      int expected = 0;
+      bool expected = false;
 
-      if (p->isActive.test(std::memory_order_acquire) || p->isActive.test_and_set(std::memory_order_acquire))
+      if (!p->isActive.compare_exchange_strong(expected, true))
       {
         continue;
       }
+
+      uint32_t refs = p->refs.fetch_add(1);
+      assert(refs == 0);
 
       return p;
     }
@@ -235,7 +242,13 @@ public:
 
     p = new Record(this, allocator);
 
-    assert(!p->isActive.test_and_set(std::memory_order_acquire));
+    p->isActive.store(true);
+
+    // assert(!p->isActive.test_and_set(std::memory_order_acquire));
+
+    uint32_t refs = p->refs.fetch_add(1);
+
+    assert(refs == 0);
 
     for (size_t i = 0; i < K; i++)
     {
@@ -250,6 +263,8 @@ public:
       p->next = old;
     } while (!head.compare_exchange_weak(old, p, std::memory_order_release, std::memory_order_relaxed));
 
+    assert(p->refs.load() == 1);
+
     return p;
   }
 
@@ -260,8 +275,14 @@ public:
       rec->pointers[i] = nullptr;
     }
 
-    assert(rec->isActive.test());
-    rec->isActive.clear();
+    rec->refs.fetch_sub(1);
+
+    assert(rec->refs.load() == 0);
+    assert(rec->isActive.load());
+
+    bool expected = true;
+    bool exchanged = rec->isActive.compare_exchange_strong(expected, false);
+    assert(exchanged);
   }
 
 private:

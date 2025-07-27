@@ -107,11 +107,23 @@ public:
    * `false` otherwise (e.g., default constructed, moved-from, joined, or detached).
    */
   bool isRunning() const;
+
   /**
    * @brief Gets the underlying std::thread::id of this thread object.
    * @return The std::thread::id associated with this Thread object.
    */
   std::thread::id getId() const;
+
+  /**
+   * @brief Sets the CPU affinity of the thread to a specific core.
+   *
+   * This function attempts to bind the thread to the given CPU core, if supported
+   * by the platform. On platforms where thread affinity is not available, this
+   * function has no effect.
+   *
+   * @param core The index of the CPU core to bind the thread to.
+   */
+  void setAffinity(size_t core);
 
   /**
    * @brief Static method to get the ID of the current executing thread.

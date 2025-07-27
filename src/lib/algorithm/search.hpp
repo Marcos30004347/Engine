@@ -4,8 +4,6 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "lib/datastructure/Vector.hpp"
-
 namespace lib
 {
 namespace algorithm

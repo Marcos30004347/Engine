@@ -75,23 +75,23 @@ void multiThreadTests()
 
 void concurrentListMultithreadTests()
 {
-  lib::ConcurrentQueue<int> queue;
+  lib::ConcurrentQueue<int> *queue = new lib::ConcurrentQueue<int>();
 
   os::print("Inserting 0\n");
-  queue.enqueue(0);
+  queue->enqueue(0);
   os::print("Inserting 1\n");
-  queue.enqueue(1);
+  queue->enqueue(1);
   os::print("Inserting 2\n");
-  queue.enqueue(2);
+  queue->enqueue(2);
 
   int x;
-  queue.tryDequeue(x);
+  queue->tryDequeue(x);
   os::print("Popped %i\n", x);
 
-  queue.tryDequeue(x);
+  queue->tryDequeue(x);
   os::print("Popped %i\n", x);
 
-  queue.tryDequeue(x);
+  queue->tryDequeue(x);
   os::print("Popped %i\n", x);
 
   size_t totalThreads = os::Thread::getHardwareConcurrency();
@@ -109,7 +109,7 @@ void concurrentListMultithreadTests()
           for (size_t j = 0; j < 1000; j++)
           {
             then = lib::time::TimeSpan::now();
-            queue.enqueue(j);
+            queue->enqueue(j);
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
@@ -121,7 +121,7 @@ void concurrentListMultithreadTests()
           {
             then = lib::time::TimeSpan::now();
 
-            while (!queue.tryDequeue(x))
+            while (!queue->tryDequeue(x))
             {
             }
 
@@ -136,26 +136,8 @@ void concurrentListMultithreadTests()
   {
     threads[i].join();
   }
-  return;
-  for (size_t i = 0; i < totalThreads; i++)
-  {
-    threads[i] = os::Thread(
-        [&]()
-        {
-          double total_ns = 0;
-
-          for (size_t j = 0; j < 1000; j++)
-          {
-            queue.enqueue(j);
-          }
-        });
-  }
-
-  for (size_t i = 0; i < totalThreads * 1000; i++)
-  {
-    int x;
-    assert(queue.tryDequeue(x));
-  }
+  
+  delete queue;
 }
 
 int main()
@@ -163,7 +145,11 @@ int main()
   lib::memory::SystemMemoryManager::init();
 
   multiThreadTests();
-  concurrentListMultithreadTests();
+
+  for (uint32_t i = 0; i < 1000; i++)
+  {
+    concurrentListMultithreadTests();
+  }
 
   lib::memory::SystemMemoryManager::shutdown();
   return 0;

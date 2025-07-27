@@ -10,6 +10,9 @@
 
 #include <type_traits>
 
+// #include "jobsystem/Fiber.hpp"
+// #include "jobsystem/JobSystem.hpp"
+
 template <typename T> struct is_shared_ptr : std::false_type
 {
 };
@@ -268,7 +271,7 @@ public:
       localLists.set(local);
     }
 
-    assert(local != nullptr);
+    assert(local != nullptr && local->get() != nullptr);
 
     local->get()->enqueue(value);
   }
@@ -276,95 +279,111 @@ public:
   bool tryDequeue(T &value)
   {
     // TODO: improve this
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 1\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
 
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 2\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+
     localLists.get(local);
+
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 3\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
 
     if (local == nullptr)
     {
       local = threadLists.head.load(std::memory_order_acquire);
     }
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 4\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
 
     if (local == nullptr)
     {
       return false;
     }
 
-    detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *node = local;
+    // detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *node = local;
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *start = local;
+    // os::print("Thread %u wf=%p cf=%p, inside queue part 5\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
 
     // if(local->get()->size.load()) {
     //   local->
     // }
 
-    for (size_t i = 0; i < (time % concurrencyLevel); i++)
-    {
-      node = node->next.load(std::memory_order_relaxed);
-      if (node == nullptr)
-      {
-        node = threadLists.head.load(std::memory_order_acquire);
-      }
-    }
+    // for (size_t i = 0; i < (time % concurrencyLevel); i++)
+    // {
+    //   node = node->next.load(std::memory_order_relaxed);
+    //   if (node == nullptr)
+    //   {
+    //     node = threadLists.head.load(std::memory_order_acquire);
+    //   }
+    // }
 
-    start = node;
+    // start = local;
 
-    const size_t candidatesMax = 3;
-    size_t listsCount = 0;
-    detail::ConcurrentQueueProducer<T> *lists[candidatesMax];
+    // const size_t candidatesMax = 3;
+    // size_t listsCount = 0;
+    // detail::ConcurrentQueueProducer<T> *lists[candidatesMax];
 
     bool looping = false;
 
-    size_t iters = 0;
-
-    for (size_t iter = 0; iter < 2 && listsCount < candidatesMax; iter++)
+    for (size_t iter = 0; iter < 2; iter++)
     {
-      while (node && listsCount < candidatesMax)
+      // os::print("Thread %u wf=%p cf=%p, inside queue part 6\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+
+      while (local)
       {
-        iters++;
-        if (looping && node == start)
+        assert(local->get());
+
+        if (looping && local == start)
         {
           break;
         }
 
-        auto size = node->get()->size.load();
+        auto size = local->get()->size.load();
 
         if (size > 0)
         {
-          lists[listsCount++] = node->get();
+          // os::print("Thread %u wf=%p cf=%p, inside queue part 8\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+ 
+          if (local->get()->tryDequeue(value))
+          {
+            // os::print("Thread %u wf=%p cf=%p, inside queue part 9\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
+            return true;
+          }
         }
 
-        node = node->next.load(std::memory_order_relaxed);
+        local = local->next.load(std::memory_order_relaxed);
       }
 
-      if (node == nullptr)
+      if (local == nullptr)
       {
         looping = true;
-        node = threadLists.head.load(std::memory_order_relaxed);
+        local = threadLists.head.load(std::memory_order_relaxed);
       }
+      // os::print("Thread %u wf=%p cf=%p, inside queue part 7\n", os::Thread::getCurrentThreadId(), jobsystem::JobSystem::workerJob, jobsystem::fiber::Fiber::currentFiber);
     }
 
-    if (listsCount == 0)
-    {
-      return false;
-    }
+    // if (listsCount == 0)
+    // {
+    //   return false;
+    // }
 
-    time++;
+    // time++;
 
-    for (size_t i = 0; i < listsCount; i++)
-    {
-      if (lists[i]->tryDequeue(value))
-      {
-        // if constexpr (std::is_pointer<T>::value)
-        // {
-        //   os::print("got %p\n", value);
-        // }
-        // if constexpr (is_shared_ptr<T>::value)
-        // {
-        //   os::print("got shared %p\n", value.get());
-        // }
-        return true;
-      }
-    }
+    // for (size_t i = 0; i < listsCount; i++)
+    // {
+    //   if (lists[i]->tryDequeue(value))
+    //   {
+    //     // if constexpr (std::is_pointer<T>::value)
+    //     // {
+    //     //   os::print("got %p\n", value);
+    //     // }
+    //     // if constexpr (is_shared_ptr<T>::value)
+    //     // {
+    //     //   os::print("got shared %p\n", value.get());
+    //     // }
+    //     return true;
+    //   }
+    // }
 
     return false;
   }

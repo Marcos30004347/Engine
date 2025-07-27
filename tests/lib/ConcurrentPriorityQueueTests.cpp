@@ -36,7 +36,10 @@ void multiThreadTests()
           {
             // os::print("Thread %i enqueuing %i\n", i, (i + 1) * 1000 + j);
             then = lib::time::TimeSpan::now();
-            assert(pq->enqueue((i + 1) * 1000 + j, (i + 1) * 1000 + j));
+            bool enqueued = pq->enqueue((i + 1) * 1000 + j, (i + 1) * 1000 + j);
+            
+            assert(enqueued);
+
             total_insert_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
@@ -98,6 +101,7 @@ void multiThreadGCTests()
   for (size_t i = 0; i < 1000; i++)
   {
     values[i] = allocator.allocate(1);
+    *values[i] = 1;
     wasFreed[i].store(false);
   }
 

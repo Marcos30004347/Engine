@@ -1,37 +1,90 @@
 #include "Fiberpool.hpp"
 #include "JobSystem.hpp"
 
+#include "lib/time/TimeSpan.hpp"
+
 using namespace jobsystem;
 using namespace jobsystem::fiber;
 
-FiberPool::FiberPool(uint64_t stackSize) : stackSize(stackSize), pool()
+FiberPool::FiberPool(uint64_t stackSize, uint64_t threadCacheSize, uint64_t maxThreads)
+    : stackSize(stackSize), threadCacheSize(threadCacheSize), maxThreads(maxThreads), cache(os::Thread::getHardwareConcurrency())
 {
+}
+
+void emptyHandler(void *, Fiber *)
+{
+}
+
+void FiberPool::initializeThread()
+{
+  bool inserted = cache.set(os::Thread::getCurrentThreadId(), threadCacheSize);
+  
+  if (!inserted)
+  {
+    abort();
+  }
+
+  assert(inserted);
+
+  Stack<jobsystem::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
+  
+  if (!local)
+  {
+    abort();
+  }
+
+  assert(local != nullptr);
+
+  for (size_t i = 0; i < threadCacheSize; i++)
+  {
+    local->push(new Fiber(emptyHandler, nullptr, stackSize));
+  }
+}
+
+void FiberPool::deinitializeThread()
+{
+  Stack<jobsystem::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
+
+  Fiber *curr = nullptr;
+
+  while (local->pop(curr))
+  {
+    delete curr;
+  }
 }
 
 FiberPool::~FiberPool()
 {
-  Fiber *fiber = nullptr;
-
-  while (pool.tryDequeue(fiber))
-  {
-    delete fiber;
-  }
 }
 
 Fiber *FiberPool::acquire(Fiber::Handler func, void *data)
 {
-  Fiber *fiber;
+  Stack<jobsystem::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
 
-  if (pool.tryDequeue(fiber))
+  assert(local != nullptr);
+
+  Fiber *fib = nullptr;
+
+  if (local->pop(fib))
   {
-    fiber->reset(func, data);
-    return fiber;
+    fib->reset(func, data);
+  }
+  else
+  {
+    fib = new Fiber(func, data, stackSize);
   }
 
-  return new Fiber(func, data, stackSize);
+  return fib;
 }
 
 void FiberPool::release(Fiber *fiber)
 {
-  pool.enqueue(fiber);
+  Stack<jobsystem::fiber::Fiber *> *local = cache.get(os::Thread::getCurrentThreadId());
+
+  assert(local != nullptr);
+
+  if (!local->push(fiber))
+  {
+    delete fiber;
+  }
 }

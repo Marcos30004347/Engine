@@ -105,12 +105,12 @@ fcontext_stack_t create_fcontext_stack(size_t size)
     /* fix size */
     if (size == 0)
         size = getDefaultSize();
-    size_t minsz = getMinSize();
-    size_t maxsz = getMaxSize();
-    if (size < minsz)
-        size = minsz;
-    if (size > maxsz)
-        size = maxsz;
+    // size_t minsz = getMinSize();
+    // size_t maxsz = getMaxSize();
+    // if (size < minsz)
+    //     size = minsz;
+    // if (size > maxsz)
+    //     size = maxsz;
 
     pages = (size_t)floorf((float)size/(float)getPageSize());
     assert(pages >= 2);     /* at least two pages must fit into stack (one page is guard-page) */
@@ -150,8 +150,8 @@ void destroy_fcontext_stack(fcontext_stack_t* s)
 {
     void* vp;
 
-    assert(s->ssize >= getMinSize());
-    assert(s->ssize <= getMaxSize());
+    // assert(s->ssize >= getMinSize());
+    // assert(s->ssize <= getMaxSize());
 
     vp = (char*)s->sptr - s->ssize;
 

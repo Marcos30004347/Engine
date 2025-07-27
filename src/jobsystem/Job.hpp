@@ -4,8 +4,12 @@
 #include <utility>
 
 #include "Fiberpool.hpp"
-#include "lib/datastructure/ConcurrentQueue.hpp"
+// #include "lib/datastructure/ConcurrentQueue.hpp"
 
+#include "lib/time/TimeSpan.hpp"
+
+#include "Stack.hpp"
+#include "ThreadCache.hpp"
 namespace jobsystem
 {
 
@@ -17,14 +21,19 @@ public:
   ~JobAllocator();
 
   Job *allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolIndex);
-  Job *currentThreadToJob();
+
+  volatile Job *currentThreadToJob();
   uint64_t getPayloadSize();
-  void deallocate(Job *);
+  void deallocate(volatile Job *);
+  void initializeThread();
+  void deinitializeThread();
 
 private:
   uint64_t payloadSize;
   lib::memory::allocator::SystemAllocator<char> allocator;
-  lib::ConcurrentQueue<void *> freeList;
+  uint64_t cacheSize;
+  ThreadCache<Stack<void *>> cache;
+  // lib::ConcurrentQueue<void *> freeList;
 };
 
 class Job
@@ -35,36 +44,29 @@ class Job
   static std::atomic<uint32_t> allocations;
   static std::atomic<uint32_t> deallocations;
 
-private:
-  std::atomic<uint32_t> refsInQueues;
-  std::atomic<uint32_t> refsInPromises;
-  std::atomic<uint32_t> refsInRuntime;
-  std::atomic<uint32_t> refsInJobs;
+public:
+  // std::atomic<uint32_t> refsInQueues;
+  // std::atomic<uint32_t> refsInPromises;
+  // std::atomic<uint32_t> refsInRuntime;
+  // std::atomic<uint32_t> refsInJobs;
 
-  Job *waiter;
-  fiber::Fiber *fiber;
+  std::atomic<uint32_t> refs;
+
+  volatile Job *waiter;
+  volatile fiber::Fiber *fiber;
 
   uint32_t fiberPoolIndex;
 
   std::atomic<bool> finished;
   std::atomic_flag spinLock = ATOMIC_FLAG_INIT;
   JobAllocator *allocator;
-  inline void checkForDeallocation()
-  {
-    if (refsInQueues.load() == 0 && refsInPromises.load() == 0 && refsInRuntime.load() == 0 && refsInJobs.load() == 0)
-    {
-      deallocations.fetch_add(1);
-      // os::print("deallocations at %p = %u, allocs = %u\n", this, deallocations.load(), allocations.load());
-      assert(deallocations.load() <= allocations.load());
-      allocator->deallocate(this);
-    }
-  }
 
 public:
-  Job(fiber::Fiber *fiber, uint32_t poolId, JobAllocator *allocator)
-      : finished(false), fiber(fiber), waiter(nullptr), fiberPoolIndex(poolId), refsInQueues(0), refsInPromises(0), refsInRuntime(0), refsInJobs(0), allocator(allocator)
+  Job(volatile fiber::Fiber *fiber, uint32_t poolId, JobAllocator *allocator)
+      : finished(false), fiber(fiber), waiter(nullptr), fiberPoolIndex(poolId), refs(0), allocator(allocator)
   {
-    allocations.fetch_add(1);
+    // allocations.fetch_add(1);
+
     assert(deallocations.load() <= allocations.load());
     // os::print("allocations at %p = %u\n", this, allocations.load());
   }
@@ -72,75 +74,44 @@ public:
   {
   }
 
-  uint32_t refInPromise()
+  void ref() volatile
   {
-    return refsInPromises.fetch_add(1);
+    refs.fetch_add(1);
   }
 
-  uint32_t refInQueue()
+  void deref(const char *place) volatile
   {
-    return refsInQueues.fetch_add(1);
+    // os::print("derefing job %p (%u) - %s\n", this, refs.load(), place != nullptr ? place : "");
+    if (refs.fetch_sub(1) == 1)
+    {
+      // os::print("deallocating %p\n", this);
+
+      deallocations.fetch_add(1);
+
+      uint32_t deallocs = deallocations.load();
+      uint32_t allocs = allocations.load();
+
+      // if (deallocs > allocs)
+      // {
+      //   os::print("deallocations at %p = %u, allocs = %u\n", this, deallocs, allocs);
+      //   assert(deallocs <= allocs);
+      // }
+      // os::print("%p deallocated by %i - %u %u %u %u = %u\n", this, src, refsInQueues.load(), refsInPromises.load(), refsInRuntime.load(), refsInJobs.load(), refs.load());
+
+      allocator->deallocate(this);
+    }
   }
 
-  uint32_t refInRuntime()
-  {
-    return refsInRuntime.fetch_add(1);
-  }
-
-  uint32_t refInJob()
-  {
-    return refsInJobs.fetch_add(1);
-  }
-
-  uint32_t derefInPromise()
-  {
-    uint32_t old = refsInPromises.fetch_sub(1);
-    assert(old > 0);
-    checkForDeallocation();
-    return old;
-  }
-
-  uint32_t derefInQueue()
-  {
-    uint32_t old = refsInQueues.fetch_sub(1);
-    assert(old > 0);
-    checkForDeallocation();
-    return old;
-  }
-
-  uint32_t derefInRuntime()
-  {
-    uint32_t old = refsInRuntime.fetch_sub(1);
-    assert(old > 0);
-    checkForDeallocation();
-    return old;
-  }
-
-  uint32_t derefInJob()
-  {
-    uint32_t old = refsInJobs.fetch_sub(1);
-    assert(old > 0);
-    checkForDeallocation();
-    return old;
-  }
-
-  // void run()
-  // {
-  //   fiber->run();
-  // }
-
-  void resume()
+  void resume() volatile
   {
     assert(fiber != nullptr);
     fiber::Fiber::switchTo(fiber);
   }
 
-  bool resolve()
+  bool resolve() volatile
   {
-
     bool expected = false;
     bool old = finished.compare_exchange_strong(expected, true, std::memory_order_acquire);
-
     // w = waiter;
     // waiter = nullptr;
 
@@ -150,25 +121,30 @@ public:
     return old;
   }
 
-  void lock()
+  void lock() volatile
   {
     while (spinLock.test_and_set(std::memory_order_acquire))
     {
     }
+    // os::print("Thread %u locking %p %p\n", os::Thread::getCurrentThreadId(), this, fiber);
   }
-  void unlock()
+
+  void unlock() volatile
   {
+    // os::print("Thread %u unlocking %p %p\n", os::Thread::getCurrentThreadId(), this, fiber);
+
     spinLock.clear(std::memory_order_release);
   }
 
-  void setWaiter(Job *&job)
+  volatile fiber::Fiber *getFiber() volatile
   {
-    job->refInJob();
-    // assert(waiter == nullptr);
+    return fiber;
+  }
+
+  void setWaiter(volatile Job *job) volatile
+  {
     waiter = job;
-    assert(job->refInJob() == 0);
-    // uint32_t oldRefs = refInWaiters.fetch_add(1);
-    // assert(oldRefs == 0);
+    // os::print("thread %u waiting refs = %u - fiber = %p\n", os::Thread::getCurrentThreadId(), job->refs.load(), fiber);
   }
 };
 
@@ -191,7 +167,7 @@ public:
 
   Promise(Job *job, T *data) : job(job), data(data)
   {
-    job->refInPromise();
+    // os::print("promise constructor %p assigning job %p (%u)\n", this, job, job->refs.load());
   }
 
 public:
@@ -203,9 +179,9 @@ public:
   {
     if (job)
     {
-      assert(job->refsInPromises.load() == 1);
-      job->derefInPromise();
-      assert(job->refsInPromises.load() == 0);
+      assert(job->refs.load() >= 1);
+      // os::print("promise %p derefing job %p (%u)\n", this, job, job->refs.load());
+      job->deref("promise destructor");
     }
   }
 
@@ -214,24 +190,26 @@ public:
 
   Promise(Promise &&other) noexcept : job(std::move(other.job)), data(std::move(other.data))
   {
+    // os::print("promise %p copy assigning job %p (%u)\n", this, job, job->refs.load());
+
     other.job = nullptr;
     other.data = nullptr;
-
-    assert(job->refsInPromises.load() == 1);
   }
 
   Promise &operator=(Promise &&other) noexcept
   {
     if (this != &other)
     {
-      assert(other.job->refsInPromises.load() == 1);
       job = std::move(other.job);
-      other.job = nullptr;
       data = std::move(other.data);
+
+      other.job = nullptr;
       other.data = nullptr;
+
+      // os::print("promise %p move assigning job %p (%u)\n", this, job, job->refs.load());
     }
 
-    assert(job->refsInPromises.load() == 1);
+    assert(job->refs.load() >= 1);
     return *this;
   }
 };
@@ -250,7 +228,6 @@ private:
   */
   Promise(Job *j) : job(j)
   {
-    job->refInPromise();
     // os::print("creating this %p and increasing promise refs %u\n", this, job->refInPromises.load());
   }
 
@@ -263,9 +240,9 @@ public:
   {
     if (job)
     {
-      assert(job->refsInPromises.load() == 1);
-      job->derefInPromise(); // refInPromises.fetch_sub(1);
-      assert(job->refsInPromises.load() == 0);
+      assert(job->refs.load() >= 1);
+      job->deref("promise destructor 2"); // refInPromises.fetch_sub(1);
+      // assert(job->refsInPromises.load() == 0);
     }
   }
 
@@ -275,7 +252,7 @@ public:
   Promise(Promise &&other) noexcept : job(std::move(other.job))
   {
     other.job = nullptr;
-    assert(job->refsInPromises.load() == 1);
+    assert(job->refs.load() >= 1);
   }
 
   Promise &operator=(Promise &&other) noexcept
@@ -283,12 +260,12 @@ public:
     // os::print("assigning void promise rf = %u\n", other.job->refInPromises.load());
     if (this != &other)
     {
-      assert(other.job->refsInPromises.load() == 1);
+      assert(other.job->refs.load() >= 1);
       job = std::move(other.job);
       other.job = nullptr;
     }
 
-    assert(job->refsInPromises.load() == 1);
+    assert(job->refs.load() >= 1);
 
     return *this;
   }

@@ -16,27 +16,32 @@ int add3(int i)
 
 void entry()
 {
-  jobsystem::JobEnqueueData data;
-
-  data.allocatorIndex = 0;
-  data.queueIndex = 0;
-  data.stackSize = 1024 * 1024;
-
-  size_t count = 16;
-  jobsystem::Promise<int> promises[count];
-
-  for (int i = 0; i < count; i++)
+  for (size_t iter = 0; iter < 1000; iter++)
   {
-    os::print("enqueing add3:\n");
-    promises[i] = jobsystem::JobSystem::enqueue(&data, add3, i);
-  }
+    jobsystem::JobEnqueueData data;
 
-  for (int i = 0; i < count; i++)
-  {
-    int &x = jobsystem::JobSystem::wait(promises[i]);
-    // os::print("count = %u, %u\n", i, promises[i].job.use_count());
+    data.allocatorIndex = 0;
+    data.queueIndex = 0;
+    data.stackSize = 4096;
 
-    // assert(x == i + 3);
+    size_t count = 128;
+    jobsystem::Promise<int> promises[count];
+
+    // os::print("Thread %u Start enqueing\n", os::Thread::getCurrentThreadId());
+    
+    for (int i = 0; i < count; i++)
+    {
+      promises[i] = jobsystem::JobSystem::enqueue(&data, add3, i);
+    }
+    
+    // os::print("Thread %u Start waiting\n", os::Thread::getCurrentThreadId());
+
+    for (int i = 0; i < count; i++)
+    {
+      jobsystem::JobSystem::wait(promises[i]);
+    }
+
+    // os::print("Thread %u finished iteration\n", os::Thread::getCurrentThreadId());
   }
 
   jobsystem::JobSystem::stop();
@@ -44,8 +49,7 @@ void entry()
 
 int main()
 {
-  jobsystem::fiber::FiberPool *pool = new jobsystem::fiber::FiberPool(1024 * 1024);
-  jobsystem::JobAllocator *allocator = new jobsystem::JobAllocator(sizeof(uint8_t) * 256, 4096);
+  // jobsystem::JobAllocator *allocator = new jobsystem::JobAllocator(sizeof(uint8_t) * 4096, 4096);
 
   jobsystem::JobSystemSettings settings;
 
@@ -56,9 +60,10 @@ int main()
   allocators[0].capacity = 4096;
   allocators[0].payloadSize = sizeof(uint8_t) * 256;
 
-  stacks[0].stackSize = 1024 * 1024;
+  stacks[0].stackSize = 4096;
+  stacks[0].cacheSize = 128;
 
-  settings.threadsCount = 1; // os::Thread::getHardwareConcurrency();
+  settings.threadsCount = os::Thread::getHardwareConcurrency();
 
   settings.jobAllocatorsSettings = allocators;
   settings.jobAllocatorSettingsCount = 1;
@@ -70,7 +75,7 @@ int main()
   settings.jobStackSettingsCount = 1;
 
   jobsystem::JobSystem::init(entry, &settings);
-  os::print("here\n");
+  os::print("shuting down...\n");
   jobsystem::JobSystem::shutdown();
 
   return 0;

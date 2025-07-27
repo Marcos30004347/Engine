@@ -8,5 +8,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/lib/ConcurrentStackTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/lib/ConcurrentQueueTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/lib/ConcurrentPriorityQueueTests.cmake)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/jobsystem/ThreadCacheTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/jobsystem/JobTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/jobsystem/JobSystemTests.cmake)

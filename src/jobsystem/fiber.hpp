@@ -3,10 +3,12 @@
 #include "fcontext/fcontext.h"
 #include <atomic>
 #include <functional>
-#include <mutex>
 #include <queue>
 #include <thread>
 #include <vector>
+
+#include "ThreadCache.hpp"
+
 
 namespace jobsystem
 {
@@ -16,7 +18,7 @@ struct Fiber
 {
   typedef void (*Handler)(void *, Fiber *);
 
-  Fiber *from;
+  volatile Fiber *from;
   size_t stack_size;
 
   fcontext_t ctx = nullptr;
@@ -33,15 +35,19 @@ struct Fiber
   ~Fiber();
 
   void reset(Handler, void *userData);
-  static void switchTo(Fiber *);
+  static void switchTo(volatile Fiber *);
 
-  static Fiber *current();
-  static Fiber *currentThreadToFiber();
+  static volatile Fiber *current();
+  static volatile Fiber *currentThreadToFiber();
   size_t getStackSize();
+
+  // static thread_local volatile Fiber *currentFiber;
+  static void initializeSubSystems(size_t threads = 2 * os::Thread::getHardwareConcurrency());
+  static void deinitializeSubSystems();
+  static ThreadCache<volatile Fiber *> *currentThreadFiber;
 
 private:
   Fiber();
-  static fcontext_transfer_t yield_entry(fcontext_transfer_t t);
 };
 
 } // namespace fiber

@@ -56,6 +56,7 @@ int main()
   lib::time::TimeSpan then = lib::time::TimeSpan::now();
   lib::memory::SystemMemoryManager::init();
 
+  #if !defined(USE_THREAD_LOCAL)
   lib::detail::ConcurrentLookupTable<int> *lookupTable = new lib::detail::ConcurrentLookupTable<int>();
 
   then = lib::time::TimeSpan::now();
@@ -85,6 +86,7 @@ int main()
   os::print("Getting value %i from key 1 = in %fns\n", x, (lib::time::TimeSpan::now() - then).nanoseconds());
 
   delete lookupTable;
+  #endif
   multiThreadTests();
   lib::memory::SystemMemoryManager::shutdown();
   return 0;

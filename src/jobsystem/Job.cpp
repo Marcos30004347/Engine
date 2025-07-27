@@ -1,60 +1,91 @@
 #include "Job.hpp"
 #include <assert.h>
 
+#include "os/print.hpp"
 namespace jobsystem
 {
 
 std::atomic<uint32_t> Job::allocations(0);
 std::atomic<uint32_t> Job::deallocations(0);
 
-JobAllocator::JobAllocator(size_t maxPayloadSize, size_t capacity) : freeList(), allocator(), payloadSize(maxPayloadSize)
+JobAllocator::JobAllocator(size_t maxPayloadSize, size_t reserve) : cache(os::Thread::getHardwareConcurrency()), allocator(), payloadSize(maxPayloadSize), cacheSize(reserve)
 {
-  assert(capacity >= 1);
+  assert(reserve >= 1);
   assert(maxPayloadSize >= sizeof(Job) + 1 * sizeof(size_t));
+}
 
-  for (size_t i = 0; i < capacity; i++)
+void JobAllocator::initializeThread()
+{
+  bool inserted = cache.set(os::Thread::getCurrentThreadId(), cacheSize);
+
+  assert(inserted);
+
+  Stack<void *> *local = cache.get(os::Thread::getCurrentThreadId());
+
+  assert(local != nullptr);
+
+  for (size_t i = 0; i < cacheSize; i++)
   {
-    freeList.enqueue((void *)allocator.allocate(maxPayloadSize + sizeof(Job)));
+    local->push((void *)allocator.allocate(payloadSize + sizeof(Job)));
+  }
+}
+
+void JobAllocator::deinitializeThread()
+{
+  // os::print("Thread %u deinitializing job pool\n", os::Thread::getCurrentThreadId());
+  Stack<void *> *local = cache.get(os::Thread::getCurrentThreadId());
+
+  void *curr = nullptr;
+
+  while (local->pop(curr))
+  {
+    allocator.deallocate((char *)curr);
   }
 }
 
 JobAllocator::~JobAllocator()
 {
-  void *data = nullptr;
-
-  while (freeList.tryDequeue(data))
-  {
-    allocator.deallocate((char *)data);
-  }
 }
 
 Job *JobAllocator::allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolId)
 {
   void *free = nullptr;
 
-  if (!freeList.tryDequeue(free))
+  Stack<void *> *local = cache.get(os::Thread::getCurrentThreadId());
+  // os::print("job pool achiring %u\n", local->size());
+
+  if (!local->pop(free))
   {
-    return nullptr;
+    free = (void *)allocator.allocate(payloadSize + sizeof(Job));
+    assert(free != nullptr);
   }
 
   fiber::Fiber *fiber = nullptr;
-  fiber = pool->acquire(handler, free);
-  // os::print("job = %p, fiber = %p\n", free, fiber);
 
-  return new (free) Job(fiber, poolId, this);
+  // lib::time::TimeSpan prev1 = lib::time::TimeSpan::now();
+  fiber = pool->acquire(handler, free);
+  // os::print("achire time = %f\n", (lib::time::TimeSpan::now() - prev1).nanoseconds());
+
+  // lib::time::TimeSpan prev2 = lib::time::TimeSpan::now();
+  Job *j = new (free) Job(fiber, poolId, this);
+  // os::print("allocated job = %p\n", j);
+  return j;
 }
 
-Job *JobAllocator::currentThreadToJob()
+volatile Job *JobAllocator::currentThreadToJob()
 {
   void *free = nullptr;
 
-  freeList.tryDequeue(free);
-  if (free == nullptr)
+  Stack<void *> *local = cache.get(os::Thread::getCurrentThreadId());
+
+  if (!local->pop(free))
   {
-    return nullptr;
+    free = (void *)allocator.allocate(payloadSize + sizeof(Job));
+    assert(free != nullptr);
   }
 
-  fiber::Fiber *fiber = fiber::Fiber::currentThreadToFiber();
+  volatile fiber::Fiber *fiber = fiber::Fiber::currentThreadToFiber();
+  // os::print("Thread %u fib = %p\n", os::Thread::getCurrentThreadId(), fiber);
 
   return new (free) Job(fiber, -1, this);
 }
@@ -64,9 +95,17 @@ uint64_t JobAllocator::getPayloadSize()
   return payloadSize;
 }
 
-void JobAllocator::deallocate(Job *job)
+void JobAllocator::deallocate(volatile Job *job)
 {
-  freeList.enqueue((void *)job);
+  Stack<void *> *local = cache.get(os::Thread::getCurrentThreadId());
+  // uint32_t s = local->size();
+  // os::print("Thread %u job pool deallocating %u %p\n", os::Thread::getCurrentThreadId(), 0, job);
+
+  if (!local->push((void *)job))
+  {
+    allocator.deallocate((char *)job);
+  }
+  // // os::print("job pool deallocated %u\n", s);
 }
 
 } // namespace jobsystem

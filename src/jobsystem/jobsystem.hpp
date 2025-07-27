@@ -1,5 +1,4 @@
 #pragma once
-#include <thread>
 
 #include "Fiber.hpp"
 #include "Fiberpool.hpp"
@@ -7,8 +6,8 @@
 #include "lib/algorithm/string.hpp"
 #include "lib/datastructure/ConcurrentPriorityQueue.hpp"
 #include "lib/datastructure/ConcurrentQueue.hpp"
-#include "lib/datastructure/Vector.hpp"
 #include "lib/time/TimeSpan.hpp"
+#include "os/Thread.hpp"
 
 // #include "Promise.hpp"
 #include "Job.hpp"
@@ -30,6 +29,7 @@ struct JobQueueSettings
 struct JobStackSettings
 {
   size_t stackSize;
+  size_t cacheSize;
 };
 
 struct JobEnqueueData
@@ -76,28 +76,29 @@ public:
   static void stop();
   static void delay(lib::time::TimeSpan);
 
-private:
+  // private:
   static void workerLoop();
-  static void sleepAndWakeOnPromiseResolve(Job *&job);
+  static void sleepAndWakeOnPromiseResolve(volatile Job *job);
   static void processYieldedJobs();
 
   template <typename F, typename... Args> static void dispatch(void *data, fiber::Fiber *self);
-  static std::vector<std::thread> workerThreads;
+  static std::vector<os::Thread> workerThreads;
 
-  static thread_local Job *workerJob;
-  static thread_local Job *currentJob;
-  static thread_local Job *yieldedJob;
-  static thread_local Job *runningJob;
-  static thread_local Job *waitedJob;
+  static thread_local volatile Job *workerJob;
+  static thread_local volatile Job *currentJob;
+  static thread_local volatile Job *yieldedJob;
+  static thread_local volatile Job *runningJob;
+  static thread_local volatile Job *waitedJob;
+
   static thread_local uint64_t waitingTime;
 
   static uint64_t pendingQueueIndex;
-  static std::vector<lib::ConcurrentQueue<Job *> *> jobQueues;
+  static std::vector<lib::ConcurrentQueue<volatile Job *> *> jobQueues;
   static std::vector<JobQueueInfo> jobQueuesInfo;
   static std::vector<JobAllocator *> jobAllocators;
   static std::atomic<bool> isRunning;
   static std::vector<fiber::FiberPool *> pools;
-  static lib::ConcurrentPriorityQueue<Job *, uint64_t> *waitingQueue;
+  static lib::ConcurrentPriorityQueue<volatile Job *, uint64_t> *waitingQueue;
 };
 struct EmptyResultTag
 {
@@ -123,12 +124,18 @@ template <typename F, typename... Args> void JobSystem::dispatch(void *data, fib
   assert(self == job->fiber);
   assert(currentJob == job);
 
-  assert(job->refsInRuntime.load() >= 1);
+  assert(job->refs.load() >= 1);
 
   size_t offset = calculateOffset<JobData<F, Args...>>();
   JobData<F, Args...> *jobData = (JobData<F, Args...> *)(reinterpret_cast<char *>(job) + offset);
 
   uint64_t poolIndex = jobData->poolIndex;
+
+  // if (job->fiber != fiber::Fiber::current())
+  // {
+  //   // os::print("Thread %u inconsistent fiber start dispatch %p %p\n", os::Thread::getCurrentThreadId(), job->fiber, fiber::Fiber::current());
+  //   *(int *)(0) = 3;
+  // }
 
   if constexpr (std::is_void_v<Ret>)
   {
@@ -139,36 +146,33 @@ template <typename F, typename... Args> void JobSystem::dispatch(void *data, fib
     *jobData->result = std::apply(jobData->handler, jobData->payload);
   }
 
-  jobsystem::Job *waiter = nullptr;
+  // if (job->fiber != fiber::Fiber::current())
+  // {
+  //   *(int *)(0) = 3;
+  // }
+
+  assert(job->refs.load() >= 1);
 
   job->lock();
 
-  assert(job->resolve());
-  waiter = std::move(job->waiter);
+  bool resolved = job->resolve();
+
+  assert(resolved);
+
+  volatile jobsystem::Job *waiter = job->waiter;
+  job->waiter = nullptr;
 
   if (waiter)
   {
-    // assert(waiter->refsInQueues.load() >= 0);
-    waiter->refInQueue(); //.fetch_add(1);
-    waiter->derefInJob();
     jobQueues[pendingQueueIndex]->enqueue(waiter);
   }
 
   job->unlock();
-  // job->fiber = nullptr;
-  // pools[poolIndex]->release(self);
-  // jobData->job->fiber = nullptr;
-  // os::print("thread %u finished %p\n", os::Thread::getCurrentThreadId(), job);
-  os::print("thread %u finished refs = p=%u q=%u r=%u\n", os::Thread::getCurrentThreadId(), job->refsInPromises.load(), job->refsInQueues.load(), job->refsInRuntime.load());
-
-  // jobData->job = nullptr;
 }
 
 template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *data, F &&f, Args &&...args)
 {
   using Ret = std::invoke_result_t<F, Args...>;
-
-  // fiber::Fiber *fiber = fiber::FiberPool::acquire(&dispatch<F, Args...>, data, 1024 * 1024 * 2);
   uint64_t i = 0;
 
   for (i = 0; i < pools.size(); i++)
@@ -207,35 +211,32 @@ template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *
 
   JobData<F, Args...> *jobData = new (buffer) JobData<F, Args...>{std::forward<F>(f), std::make_tuple(std::forward<Args>(args)...), i};
 
-  Promise<Ret> p;
-
-  if constexpr (std::is_void_v<Ret>)
-  {
-    p = Promise<Ret>(job);
-  }
-  else
+  if constexpr (!std::is_void_v<Ret>)
   {
     jobData->result = (Ret *)(reinterpret_cast<char *>(jobData) + sizeof(JobData<F, Args...>));
-    p = Promise<Ret>(job, jobData->result);
   }
 
-  uint32_t refsInQueue = job->refInQueue();
+  job->ref();
+  job->ref();
 
-  assert(job->refsInJobs.load() == 0);
-  assert(job->refsInPromises.load() == 1);
-  assert(job->refsInQueues.load() == 1);
-  assert(job->refsInRuntime.load() == 0);
+  assert(job->refs.load() == 2);
 
   jobQueues[data->queueIndex]->enqueue(job);
 
-  return p;
+  if constexpr (std::is_void_v<Ret>)
+  {
+    return Promise<Ret>(job);
+  }
+  else
+  {
+    return Promise<Ret>(job, jobData->result);
+  }
 }
 
 template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *data, std::result_of_t<F && (Args && ...)> *ret, F &&f, Args &&...args)
 {
   using Ret = std::invoke_result_t<F, Args...>;
 
-  // fiber::Fiber *fiber = fiber::FiberPool::acquire(&dispatch<F, Args...>, data, 1024 * 1024 * 2);
   uint64_t i = 0;
 
   for (i = 0; i < pools.size(); i++)
@@ -269,91 +270,42 @@ template <typename F, typename... Args> auto JobSystem::enqueue(JobEnqueueData *
   JobData<F, Args...> *jobData = new (buffer) JobData<F, Args...>{std::forward<F>(f), std::make_tuple(std::forward<Args>(args)...), i};
   jobData->result = ret;
 
-  Promise<Ret> p;
+  job->ref();
+  job->ref();
 
-  if constexpr (std::is_void_v<Ret>)
-  {
-    p = Promise<Ret>(job);
-  }
-  else
-  {
-    p = Promise<Ret>(job, ret);
-  }
-
-  uint32_t refsInQueue = job->refInQueue();
-
-  assert(job->refsInJobs.load() == 0);
-  assert(job->refsInPromises.load() == 1);
-  assert(job->refsInQueues.load() == 1);
-  assert(job->refsInRuntime.load() == 0);
+  assert(job->refs.load() == 2);
 
   jobQueues[data->queueIndex]->enqueue(job);
 
-  return p;
+  if constexpr (std::is_void_v<Ret>)
+  {
+    return Promise<Ret>(job);
+  }
+  else
+  {
+    return Promise<Ret>(job, ret);
+  }
 }
 
 template <typename T> inline T &JobSystem::wait(Promise<T> &promise)
 {
-  /*
-  if (!promise->job.addWaiter(fiber::Fiber::current()))
-  {
-    return promise->get();
-  }
-  */
-
   sleepAndWakeOnPromiseResolve(promise.job);
-
   return *(promise.data);
 }
 
 template <typename T> inline T &JobSystem::wait(Promise<T> &&promise)
 {
-  /*
-  if (!promise->job.addWaiter(fiber::Fiber::current()))
-  {
-    return promise->get();
-  }
-  */
-
   sleepAndWakeOnPromiseResolve(promise.job);
-
   return *(promise.data);
 }
 
 inline void JobSystem::wait(Promise<void> &promise)
 {
-  /*
-  if (!promise->job.addWaiter(fiber::Fiber::current()))
-  {
-    return;
-  }
-  */
-  os::print(
-      " waiting thread %u enqueuing %p, p=%u q=%u r=%u\n",
-      os::Thread::getCurrentThreadId(),
-      promise.job,
-      promise.job->refsInPromises.load(),
-      promise.job->refsInQueues.load(),
-      promise.job->refsInRuntime.load());
-
   sleepAndWakeOnPromiseResolve(promise.job);
 }
 
 inline void JobSystem::wait(Promise<void> &&promise)
 {
-  /*
-  if (!promise->job.addWaiter(fiber::Fiber::current()))
-  {
-    return;
-  }
-  */
-  os::print(
-      " waiting thread %u enqueuing %p, p=%u q=%u r=%u\n",
-      os::Thread::getCurrentThreadId(),
-      promise.job,
-      promise.job->refsInPromises.load(),
-      promise.job->refsInQueues.load(),
-      promise.job->refsInRuntime.load());
   sleepAndWakeOnPromiseResolve(promise.job);
 }
 
