@@ -1,7 +1,7 @@
 #include "os/Thread.hpp"
-#include "lib/datastructure/FlatMap.hpp"
-#include "lib/memory/SystemMemoryManager.hpp"
-#include "lib/time/TimeSpan.hpp"
+#include "datastructure/FlatMap.hpp"
+#include "memory/SystemMemoryManager.hpp"
+#include "time/TimeSpan.hpp"
 
 #include "os/print.hpp"
 #include <assert.h>

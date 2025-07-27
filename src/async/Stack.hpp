@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/memory/allocator/SystemAllocator.hpp"
+#include "memory/allocator/SystemAllocator.hpp"
 
 namespace async
 {

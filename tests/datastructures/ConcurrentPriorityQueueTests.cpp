@@ -1,9 +1,9 @@
-#include "lib/datastructure/ConcurrentPriorityQueue.hpp"
+#include "datastructure/ConcurrentPriorityQueue.hpp"
 #include "os/Thread.hpp"
 
-#include "lib/algorithm/random.hpp"
-#include "lib/memory/SystemMemoryManager.hpp"
-#include "lib/time/TimeSpan.hpp"
+#include "algorithm/random.hpp"
+#include "memory/SystemMemoryManager.hpp"
+#include "time/TimeSpan.hpp"
 #include "os/print.hpp"
 #include <assert.h>
 

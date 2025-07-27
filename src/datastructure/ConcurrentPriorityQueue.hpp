@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/datastructure/ConcurrentTimestampGarbageCollector.hpp"
+#include "datastructure/ConcurrentTimestampGarbageCollector.hpp"
 #include <atomic>
 
 namespace lib

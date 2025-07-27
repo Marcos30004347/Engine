@@ -3,10 +3,10 @@
 #include "Fiber.hpp"
 #include "Fiberpool.hpp"
 
-#include "lib/algorithm/string.hpp"
-#include "lib/datastructure/ConcurrentPriorityQueue.hpp"
-#include "lib/datastructure/ConcurrentQueue.hpp"
-#include "lib/time/TimeSpan.hpp"
+#include "algorithm/string.hpp"
+#include "datastructure/ConcurrentPriorityQueue.hpp"
+#include "datastructure/ConcurrentQueue.hpp"
+#include "time/TimeSpan.hpp"
 #include "os/Thread.hpp"
 
 // #include "Promise.hpp"

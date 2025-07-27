@@ -11,7 +11,7 @@ std::atomic<uint32_t> Job::deallocations(0);
 JobAllocator::JobAllocator(size_t maxPayloadSize, size_t reserve) : cache(os::Thread::getHardwareConcurrency()), allocator(), payloadSize(maxPayloadSize), cacheSize(reserve)
 {
   assert(reserve >= 1);
-  // assert(maxPayloadSize >= sizeof(Job) + 1 * sizeof(size_t));
+  assert(maxPayloadSize >= sizeof(Job) + 1 * sizeof(size_t));
 }
 
 void JobAllocator::initializeThread()

@@ -4,7 +4,7 @@
 #include <atomic>
 #include <thread>
 
-#include "lib/algorithm/random.hpp"
+#include "algorithm/random.hpp"
 #include "os/Thread.hpp"
 #include "os/print.hpp"
 

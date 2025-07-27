@@ -4,9 +4,9 @@
 #include <utility>
 
 #include "Fiberpool.hpp"
-// #include "lib/datastructure/ConcurrentQueue.hpp"
+// #include "datastructure/ConcurrentQueue.hpp"
 
-#include "lib/time/TimeSpan.hpp"
+#include "time/TimeSpan.hpp"
 
 #include "Stack.hpp"
 #include "ThreadCache.hpp"

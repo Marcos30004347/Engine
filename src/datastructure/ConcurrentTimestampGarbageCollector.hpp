@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lib/datastructure/HazardPointer.hpp"
-#include "lib/time/TimeSpan.hpp"
+#include "datastructure/HazardPointer.hpp"
+#include "time/TimeSpan.hpp"
 #include <atomic>
 
 namespace lib

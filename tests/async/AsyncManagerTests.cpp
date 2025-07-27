@@ -1,5 +1,5 @@
 #include "async/AsyncManager.hpp"
-#include "lib/time/TimeSpan.hpp"
+#include "time/TimeSpan.hpp"
 
 async::Job *mainJob;
 async::Job *funcJob;

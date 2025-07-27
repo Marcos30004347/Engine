@@ -1,9 +1,9 @@
 #pragma once
 
-#include "lib/algorithm/search.hpp"
-#include "lib/algorithm/sort.hpp"
-#include "lib/datastructure/ThreadLocalStorage.hpp"
-#include "lib/memory/allocator/SystemAllocator.hpp"
+#include "algorithm/search.hpp"
+#include "algorithm/sort.hpp"
+#include "datastructure/ThreadLocalStorage.hpp"
+#include "memory/allocator/SystemAllocator.hpp"
 
 #include <atomic>
 #include <unordered_set>

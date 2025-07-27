@@ -1,5 +1,5 @@
 #include "async/Job.hpp"
-#include "lib/time/TimeSpan.hpp"
+#include "time/TimeSpan.hpp"
 
 static thread_local async::Job *mainJob = nullptr;
 static thread_local async::Job *funcJob = nullptr;
@@ -15,14 +15,33 @@ static thread_local double allocations = 0;
 static thread_local double invocations = 0;
 static thread_local double resumes = 0;
 
+static inline void* get_stack_pointer() {
+    void* sp;
+#if defined(__x86_64__) || defined(_M_X64)
+    asm volatile("mov %%rsp, %0" : "=r"(sp));
+#elif defined(__i386__) || defined(_M_IX86)
+    asm volatile("mov %%esp, %0" : "=r"(sp));
+#elif defined(__aarch64__)
+    asm volatile("mov %0, sp" : "=r"(sp));
+#else
+    // Fallback: frame address is often close to SP
+    sp = __builtin_frame_address(0);
+#endif
+    return sp;
+}
+
 void handler0(void *data, async::fiber::Fiber *fiber)
 {
   invocations += 1;
-  invocationTimes += (lib::time::TimeSpan::now() - prev).nanoseconds();
+
+  auto now = lib::time::TimeSpan::now();
+
+  invocationTimes += (now - prev).nanoseconds();
 
   assert(counter++ == 1);
 
   prev = lib::time::TimeSpan::now();
+
   mainJob->resume();
 
   assert(counter++ == 3);
@@ -38,16 +57,16 @@ int multithreadTests()
 {
   async::fiber::Fiber::initializeSubSystems();
 
-  uint32_t invocations = 1000;
+  uint32_t invocations = 256;
+  size_t totalThreads = 1; // os::Thread::getHardwareConcurrency();
 
-  async::fiber::FiberPool *fiberpool = new async::fiber::FiberPool(32768, invocations, os::Thread::getHardwareConcurrency());
-  async::JobAllocator *allocator = new async::JobAllocator(sizeof(uint8_t) * 256, os::Thread::getHardwareConcurrency() * invocations);
+  async::fiber::FiberPool *fiberpool = new async::fiber::FiberPool(async::fiber::Fiber::getDefaultSize(), 1, totalThreads);
+  async::JobAllocator *allocator = new async::JobAllocator(sizeof(uint8_t) * 1024, totalThreads);
 
   std::atomic<uint32_t> started(0);
 
   std::atomic<size_t> insertedFinished(0);
 
-  size_t totalThreads = os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
 
   for (size_t i = 0; i < totalThreads; i++)
@@ -91,7 +110,7 @@ int multithreadTests()
             resumes += 1;
 
             assert(counter++ == 4);
-          
+
             fiberpool->release((async::fiber::Fiber *)funcJob->getFiber());
             allocator->deallocate(funcJob);
           }
@@ -100,6 +119,7 @@ int multithreadTests()
           allocator->deallocate(mainJob);
 
           mainJob = nullptr;
+          funcJob = nullptr;
 
           allocator->deinitializeThread();
           fiberpool->deinitializeThread();

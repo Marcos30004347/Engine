@@ -120,9 +120,10 @@ Fiber *Fiber::currentThreadToFiber()
 Fiber::Fiber()
 {
   size_t pageSize = getPageSize();
-  stack = create_fcontext_stack(pageSize * 2);
+  stack.sptr = nullptr;
+  stack.ssize = 0;
   ctx = NULL;
-  stack_size = 4096 * 2;
+  stack_size = 0;
 }
 
 static void pre_fault_stack(void *stack_top, size_t size)
@@ -145,13 +146,38 @@ static void pre_fault_stack(void *stack_top, size_t size)
   }
 }
 
+static void dump_stack_hex(void *sptr, size_t N = 1024)
+{
+  if (sptr == nullptr)
+  {
+    printf("null stack\n");
+    return;
+  }
+
+  printf("sptr = %p\n", sptr);
+
+  auto top = reinterpret_cast<uint8_t *>(sptr);
+  auto start = top - N;
+  for (size_t offset = 0; offset < N; offset += 16)
+  {
+    // print the address of the first byte on this line
+    printf("%p:  ", start + offset);
+    // print 16 bytes in hex
+    for (size_t i = 0; i < 16; ++i)
+    {
+      printf("%02x ", *(start + offset + i));
+    }
+    printf("\n");
+  }
+}
+
 Fiber::Fiber(Handler handler, void *userData, size_t ssize)
 {
   this->handler = handler;
   this->userData = userData;
 
   stack = create_fcontext_stack(ssize < 2 * getPageSize() ? 2 * getPageSize() : ssize);
-  pre_fault_stack(stack.sptr, stack.ssize);
+  // pre_fault_stack(stack.sptr, stack.ssize);
 
   ctx = make_fcontext(stack.sptr, stack.ssize, fiber_entry);
   stack_size = ssize;
@@ -164,7 +190,10 @@ size_t Fiber::getStackSize()
 
 Fiber::~Fiber()
 {
-  destroy_fcontext_stack(&stack);
+  if (stack.sptr)
+  {
+    destroy_fcontext_stack(&stack);
+  }
 }
 
 void Fiber::reset(Handler handler, void *userData)
@@ -183,8 +212,7 @@ void Fiber::switchTo(Fiber *other)
 {
   assert(other);
 
-  Fiber *curr = Fiber::current();
-  other->from = curr;
+  other->from = Fiber::current();
 
   currentThreadFiber->update(os::Thread::getCurrentThreadId(), other);
 

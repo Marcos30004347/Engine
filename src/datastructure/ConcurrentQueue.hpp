@@ -1,9 +1,9 @@
 #pragma once
 
-#include "lib/algorithm/random.hpp"
-#include "lib/datastructure/ConcurrentLinkedList.hpp"
-#include "lib/datastructure/HazardPointer.hpp"
-#include "lib/memory/allocator/SystemAllocator.hpp"
+#include "algorithm/random.hpp"
+#include "datastructure/ConcurrentLinkedList.hpp"
+#include "datastructure/HazardPointer.hpp"
+#include "memory/allocator/SystemAllocator.hpp"
 #include "os/Thread.hpp"
 #include <atomic>
 #include <cstddef>

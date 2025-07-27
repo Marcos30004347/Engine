@@ -1,8 +1,8 @@
 #pragma once
 
 #include "HazardPointer.hpp"
-#include "lib/algorithm/random.hpp"
-#include "lib/memory/allocator/SystemAllocator.hpp"
+#include "algorithm/random.hpp"
+#include "memory/allocator/SystemAllocator.hpp"
 #include "os/Thread.hpp"
 #include <atomic>
 #include <cstddef>

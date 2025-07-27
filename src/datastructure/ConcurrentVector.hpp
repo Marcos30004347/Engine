@@ -4,8 +4,8 @@
 #include <memory>
 #include <stdexcept>
 
-#include "lib/memory/SystemMemoryManager.hpp"
-#include "lib/memory/allocator/SystemAllocator.hpp"
+#include "memory/SystemMemoryManager.hpp"
+#include "memory/allocator/SystemAllocator.hpp"
 
 #include <chrono>
 #include <iostream>

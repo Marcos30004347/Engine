@@ -2,8 +2,8 @@
 
 #include "Fiber.hpp"
 
-#include "lib/datastructure/ConcurrentQueue.hpp"
-#include "lib/datastructure/ThreadLocalStorage.hpp"
+#include "datastructure/ConcurrentQueue.hpp"
+#include "datastructure/ThreadLocalStorage.hpp"
 
 #include "ThreadCache.hpp"
 #include "Stack.hpp"

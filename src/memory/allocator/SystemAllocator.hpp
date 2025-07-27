@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/memory/SystemMemoryManager.hpp"
+#include "memory/SystemMemoryManager.hpp"
 
 namespace lib
 {

@@ -1,9 +1,9 @@
-#include "lib/datastructure/ConcurrentQueue.hpp"
+#include "datastructure/ConcurrentQueue.hpp"
 
 #include "os/Thread.hpp"
 
-#include "lib/memory/SystemMemoryManager.hpp"
-#include "lib/time/TimeSpan.hpp"
+#include "memory/SystemMemoryManager.hpp"
+#include "time/TimeSpan.hpp"
 
 #include "os/print.hpp"
 #include <assert.h>
@@ -136,7 +136,7 @@ void concurrentListMultithreadTests()
   {
     threads[i].join();
   }
-  
+
   delete queue;
 }
 

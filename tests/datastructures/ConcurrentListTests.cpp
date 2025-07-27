@@ -1,8 +1,8 @@
-#include "lib/datastructure/ConcurrentLinkedList.hpp"
+#include "datastructure/ConcurrentLinkedList.hpp"
 #include "os/Thread.hpp"
 
-#include "lib/memory/SystemMemoryManager.hpp"
-#include "lib/time/TimeSpan.hpp"
+#include "memory/SystemMemoryManager.hpp"
+#include "time/TimeSpan.hpp"
 
 #include "os/print.hpp"
 #include <assert.h>
