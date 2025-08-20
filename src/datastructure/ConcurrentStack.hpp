@@ -169,61 +169,26 @@ public:
     detail::ConcurrentStackNode<detail::ConcurrentStackProducer<T> *> *node = local;
     detail::ConcurrentStackNode<detail::ConcurrentStackProducer<T> *> *start = local;
 
-    for (size_t i = 0; i < (time % concurrencyLevel); i++)
-    {
-      node = node->next.load(std::memory_order_relaxed);
-      if (node == nullptr)
-      {
-        node = threadLists.head.load(std::memory_order_acquire);
-      }
-    }
-
     start = node;
-
-    const size_t candidatesMax = 3;
-    size_t listsCount = 0;
-    detail::ConcurrentStackProducer<T> *lists[candidatesMax];
 
     bool looping = false;
 
-    for (size_t iter = 0; iter < 2 && listsCount < candidatesMax; iter++)
+    for (size_t iter = 0; iter < 2; iter++)
     {
-      while (node && listsCount < candidatesMax)
+      while (node && !(looping && node == start))
       {
-        if (looping && node == start)
+        if (node->get()->tryPop(value))
         {
-          break;
-        }
-
-        auto size = node->get()->size.load();
-
-        if (size > 0)
-        {
-          lists[listsCount++] = node->get();
+          return true;
         }
 
         node = node->next.load(std::memory_order_relaxed);
       }
 
-      if (node == nullptr && listsCount < candidatesMax)
+      if (node == nullptr)
       {
         looping = true;
         node = threadLists.head.load(std::memory_order_relaxed);
-      }
-    }
-
-    if (listsCount == 0)
-    {
-      return false;
-    }
-
-    time++;
-
-    for (size_t i = 0; i < listsCount; i++)
-    {
-      if (lists[i % listsCount]->tryPop(value))
-      {
-        return true;
       }
     }
 

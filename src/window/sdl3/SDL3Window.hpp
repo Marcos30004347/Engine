@@ -1,9 +1,14 @@
 #pragma once
 
-#ifdef SDL3_AVAILABLE
+#ifndef SDL3_AVAILABLE
+#define SDL3_AVAILABLE 1
+#endif
+
+#if SDL3_AVAILABLE
 
 #include "SDL3/SDL.h"
 #include "window/window.hpp"
+#include <string>
 
 namespace window
 {
@@ -26,6 +31,15 @@ public:
 
   unsigned int extensionCount;
   const char *const *extensions;
+
+  uint32_t getWidth() override;
+  uint32_t getHeight() override;
+  
+  uint32_t width;
+  uint32_t height;
+  
+  std::vector<std::string> getVulkanExtensions() override;
+  VkSurfaceKHR getVulkanSurface(VkInstance instance) override;
 };
 
 } // namespace sdl3

@@ -77,22 +77,14 @@ void concurrentListMultithreadTests()
 {
   lib::ConcurrentQueue<int> *queue = new lib::ConcurrentQueue<int>();
 
-  os::print("Inserting 0\n");
   queue->enqueue(0);
-  os::print("Inserting 1\n");
   queue->enqueue(1);
-  os::print("Inserting 2\n");
   queue->enqueue(2);
 
   int x;
   queue->tryDequeue(x);
-  os::print("Popped %i\n", x);
-
   queue->tryDequeue(x);
-  os::print("Popped %i\n", x);
-
   queue->tryDequeue(x);
-  os::print("Popped %i\n", x);
 
   size_t totalThreads = os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];

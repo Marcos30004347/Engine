@@ -1,8 +1,8 @@
 #include "SystemMemoryManager.hpp"
 #include "os/print.hpp"
-
 #include <atomic>
-//#include <rpmalloc/rpmalloc.h>
+#include <cstdlib>
+// #include <rpmalloc/rpmalloc.h>
 
 using namespace lib;
 using namespace memory;
@@ -34,7 +34,7 @@ void SystemMemoryManager::initializeThread()
 
 void SystemMemoryManager::finializeThread()
 {
-  //rpmalloc_thread_finalize();
+  // rpmalloc_thread_finalize();
 }
 
 void *SystemMemoryManager::malloc(size_t size, void *hint)
@@ -43,9 +43,34 @@ void *SystemMemoryManager::malloc(size_t size, void *hint)
   //  return rpmalloc(size);
 }
 
+inline void *aligned_malloc(std::size_t size, std::size_t alignment)
+{
+#if defined(_MSC_VER) // Windows
+  return _aligned_malloc(size, alignment);
+#elif defined(__MINGW32__) // MinGW uses MSVCRT
+  return __mingw_aligned_malloc(size, alignment);
+#else                      // POSIX (Linux, macOS, etc.)
+  void *ptr = nullptr;
+  if (posix_memalign(&ptr, alignment, size) != 0)
+    return nullptr;
+  return ptr;
+#endif
+}
+
+inline void aligned_free(void *ptr)
+{
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  _aligned_free(ptr);
+#else
+  free(ptr);
+#endif
+}
+
 void *SystemMemoryManager::allignedMalloc(size_t size, size_t alignment, void *hint)
 {
-  //return rpaligned_alloc(alignment, size);
+  return aligned_alloc(alignment, size);
+
+  // return rpaligned_alloc(alignment, size);
 }
 void SystemMemoryManager::free(void *ptr)
 {
@@ -55,7 +80,8 @@ void SystemMemoryManager::free(void *ptr)
 
 void *SystemMemoryManager::alignedAlloc(size_t alignment, size_t size)
 {
-  //return rpaligned_alloc(alignment, size);
+  // return rpaligned_alloc(alignment, size);
+  return aligned_alloc(alignment, size);
 }
 
 void *operator new(std::size_t size) noexcept(false)

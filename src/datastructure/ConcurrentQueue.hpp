@@ -236,9 +236,10 @@ public:
 template <typename T> class ConcurrentQueue
 {
   size_t concurrencyLevel;
+  std::atomic<size_t> approximateQueueSize;
 
 public:
-  ConcurrentQueue() : time(random(os::Thread::getCurrentThreadId())), threadLists(), localLists()
+  ConcurrentQueue() : time(random(os::Thread::getCurrentThreadId())), threadLists(), localLists(), approximateQueueSize(0)
   {
     concurrencyLevel = os::Thread::getHardwareConcurrency();
   }
@@ -253,7 +254,10 @@ public:
       node = next;
     }
   }
-
+  size_t getApproximateSize()
+  {
+    return approximateQueueSize.load();
+  }
   void enqueue(T value)
   {
     // if constexpr (is_shared_ptr<T>::value)
@@ -273,62 +277,32 @@ public:
 
     assert(local != nullptr && local->get() != nullptr);
 
+    approximateQueueSize.fetch_add(1);
     local->get()->enqueue(value);
   }
 
   bool tryDequeue(T &value)
   {
-    // TODO: improve this
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 1\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
-
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
 
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 2\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
-
     localLists.get(local);
-
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 3\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
 
     if (local == nullptr)
     {
       local = threadLists.head.load(std::memory_order_acquire);
     }
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 4\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
 
     if (local == nullptr)
     {
       return false;
     }
 
-    // detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *node = local;
     detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *start = local;
-    // os::print("Thread %u wf=%p cf=%p, inside queue part 5\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
-
-    // if(local->get()->size.load()) {
-    //   local->
-    // }
-
-    // for (size_t i = 0; i < (time % concurrencyLevel); i++)
-    // {
-    //   node = node->next.load(std::memory_order_relaxed);
-    //   if (node == nullptr)
-    //   {
-    //     node = threadLists.head.load(std::memory_order_acquire);
-    //   }
-    // }
-
-    // start = local;
-
-    // const size_t candidatesMax = 3;
-    // size_t listsCount = 0;
-    // detail::ConcurrentQueueProducer<T> *lists[candidatesMax];
 
     bool looping = false;
 
     for (size_t iter = 0; iter < 2; iter++)
     {
-      // os::print("Thread %u wf=%p cf=%p, inside queue part 6\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
-
       while (local)
       {
         assert(local->get());
@@ -342,11 +316,9 @@ public:
 
         if (size > 0)
         {
-          // os::print("Thread %u wf=%p cf=%p, inside queue part 8\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
- 
           if (local->get()->tryDequeue(value))
           {
-            // os::print("Thread %u wf=%p cf=%p, inside queue part 9\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
+            approximateQueueSize.fetch_sub(1);
             return true;
           }
         }

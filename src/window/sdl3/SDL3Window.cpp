@@ -1,14 +1,39 @@
 #include "SDL3Window.hpp"
 
-#ifdef SDL3_AVAILABLE
+#if SDL3_AVAILABLE
 
 #include <SDL3/SDL_vulkan.h>
+#include <cassert>
 #include <iostream>
 #include <vector>
 
 using namespace window;
 using namespace sdl3;
 using namespace core;
+
+std::vector<std::string> SDL3Window::getVulkanExtensions()
+{
+  std::vector<std::string> vkExtensions;
+
+  for (int i = 0; i < extensionCount; i++)
+  {
+    vkExtensions.push_back(extensions[i]);
+  }
+
+  return vkExtensions;
+}
+
+VkSurfaceKHR SDL3Window::getVulkanSurface(VkInstance instance)
+{
+  VkSurfaceKHR surface = VK_NULL_HANDLE;
+
+  if (!SDL_Vulkan_CreateSurface(sdlWindow, instance, NULL, &surface))
+  {
+    throw std::runtime_error(SDL_GetError());
+  }
+
+  return surface;
+}
 
 ColorFormat GetColorFormatFromSurface(SDL_Surface *surface)
 {
@@ -41,6 +66,9 @@ ColorFormat GetColorFormatFromSurface(SDL_Surface *surface)
 
 SDL3Window::SDL3Window(WindowSurfaceType surface, const char *title, int width, int height)
 {
+  this->width = width;
+  this->height = height;
+
   if (SDL_Init(SDL_INIT_VIDEO) == false)
   {
     std::cerr << "Failed to initialize SDL3: " << SDL_GetError() << std::endl;
@@ -57,6 +85,8 @@ SDL3Window::SDL3Window(WindowSurfaceType surface, const char *title, int width, 
     break;
   }
 
+  assert(flags & SDL_WINDOW_VULKAN);
+
   sdlWindow = SDL_CreateWindow(title, width, height, flags);
 
   if (!sdlWindow)
@@ -67,18 +97,18 @@ SDL3Window::SDL3Window(WindowSurfaceType surface, const char *title, int width, 
 
   extensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
 
-  SDL_Surface *s = SDL_GetWindowSurface(sdlWindow);
-  format = GetColorFormatFromSurface(s);
+  // SDL_Surface *s = SDL_GetWindowSurface(sdlWindow);
+  // format = GetColorFormatFromSurface(s);
 
-  int iw, ih, ipw, iph;
+  // int iw, ih, ipw, iph;
 
-  SDL_GetWindowSize(sdlWindow, &iw, &ih);
-  SDL_GetWindowSizeInPixels(sdlWindow, &ipw, &iph);
+  // SDL_GetWindowSize(sdlWindow, &iw, &ih);
+  // SDL_GetWindowSizeInPixels(sdlWindow, &ipw, &iph);
 
-  this->width = iw;
-  this->height = ih;
-  this->heightInPixels = ipw;
-  this->heightInPixels = iph;
+  // this->width = iw;
+  // this->height = ih;
+  // this->heightInPixels = ipw;
+  // this->heightInPixels = iph;
 }
 
 SDL3Window::~SDL3Window()
@@ -110,18 +140,25 @@ bool SDL3Window::update()
       int iw, ih, ipw, iph;
 
       SDL_GetWindowSize(sdlWindow, &iw, &ih);
-      SDL_GetWindowSizeInPixels(sdlWindow, &ipw, &iph);
+      // SDL_GetWindowSizeInPixels(sdlWindow, &ipw, &iph);
 
       width = iw;
       height = ih;
-      heightInPixels = ipw;
-      heightInPixels = iph;
+      // heightInPixels = ipw;
+      // heightInPixels = iph;
 
-      onWindowRezizedEvent.invoke(this);
+      // onWindowRezizedEvent.invoke(this);
     }
   }
 
   return isRunning;
 }
-
+uint32_t SDL3Window::getWidth()
+{
+  return width;
+}
+uint32_t SDL3Window::getHeight()
+{
+  return height;
+}
 #endif

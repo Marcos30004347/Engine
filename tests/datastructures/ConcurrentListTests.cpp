@@ -48,7 +48,7 @@ void multiThreadTests()
 
           for (size_t j = 0; j < 1000; j++)
           {
-            bool removed;
+            bool removed = false;
 
             for (size_t attempt = 0; attempt < totalThreads * 10000; attempt++)
             {
@@ -58,13 +58,13 @@ void multiThreadTests()
               removed = list->tryRemove(x);
 
               total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
-
               if (removed)
               {
                 assert(x == j);
                 break;
               }
             }
+
             assert(removed);
           }
 
@@ -118,7 +118,7 @@ void concurrentListMultithreadTests()
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
-          os::print("Thread %u average removal time is %fns\n", i);
+          os::print("Thread %u average removal time is %fns\n", i, total_ns / 1000);
         });
   }
 
