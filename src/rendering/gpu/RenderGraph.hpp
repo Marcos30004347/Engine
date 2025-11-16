@@ -668,12 +668,12 @@ private:
   lib::ConcurrentHashMap<std::string, uint64_t> computePipelineSymbols;
 
   // Request id -> (usage, offset, size)
-  lib::ConcurrentHashMap<std::string, BufferAllocation> scratchMap;
+  std::vector<BufferAllocation> scratchMap;
   // Usage -> metadata
   lib::ConcurrentHashMap<BufferUsage, BufferResourceMetadata> scratchBuffers;
 
-  lib::ConcurrentUnorderedSkipListMap<std::string, ScratchBufferResourceMetadata> scratchBuffersRequestsMetadatas;
-  lib::ConcurrentUnorderedSkipListMap<std::string, BufferResourceMetadata> bufferMetadatas;
+  std::vector<ScratchBufferResourceMetadata> scratchBuffersRequestsMetadatas;
+  std::vector<BufferResourceMetadata> bufferMetadatas;
   std::vector<TextureResourceMetadata> textureMetadatas;
   std::vector<SamplerResourceMetadata> samplerMetadatas;
   std::vector<BindingsLayoutResourceMetadata> bindingsLayoutMetadata;

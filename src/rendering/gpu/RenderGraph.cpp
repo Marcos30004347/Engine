@@ -342,6 +342,7 @@ std::string bufferUsageToString(int usage)
 
 struct BufferSlice
 {
+  uint64_t bufferId;
   size_t offset;
   size_t size;
 };
@@ -365,7 +366,8 @@ void RenderGraph::registerConsumer(const std::string &name, const InputResource 
       throw std::runtime_error("Buffer not found");
     }
 
-    resources.bufferMetadatas.getReference(name)->bufferUsages.push_back(
+    resources.bufferMetadatas[id].id = id;
+    resources.bufferMetadatas[id].bufferUsages.push_back(
         BufferResourceUsage{
           .view = res.bufferView,
           .consumer = taskId,
@@ -657,6 +659,11 @@ void RenderGraph::analysePasses()
       {
         uint64_t allocations = 0;
 
+        // allocations += commands.buffersAllocated.size();
+        // allocations += commands.texturesAllocated.size();
+        // allocations += commands.samplersAllocated.size();
+        // allocations += commands.bindingLayoutsAllocated.size();
+
         if (allocations == 0)
         {
           continue;
@@ -672,6 +679,57 @@ void RenderGraph::analysePasses()
       nodes[id].commands = commands.commands;
       nodes[id].queue = inferQueue(commands.commands);
 
+      // for (const auto &resourceId : commands.buffersAllocated)
+      // {
+      //   resources.bufferMetadatas[resourceId].bufferUsages.push_back(
+      //       BufferResourceUsage{
+      //         .consumer = id,
+      //         .view = {
+      //           .access = AccessPattern::NONE,
+      //           .buffer =
+      //               {
+      //                 .name = resources.bufferMetadatas[resourceId].bufferInfo.name,
+      //               },
+      //           .offset = 0,
+      //           .size = resources.bufferMetadatas[resourceId].bufferInfo.size,
+      //         }});
+      // }
+      // for (const auto &resourceId : commands.texturesAllocated)
+      // {
+      //   resources.textureMetadatas[resourceId].textureUsages.push_back(
+      //       TextureResourceUsage{
+      //         .consumer = id,
+      //         .view = {
+      //           .access = AccessPattern::NONE,
+      //           .layout = ResourceLayout::UNDEFINED,
+      //           .texture =
+      //               {
+      //                 .name = resources.textureMetadatas[resourceId].textureInfo.name,
+      //               },
+      //           .baseArrayLayer = 0,
+      //           .baseMipLevel = 0,
+      //           .levelCount = resources.textureMetadatas[resourceId].textureInfo.mipLevels,
+      //           .layerCount = resources.textureMetadatas[resourceId].textureInfo.depth,
+      //         }});
+      // }
+      // for (const auto &resourceId : commands.samplersAllocated)
+      // {
+      //   resources.samplerMetadatas[resourceId].samplerUsages.push_back(
+      //       SamplerResourceUsage{
+      //         .consumer = id,
+      //         .sampler =
+      //             {
+      //               .name = resources.samplerMetadatas[resourceId].samplerInfo.name,
+      //             },
+      //       });
+      // }
+      // for (const auto &resourceId : commands.bindingLayoutsAllocated)
+      // {
+      //   resources.bindingsLayoutMetadata[resourceId].layoutUsages.push_back(
+      //       BindingsLayoutResourceUsage{
+      //         .consumer = id,
+      //       });
+      // }
       for (auto &cmd : commands.commands)
       {
         switch (cmd.type)
@@ -878,6 +936,7 @@ void RenderGraph::analysePasses()
           break;
         }
       }
+      // taskData[id].registry.sortResources();
     }
   }
   *ref = nullptr;
@@ -989,15 +1048,15 @@ void RenderGraph::analyseTaskLevels()
 
   for (auto &task : nodes)
 
-    for (uint32_t id : topologicalOrder)
+  for (uint32_t id : topologicalOrder)
+  {
+    uint32_t currentLevel = nodes[id].level;
+    for (auto &edge : edges[id])
     {
-      uint32_t currentLevel = nodes[id].level;
-      for (auto &edge : edges[id])
-      {
-        uint64_t increment = edge.type == EdgeType::ResourceShare ? 0 : 1;
-        nodes[edge.taskId].level = std::max(nodes[edge.taskId].level, currentLevel + increment);
-      }
+      uint64_t increment = edge.type == EdgeType::ResourceShare ? 0 : 1;
+      nodes[edge.taskId].level = std::max(nodes[edge.taskId].level, currentLevel + increment);
     }
+  }
 
   for (const auto &node : nodes)
   {
@@ -1009,19 +1068,20 @@ void RenderGraph::analyseTaskLevels()
       {
       case CopyBuffer:
       {
-        auto srcMeta = resources.scratchBuffersRequestsMetadatas.getReference(cmd.args.copyBuffer->src.buffer.name);
-
-        if (srcMeta)
+        if (resources.scratchBufferSymbols.contains(cmd.args.copyBuffer->src.buffer.name))
         {
-          srcMeta->firstUsedAt = std::min(srcMeta->firstUsedAt, node.level);
-          srcMeta->lastUsedAt = std::max(srcMeta->lastUsedAt, node.level);
+          uint64_t srcId = getIdOrThrow(resources.scratchBufferSymbols, cmd.args.copyBuffer->src.buffer.name, "Scratch buffer not found");
+          auto &srcMeta = resources.scratchBuffersRequestsMetadatas[srcId];
+          srcMeta.firstUsedAt = std::min(srcMeta.firstUsedAt, node.level);
+          srcMeta.lastUsedAt = std::max(srcMeta.lastUsedAt, node.level);
         }
-        auto dstMeta = resources.scratchBuffersRequestsMetadatas.getReference(cmd.args.copyBuffer->dst.buffer.name);
 
-        if (dstMeta)
+        if (resources.scratchBufferSymbols.contains(cmd.args.copyBuffer->dst.buffer.name))
         {
-          dstMeta->firstUsedAt = std::min(dstMeta->firstUsedAt, node.level);
-          dstMeta->lastUsedAt = std::max(dstMeta->lastUsedAt, node.level);
+          uint64_t dstId = getIdOrThrow(resources.scratchBufferSymbols, cmd.args.copyBuffer->dst.buffer.name, "Scratch buffer not found");
+          auto &dstMeta = resources.scratchBuffersRequestsMetadatas[dstId];
+          dstMeta.firstUsedAt = std::min(dstMeta.firstUsedAt, node.level);
+          dstMeta.lastUsedAt = std::max(dstMeta.lastUsedAt, node.level);
         }
         break;
       }
@@ -1036,8 +1096,7 @@ void RenderGraph::analyseTaskLevels()
         {
           for (const auto &buffer : group.buffers)
           {
-          auto buf =  resources.scratchBuffersRequestsMetadatas.getReference(buffer.bufferView.buffer.name);
-            if (buf)
+            if (resources.scratchBufferSymbols.contains(buffer.bufferView.buffer.name))
             {
               uint64_t bufId = getIdOrThrow(resources.scratchBufferSymbols, buffer.bufferView.buffer.name, "Scratch buffer not found");
               auto &meta = resources.scratchBuffersRequestsMetadatas[bufId];
@@ -1159,15 +1218,15 @@ void RenderGraph::analyseDependencyGraph()
         });
   }
 
-  for (const auto &[name, meta] : resources.bufferMetadatas)
+  for (auto &meta : resources.bufferMetadatas)
   {
-    // std::sort(
-    //     meta.bufferUsages.begin(),
-    //     meta.bufferUsages.end(),
-    //     [this](BufferResourceUsage taskA, BufferResourceUsage taskB)
-    //     {
-    //       return nodes[taskA.consumer].priority < nodes[taskB.consumer].priority;
-    //     });
+    std::sort(
+        meta.bufferUsages.begin(),
+        meta.bufferUsages.end(),
+        [this](BufferResourceUsage taskA, BufferResourceUsage taskB)
+        {
+          return nodes[taskA.consumer].priority < nodes[taskB.consumer].priority;
+        });
 
     std::vector<lib::BoundedTaggedIntervalTree<AccessConsumerPair, uint64_t>::Interval> intervals;
 
@@ -1209,13 +1268,13 @@ void RenderGraph::analyseDependencyGraph()
 
   for (auto &meta : resources.textureMetadatas)
   {
-    // std::sort(
-    //     meta.textureUsages.begin(),
-    //     meta.textureUsages.end(),
-    //     [this](TextureResourceUsage taskA, TextureResourceUsage taskB)
-    //     {
-    //       return nodes[taskA.consumer].priority < nodes[taskB.consumer].priority;
-    //     });
+    std::sort(
+        meta.textureUsages.begin(),
+        meta.textureUsages.end(),
+        [this](TextureResourceUsage taskA, TextureResourceUsage taskB)
+        {
+          return nodes[taskA.consumer].priority < nodes[taskB.consumer].priority;
+        });
 
     std::vector<lib::BoundedTaggedRectTreap<AccessLayoutConsumerTriple, uint64_t>::Rect> intervals;
     intervals.reserve(resources.textureMetadatas.size() * 4);
@@ -1271,7 +1330,7 @@ void RenderGraph::analyseDependencyGraph()
 
 struct Request
 {
-  std::string buffer;
+  uint64_t id;
   uint64_t size;
   uint64_t start;
   uint64_t end;
@@ -1282,7 +1341,7 @@ inline size_t alignUp(size_t value, size_t alignment)
   return (value + alignment - 1) & ~(alignment - 1);
 }
 
-std::pair<std::unordered_map<std::string, BufferSlice>, size_t> allocateBuffersGraphColoring(std::vector<Request> &requests, size_t alignment)
+std::pair<std::vector<BufferSlice>, size_t> allocateBuffersGraphColoring(std::vector<Request> &requests, size_t alignment)
 {
   std::sort(
       requests.begin(),
@@ -1300,7 +1359,7 @@ std::pair<std::unordered_map<std::string, BufferSlice>, size_t> allocateBuffersG
   };
 
   std::vector<ColorSlot> colors;
-  std::unordered_map<std::string, BufferSlice> allocations;
+  std::vector<BufferSlice> allocations;
 
   for (size_t i = 0; i < requests.size(); ++i)
   {
@@ -1329,9 +1388,10 @@ std::pair<std::unordered_map<std::string, BufferSlice>, size_t> allocateBuffersG
 
     slot.lastEnd = req.end;
 
-    allocations[req.buffer] = BufferSlice{
-      .offset = slot.offsetBase,
-      .size = req.size,
+    allocations[req.id] = BufferSlice{
+      requests[i].id,
+      slot.offsetBase,
+      req.size,
     };
   }
 
@@ -1357,19 +1417,19 @@ void RenderGraph::analyseAllocations()
 
     memoryRequests[info.usage].push_back(
         Request{
-          .buffer = meta.bufferInfo.name,
+          .id = meta.id,
           .start = meta.firstUsedAt,
           .end = meta.lastUsedAt,
           .size = info.size,
         });
   }
 
-  resources.scratchMap.clear();
+  resources.scratchMap = std::vector<BufferAllocation>(resources.scratchBuffersRequestsMetadatas.size());
 
   for (auto &[usage, requests] : memoryRequests)
   {
     auto [allocations, totalSize] = allocateBuffersGraphColoring(requests, 16);
-    uint32_t bufferAllocationId = resources.bufferMetadatas.getSize();
+    uint32_t bufferAllocationId = resources.bufferMetadatas.size();
 
     BufferInfo info;
     info.name = bufferUsageToString(usage) + ".buffer";
@@ -1385,17 +1445,18 @@ void RenderGraph::analyseAllocations()
 
     os::Logger::logf("[RenderGraph] Reserving %u bytes for %s", info.size, info.name.c_str());
 
-    for (auto &[name, allocation] : allocations)
+    for (auto &allocation : allocations)
     {
-      resources.scratchMap.insert(
-          name,
-          BufferAllocation{
-            .offset = allocation.offset,
-            .size = allocation.size,
-            .usage = usage,
-          });
+      resources.scratchMap[allocation.bufferId].usage = usage;
+      resources.scratchMap[allocation.bufferId].offset = allocation.offset;
+      resources.scratchMap[allocation.bufferId].size = allocation.size;
 
-      os::Logger::logf("[RenderGraph] Reserving slice of %s, offset = %u, size = %u, for %s", info.name.c_str(), allocation.offset, allocation.size, name.c_str());
+      os::Logger::logf(
+          "[RenderGraph] Reserving slice of %s, offset = %u, size = %u, for %s",
+          info.name.c_str(),
+          allocation.offset,
+          allocation.size,
+          resources.bufferMetadatas[allocation.bufferId].bufferInfo.name.c_str());
     }
   }
 }
@@ -1426,14 +1487,14 @@ void RenderGraph::analyseBufferStateTransition()
 
   uint64_t size = 0;
 
-  for (const auto &[name, meta] : resources.bufferMetadatas)
+  for (auto &meta : resources.bufferMetadatas)
   {
     size += meta.bufferUsages.size();
   }
 
   intervals.reserve(4 * size);
 
-  for (const auto &[name, meta] : resources.bufferMetadatas)
+  for (auto &meta : resources.bufferMetadatas)
   {
 
     lib::BoundedTaggedIntervalTree<AccessPattern, uint64_t> bufferIntevals(meta.bufferUsages.size() * 4);
@@ -2222,13 +2283,10 @@ const Buffer RenderGraph::createBuffer(const BufferInfo &info)
   id = resources.buffersAllocated.fetch_add(1);
 
   resources.bufferSymbols.insert(name, id);
-  resources.bufferMetadatas.insert(
-      name,
-      {
-        .bufferInfo = info,
-        .bufferUsages = {},
-        .id = id,
-      });
+  resources.bufferMetadatas.push_back({});
+
+  resources.bufferMetadatas[id].id = id;
+  resources.bufferMetadatas[id].bufferInfo = info;
 
   return Buffer{
     .name = info.name,
