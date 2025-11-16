@@ -6,9 +6,14 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set default build type to Debug" FORCE)
 endif()
 
+option(ENABLE_PROFILING "Enable CPU profiling with gperftools" ON)
+
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined -fno-omit-frame-pointer -g -O0")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address,undefined -fno-omit-frame-pointer -g -O0")
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -g -fno-omit-frame-pointer")
+# set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O2 -g -fno-omit-frame-pointer")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -g -O0")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -g -O0")
 
@@ -77,6 +82,17 @@ if(APPLE)
     target_link_libraries(Engine PRIVATE ${MOLTENVK_LIB})
 endif()
 
+if(ENABLE_PROFILING)
+    find_library(PROFILER_LIB profiler)
+    if(PROFILER_LIB)
+        message(STATUS "gperftools profiler found: ${PROFILER_LIB}")
+        target_link_libraries(Engine PRIVATE ${PROFILER_LIB})
+        target_compile_definitions(Engine PRIVATE ENABLE_PROFILING)
+    else()
+        message(WARNING "gperftools profiler not found, disabling profiling support")
+    endif()
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_compile_definitions(Engine PRIVATE DEBUG)
   target_compile_definitions(Engine PRIVATE NDEBUG)
@@ -116,7 +132,9 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_compile_definitions(Engine PRIVATE DEBUG)
   target_compile_definitions(Engine PRIVATE NDEBUG)
+  target_compile_definitions(Engine PRIVATE VULKAN_DEVICE_LOG)
 endif()
+
 
 
 add_subdirectory(samples)

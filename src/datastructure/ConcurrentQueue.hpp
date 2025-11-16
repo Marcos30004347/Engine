@@ -246,10 +246,10 @@ public:
 
   ~ConcurrentQueue()
   {
-    detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *node = threadLists.head.load(std::memory_order_acquire);
+    ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *node = threadLists.head.load(std::memory_order_acquire);
     while (node)
     {
-      detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *next = node->next.load(std::memory_order_acquire);
+      ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *next = node->next.load(std::memory_order_acquire);
       delete node->get();
       node = next;
     }
@@ -265,7 +265,7 @@ public:
     //   os::print("queue enqueuing %p\n", value.get());
     // }
 
-    detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
+    ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
 
     if (!localLists.get(local))
     {
@@ -283,7 +283,7 @@ public:
 
   bool tryDequeue(T &value)
   {
-    detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
+    ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
 
     localLists.get(local);
 
@@ -297,7 +297,7 @@ public:
       return false;
     }
 
-    detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *start = local;
+    ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *start = local;
 
     bool looping = false;
 
@@ -361,8 +361,8 @@ public:
   }
 
 private:
-  ThreadLocalStorage<detail::ConcurrentSingleLinkedListNode<detail::ConcurrentQueueProducer<T> *> *> localLists;
-  detail::ConcurrentLinkedList<detail::ConcurrentQueueProducer<T> *> threadLists;
+  ThreadLocalStorage<ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *> localLists;
+  ConcurrentLinkedList<detail::ConcurrentQueueProducer<T> *> threadLists;
   size_t time;
 };
 

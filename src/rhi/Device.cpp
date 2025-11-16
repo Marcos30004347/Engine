@@ -1,6 +1,6 @@
 #include "Device.hpp"
-#include "vulkan/vulkan.hpp"
 #include <algorithm>
+#include <sstream>
 
 namespace rhi
 {
@@ -148,7 +148,6 @@ Format typeToFormat(Type type)
   return typeToFormatTable[type];
 }
 
-
 size_t formatPixelSize(Format fmt)
 {
   switch (fmt)
@@ -216,6 +215,107 @@ size_t formatPixelSize(Format fmt)
   }
 }
 
+std::string toString(ResourceLayout layout)
+{
+  switch (layout)
+  {
+  case ResourceLayout::UNDEFINED:
+    return "UNDEFINED";
+  case ResourceLayout::GENERAL:
+    return "GENERAL";
+  case ResourceLayout::COLOR_ATTACHMENT:
+    return "COLOR_ATTACHMENT";
+  case ResourceLayout::DEPTH_STENCIL_ATTACHMENT:
+    return "DEPTH_STENCIL_ATTACHMENT";
+  case ResourceLayout::DEPTH_STENCIL_READ_ONLY:
+    return "DEPTH_STENCIL_READ_ONLY";
+  case ResourceLayout::SHADER_READ_ONLY:
+    return "SHADER_READ_ONLY";
+  case ResourceLayout::TRANSFER_SRC:
+    return "TRANSFER_SRC";
+  case ResourceLayout::TRANSFER_DST:
+    return "TRANSFER_DST";
+  case ResourceLayout::PREINITIALIZED:
+    return "PREINITIALIZED";
+  case ResourceLayout::PRESENT_SRC:
+    return "PRESENT_SRC";
+  default:
+    return "UNKNOWN_RESOURCE_LAYOUT";
+  }
+}
+
+std::string toString(AccessPattern access)
+{
+  switch (access)
+  {
+  case AccessPattern::NONE:
+    return "NONE";
+  case AccessPattern::VERTEX_ATTRIBUTE_READ:
+    return "VERTEX_ATTRIBUTE_READ";
+  case AccessPattern::INDEX_READ:
+    return "INDEX_READ";
+  case AccessPattern::UNIFORM_READ:
+    return "UNIFORM_READ";
+  case AccessPattern::SHADER_READ:
+    return "SHADER_READ";
+  case AccessPattern::SHADER_WRITE:
+    return "SHADER_WRITE";
+  case AccessPattern::COLOR_ATTACHMENT_READ:
+    return "COLOR_ATTACHMENT_READ";
+  case AccessPattern::COLOR_ATTACHMENT_WRITE:
+    return "COLOR_ATTACHMENT_WRITE";
+  case AccessPattern::DEPTH_STENCIL_ATTACHMENT_READ:
+    return "DEPTH_STENCIL_ATTACHMENT_READ";
+  case AccessPattern::DEPTH_STENCIL_ATTACHMENT_WRITE:
+    return "DEPTH_STENCIL_ATTACHMENT_WRITE";
+  case AccessPattern::TRANSFER_READ:
+    return "TRANSFER_READ";
+  case AccessPattern::TRANSFER_WRITE:
+    return "TRANSFER_WRITE";
+  case AccessPattern::INDIRECT_COMMAND_READ:
+    return "INDIRECT_COMMAND_READ";
+  case AccessPattern::MEMORY_READ:
+    return "MEMORY_READ";
+  case AccessPattern::MEMORY_WRITE:
+    return "MEMORY_WRITE";
+  default:
+    return "UNKNOWN_ACCESS_PATTERN";
+  }
+}
+
+std::string bufferUsageToString(int usage)
+{
+  if (usage == BufferUsage_None)
+    return "None";
+
+  std::ostringstream oss;
+  bool first = true;
+
+  auto addFlag = [&](int flag, const char *name)
+  {
+    if (usage & flag)
+    {
+      if (!first)
+        oss << " | ";
+      oss << name;
+      first = false;
+    }
+  };
+
+  addFlag(BufferUsage_Uniform, "Uniform");
+  addFlag(BufferUsage_Storage, "Storage");
+  addFlag(BufferUsage_Push, "Push");
+  addFlag(BufferUsage_Pull, "Pull");
+  addFlag(BufferUsage_Vertex, "Vertex");
+  addFlag(BufferUsage_Indirect, "Indirect");
+  addFlag(BufferUsage_Timestamp, "Timestamp");
+  addFlag(BufferUsage_Index, "Index");
+
+  return oss.str();
+}
+// BufferView::BufferView() : heap(nullptr), offset(0), size(0)
+// {
+// }
 
 // Device *Device::create(DeviceBackend backend, DeviceRequiredLimits limits, std::vector<DeviceFeatures> features) {
 //   switch (backend) {

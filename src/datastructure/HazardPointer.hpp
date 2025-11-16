@@ -134,7 +134,7 @@ public:
         {
           // os::print("deallocating %p\n", retiredList[i]);
 
-          allocator.deallocate((T *)retiredList[i]);
+        //  allocator.deallocate((T *)retiredList[i]);
 
           if (i != retiredList.size() - 1)
           {
@@ -167,20 +167,6 @@ public:
     {
       return pointers[index];
     }
-    // void retire(uint32_t index)
-    // {
-    //   retiredList.pushBack((void *)pointers[index]);
-
-    //   // os::print("retiring %p\n", pointers[index]);
-
-    //   pointers[index] = nullptr;
-
-    //   if (retiredList.size() >= R)
-    //   {
-    //     scan(manager->head);
-    //     helpScan();
-    //   }
-    // }
 
     void retire(void *ptr)
     {

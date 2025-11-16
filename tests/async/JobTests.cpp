@@ -58,7 +58,7 @@ int multithreadTests()
   async::fiber::Fiber::initializeSubSystems();
 
   uint32_t invocations = 256;
-  size_t totalThreads = 1; // os::Thread::getHardwareConcurrency();
+  size_t totalThreads = os::Thread::getHardwareConcurrency();
 
   async::fiber::FiberPool *fiberpool = new async::fiber::FiberPool(async::fiber::Fiber::getDefaultSize(), 1, totalThreads);
   async::JobAllocator *allocator = new async::JobAllocator(sizeof(uint8_t) * 1024, totalThreads);

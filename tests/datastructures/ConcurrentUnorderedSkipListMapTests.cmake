@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.10)
+
+project (ConcurrentUnorderedSkipListMapTests)
+get_filename_component(TEST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+add_executable(ConcurrentUnorderedSkipListMapTests ${TEST_DIR}/ConcurrentUnorderedSkipListMapTests.cpp)
+target_link_libraries(ConcurrentUnorderedSkipListMapTests PRIVATE Engine)
+add_test(NAME ConcurrentUnorderedSkipListMapTests COMMAND ConcurrentUnorderedSkipListMapTests)

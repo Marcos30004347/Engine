@@ -11,7 +11,13 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_format_traits.hpp>
 
-#include "rhi/EventLoop.hpp"
+#include "rhi/BufferAllocator.hpp"
+#include "rendering/gpu/EventLoop.hpp"
+
+#ifdef VULKAN_DEVICE_LOG
+#include "os/Logger.hpp"
+#endif
+
 namespace rhi
 {
 namespace vulkan
@@ -51,13 +57,13 @@ struct SwapChainSupportDetails
   std::vector<VkPresentModeKHR> presentModes;
 };
 
-struct VulkanBuffer
-{
-  VkBuffer buffer;
-  VkDeviceMemory memory;
-  VkDeviceSize size;
-  void *mapped = nullptr;
-};
+// struct VulkanBuffer
+// {
+//   VkBuffer buffer;
+//   VkDeviceMemory memory;
+//   VkDeviceSize size;
+//   void *mapped = nullptr;
+// };
 
 struct VulkanQueue
 {
@@ -166,15 +172,6 @@ struct VulkanComputePipeline : public ComputePipelineImp
   BindingsLayout layout;
 };
 
-struct VulkanCommandBuffer : public CommandBufferImp
-{
-  VkCommandBuffer commandBuffer;
-  VkCommandPool commandPool;
-  VulkanGraphicsPipeline *boundGraphicsPipeline;
-  VulkanComputePipeline *boundComputePipeline;
-  std::vector<VulkanCommandBufferRenderPass> renderPasses;
-};
-
 struct VulkanImage : public TextureImp
 {
   VkImage image;
@@ -192,19 +189,22 @@ public:
   using VulkanFutureCallback = void (*)(VulkanDevice *);
 
   VulkanDevice *device;
+
   VkFence fence;
+  VkSemaphore semaphore;
+
   std::vector<VkFramebuffer> framebuffers;
   std::vector<TextureView> views;
 
-  VulkanAsyncHandler(VulkanDevice *, VkFence, std::vector<VkFramebuffer> &, std::vector<TextureView> &);
-  static FenceStatus getStatus(VulkanAsyncHandler &future);
+  VulkanAsyncHandler(VulkanDevice *, VkFence, VkSemaphore, std::vector<VkFramebuffer> &, std::vector<TextureView> &);
+  static rendering::FenceStatus getStatus(VulkanAsyncHandler &future);
 };
 
 class VulkanFuture : public detail::GPUFutureImp
 {
 public:
-  AsyncEvent<VulkanAsyncHandler> handler;
-  VulkanFuture(AsyncEvent<VulkanAsyncHandler> &&handler);
+  rendering::AsyncEvent<VulkanAsyncHandler> handler;
+  VulkanFuture(rendering::AsyncEvent<VulkanAsyncHandler> &&handler);
 };
 
 struct VulkanBindingGroups : public BindingGroupsImp
@@ -213,7 +213,16 @@ struct VulkanBindingGroups : public BindingGroupsImp
   std::vector<VkDescriptorSet> descriptorSets;
 };
 
-class VulkanHeap : public GPUHeap
+struct VulkanCommandBuffer : public CommandBufferImp
+{
+  VkCommandBuffer commandBuffer;
+  VkCommandPool commandPool;
+  VulkanGraphicsPipeline *boundGraphicsPipeline;
+  VulkanComputePipeline *boundComputePipeline;
+  VulkanBindingGroups *boundGroups;
+  std::vector<VulkanCommandBufferRenderPass> renderPasses;
+};
+class VulkanBuffer : public BufferImp
 {
 public:
   std::atomic<BufferMap> mapped;
@@ -221,9 +230,16 @@ public:
   VkBuffer buffer;
   BufferUsage usage;
   VkDeviceMemory deviceMemory;
-  VulkanHeap(VulkanDevice *device, VkDeviceMemory, VkBuffer, size_t, BufferUsage);
-  ~VulkanHeap();
+
+  VulkanBuffer(VulkanDevice *device, VkDeviceMemory, VkBuffer, size_t, BufferUsage);
+  ~VulkanBuffer();
 };
+
+// class VulkanBufferView : public BufferViewImp {
+//   public:
+//   Buffer parent;
+//   VulkanBufferView(Buffer parent);
+// };
 
 struct VulkanSampler : public SamplerImp
 {
@@ -241,43 +257,47 @@ public:
   // SurfaceHandle addWindowForDrawing(window::Window *) override;
   Format getSwapChainFormat(SwapChain) override;
 
-  GPUHeap *allocateHeap(size_t size, BufferUsage, void *) override;
-  void freeHeap(GPUHeap *) override;
-  BufferMapStatus mapBuffer(GPUBuffer, BufferMap, void **) override;
-  void unmapBuffer(GPUBuffer) override;
+  Buffer createBuffer(const BufferInfo &, void *) override;
+
+  void destroyBuffer(BufferImp *) override;
+  BufferMapStatus mapBuffer(BufferView, BufferMap, void **) override;
+  void unmapBuffer(BufferView) override;
+
+  // BufferView createBufferView(Buffer& buffer, const uint32_t size) override;
+  // void destroyBufferView(BufferViewImp *) override;
 
   // void destroyBuffer(BufferHandle) override;
 
   SwapChain createSwapChain(Surface surface, uint32_t width, uint32_t height) override;
-  void destroySwapChain(SwapChain swapChain) override;
+  void destroySwapChain(SwapChainImp *swapChain) override;
 
   // TODO: view not being deallocated
   TextureView getCurrentSwapChainTextureView(SwapChain) override;
 
-  void destroyShader(Shader handle) override;
+  void destroyShader(ShaderImp *handle) override;
 
   BindingsLayout createBindingsLayout(const BindingsLayoutInfo &) override;
-  void destroyBindingsLayout(BindingsLayout) override;
+  void destroyBindingsLayout(BindingsLayoutImp *) override;
 
-  BindingGroups createBindingGroups(const BindingsLayout layout, const BindingGroupsInfo &info) override;
-  void destroyBindingGroups(BindingGroups bindingGroup) override;
+  BindingGroups createBindingGroups(const BindingGroupsInfo &info) override;
+  void destroyBindingGroups(BindingGroupsImp *bindingGroup) override;
 
   GraphicsPipeline createGraphicsPipeline(GraphicsPipelineInfo) override;
-  void destroyGraphicsPipeline(GraphicsPipeline) override;
+  void destroyGraphicsPipeline(GraphicsPipelineImp *) override;
 
   ComputePipeline createComputePipeline(const ComputePipelineInfo &info) override;
-  void destroyComputePipeline(ComputePipeline) override;
+  void destroyComputePipeline(ComputePipelineImp *) override;
 
-  CommandBuffer createCommandBuffer() override;
-  void destroyCommandBuffer(CommandBuffer) override;
+  CommandBuffer createCommandBuffer(const CommandBufferInfo &) override;
+  void destroyCommandBuffer(CommandBufferImp *) override;
 
-  Sampler createSampler(const SamplerCreateInfo &info) override;
-  void destroySampler(Sampler handle) override;
+  Sampler createSampler(const SamplerInfo &info) override;
+  void destroySampler(SamplerImp *handle) override;
 
   void beginCommandBuffer(CommandBuffer) override;
   void endCommandBuffer(CommandBuffer) override;
 
-  void cmdCopyBuffer(CommandBuffer cmdBuffer, GPUBuffer src, GPUBuffer dst, uint32_t srcOffset, uint32_t dstOffset, uint32_t size) override;
+  void cmdCopyBuffer(CommandBuffer cmdBuffer, BufferView src, BufferView dst, uint32_t srcOffset, uint32_t dstOffset, uint32_t size) override;
 
   void cmdBeginRenderPass(CommandBuffer, const RenderPassInfo &) override;
   void cmdEndRenderPass(CommandBuffer) override;
@@ -286,19 +306,51 @@ public:
   void cmdBindGraphicsPipeline(CommandBuffer, GraphicsPipeline) override;
   void cmdBindComputePipeline(CommandBuffer, ComputePipeline) override;
 
-  void cmdBindVertexBuffer(CommandBuffer, uint32_t slot, GPUBuffer) override;
-  void cmdBindIndexBuffer(CommandBuffer, GPUBuffer, Type type) override;
+  void cmdBindVertexBuffer(CommandBuffer, uint32_t slot, BufferView) override;
+  void cmdBindIndexBuffer(CommandBuffer, BufferView, Type type) override;
 
   void cmdDraw(CommandBuffer, uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0) override;
 
   void cmdDrawIndexed(CommandBuffer, uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0) override;
 
-  void cmdDrawIndexedIndirect(CommandBuffer, GPUBuffer indirectBuffer, size_t offset, uint32_t drawCount, uint32_t stride) override;
+  void cmdDrawIndexedIndirect(CommandBuffer, BufferView indirectBuffer, size_t offset, uint32_t drawCount, uint32_t stride) override;
   void cmdDispatch(CommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) override;
 
+  void cmdImageBarrier(
+      CommandBuffer cmd,
+      Texture image,
+      PipelineStage src_stage,
+      PipelineStage dst_stage,
+      AccessPattern src_access,
+      AccessPattern dst_access,
+      ResourceLayout old_layout,
+      ResourceLayout new_layout,
+      ImageAspectFlags aspect_mask,
+      uint32_t base_mip_level,
+      uint32_t level_count,
+      uint32_t base_array_layer,
+      uint32_t layer_count,
+      uint32_t src_queue_family,
+      uint32_t dst_queue_family) override;
+
+  void cmdBufferBarrier(
+      CommandBuffer cmd,
+      Buffer b,
+      PipelineStage src_stage,
+      PipelineStage dst_stage,
+      AccessPattern src_access,
+      AccessPattern dst_access,
+      uint32_t offset,
+      uint32_t size,
+      uint32_t src_queue_family,
+      uint32_t dst_queue_family) override;
+
+  void cmdMemoryBarrier(CommandBuffer cmd, PipelineStage src_stage, PipelineStage dst_stage, AccessPattern src_access, AccessPattern dst_access) override;
+  void cmdPipelineBarrier(CommandBuffer cmd, PipelineStage src_stage, PipelineStage dst_stage, AccessPattern src_access, AccessPattern dst_access) override;
+
   // Submission
-  GPUFuture submit(QueueHandle queue, CommandBuffer *commandBuffers, uint32_t count) override;
- 
+  GPUFuture submit(QueueHandle queue, CommandBuffer *commandBuffers, uint32_t count, GPUFuture *wait = NULL) override;
+
   // Sync
   void waitIdle() override;
   void tick() override;
@@ -306,17 +358,17 @@ public:
   QueueHandle getQueue(QueueType) override;
   // void submitCommandBuffer(QueueHandle, CommandBuffer) override;
 
-  Texture createImage(const ImageCreateInfo &info) override;
-  void destroyImage(Texture handle) override;
+  Texture createTexture(const TextureInfo &info) override;
+  void destroyTexture(TextureImp *handle) override;
 
-  TextureView createImageView(Texture imageHandle, ImageAspectFlags aspectFlags) override;
-  void destroyImageView(TextureView handle) override;
+  TextureView createTextureView(const TextureViewInfo &info) override;
+  void destroyTextureView(TextureViewImp *handle) override;
 
   void wait(GPUFuture &future) override;
 
   // Vulkan specific
-  Surface addSurface(VkSurfaceKHR surface);
-  Shader createShader(const VulkanSpirVShaderData &data);
+  Surface addSurface(VkSurfaceKHR surface, const SurfaceInfo &info);
+  Shader createShader(const VulkanSpirVShaderData &data, const BindingsLayoutInfo &interface);
 
   inline VkInstance getInstance()
   {
@@ -332,7 +384,7 @@ public:
   }
 
 private:
-  EventLoop<VulkanAsyncHandler> eventLoop;
+  rendering::EventLoop<VulkanAsyncHandler> eventLoop;
 
   // Device info
   bool initialized;
@@ -340,7 +392,6 @@ private:
   VulkanVersion version;
   DeviceRequiredLimits requiredLimits;
   uint64_t requestedFeaturesFlags;
-  DeviceProperties properties;
 
   std::vector<const char *> validationLayers = {
     "VK_LAYER_KHRONOS_validation",
@@ -364,6 +415,7 @@ private:
   VkDebugUtilsMessengerEXT debugMessenger;
 
   lib::ConcurrentQueue<VkFence> *fences;
+  lib::ConcurrentQueue<VkSemaphore> *semaphores;
 
   VulkanQueueFamilyIndices indices;
 
@@ -398,6 +450,7 @@ private:
   VkRenderPass createRenderPass(ColorAttatchment *attachments, uint32_t attatchmentsCount, DepthAttatchment depth);
 
   VkFence getFence();
+  VkSemaphore getSemaphore();
 
   VkCommandPool createCommandPool(uint32_t queueFamilyIndex);
   void destroyCommandPool(VkCommandPool cp);

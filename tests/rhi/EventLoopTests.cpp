@@ -1,20 +1,21 @@
-#include "rhi/EventLoop.hpp"
+#include "rendering/gpu/EventLoop.hpp"
 #include <cassert>
 #include <iostream>
 struct Fence
 {
   int id;
 };
+using namespace rendering;
 
-rhi::FenceStatus getFenceStatus(Fence &fence)
+FenceStatus getFenceStatus(Fence &fence)
 {
   os::print("finishing %u\n", fence.id);
-  return rhi::FenceStatus::FINISHED;
+  return FenceStatus::FINISHED;
 }
 
 int main()
 {
-  rhi::EventLoop<Fence> *eventLoop = new rhi::EventLoop<Fence>(getFenceStatus);
+  EventLoop<Fence> *eventLoop = new EventLoop<Fence>(getFenceStatus);
 
   eventLoop->submit({.id = 0});
   eventLoop->submit({.id = 1});

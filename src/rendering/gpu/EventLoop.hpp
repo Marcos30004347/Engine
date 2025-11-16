@@ -6,7 +6,7 @@
 #include <functional>
 #include <memory>
 
-namespace rhi
+namespace rendering
 {
 
 enum class FenceStatus

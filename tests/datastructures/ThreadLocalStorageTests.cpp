@@ -59,6 +59,7 @@ int main()
   #if !defined(USE_THREAD_LOCAL)
   lib::detail::ConcurrentLookupTable<int> *lookupTable = new lib::detail::ConcurrentLookupTable<int>();
 
+
   then = lib::time::TimeSpan::now();
   lookupTable->insert(0, 0);
   os::print("Inserting 0 in %fns\n", (lib::time::TimeSpan::now() - then).nanoseconds());
