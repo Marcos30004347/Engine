@@ -29,11 +29,15 @@ void basicTests() {
     os::print("Running basic tests...\n");
 
     Map map;
+printf("aaaa\n");
 
     assert(map.insert("a", 1));
+printf("aaaa\n");
+
     assert(map.insert("b", 2));
     assert(map.insert("c", 3));
     assert(map.getSize() == 3);
+printf("aaaa\n");
 
     // Duplicate insert
     assert(!map.insert("a", 10));

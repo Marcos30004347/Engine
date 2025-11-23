@@ -646,26 +646,20 @@ public:
 
       if (ins.duplicate == DUPLICATE_DIRECTION)
       {
-        // printf("duplicate\n");
-        // delete newNode;
-        // hazardAllocator.release(record);
-        // os::print("%s\n---------\n", dump.c_str());
         garbageCollector.closeThreadContext();
         return false;
       }
-      // 2 record
+
       Node *leaf = ins.child;
       if (!leaf)
       {
         continue;
       }
 
-      // printf("insert point %i %p %p\n", ins.child.load()->priority, ins.child.load(), head.load());
-      //  grab all CAS pointers and direction
 
-      Node *cas1 = ins.cast1;    // 1 record
-      Node *cas2 = ins.cast2;    // marked 1 record
-      Node *nextLeaf = ins.next; // 6 record
+      Node *cas1 = ins.cast1; 
+      Node *cas2 = ins.cast2;
+      Node *nextLeaf = ins.next;
 
       unsigned char parentDir = ins.parentDirection;
 

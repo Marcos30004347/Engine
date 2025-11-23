@@ -12,24 +12,24 @@ namespace lib
 {
 
 // TODO: get rid of this
-struct SpinLock
-{
-  std::atomic_flag flag = ATOMIC_FLAG_INIT;
+// struct SpinLock
+// {
+//   std::atomic_flag flag = ATOMIC_FLAG_INIT;
 
-  void lock()
-  {
-    while (flag.test_and_set(std::memory_order_acquire))
-    {
-      os::print("....locked\n");
-      // assert(false);
-    }
-  }
+//   void lock()
+//   {
+//     while (flag.test_and_set(std::memory_order_acquire))
+//     {
+//       os::print("....locked\n");
+//       // assert(false);
+//     }
+//   }
 
-  void unlock()
-  {
-    flag.clear(std::memory_order_release);
-  }
-};
+//   void unlock()
+//   {
+//     flag.clear(std::memory_order_release);
+//   }
+// };
 
 template <size_t K, typename T, typename Allocator = memory::allocator::SystemAllocator<T>> class HazardPointer
 {
@@ -40,8 +40,6 @@ public:
     friend class HazardPointer;
 
     std::atomic<uint32_t> refs;
-
-    SpinLock retiredLock;
 
     HazardPointer *manager;
     Record *next;
@@ -82,7 +80,7 @@ public:
           continue;
         }
 
-        hprec->retiredLock.lock();
+        // hprec->retiredLock.lock();
 
         while (hprec->retiredList.size() > 0)
         {
@@ -96,7 +94,7 @@ public:
             scan(manager->head.load());
           }
         }
-        hprec->retiredLock.unlock();
+        // hprec->retiredLock.unlock();
 
         expected = true;
 
@@ -124,7 +122,6 @@ public:
       }
 
       lib::algorithm::sort::quickSort(hp.data(), hp.size());
-      retiredLock.lock();
 
       for (size_t i = 0; i < retiredList.size();)
       {
@@ -132,9 +129,8 @@ public:
 
         if (index == hp.size()) // not found
         {
-          // os::print("deallocating %p\n", retiredList[i]);
 
-        //  allocator.deallocate((T *)retiredList[i]);
+          allocator.deallocate((T *)retiredList[i]);
 
           if (i != retiredList.size() - 1)
           {
@@ -149,7 +145,7 @@ public:
           i++;
         }
       }
-      retiredLock.unlock();
+      //retiredLock.unlock();
     }
 
   public:
@@ -170,11 +166,8 @@ public:
 
     void retire(void *ptr)
     {
-      retiredLock.lock();
-
       retiredList.push_back(ptr);
       bool needScan = retiredList.size() >= R;
-      retiredLock.unlock();
 
       if (needScan)
       {
@@ -229,8 +222,6 @@ public:
     p = new Record(this, allocator);
 
     p->isActive.store(true);
-
-    // assert(!p->isActive.test_and_set(std::memory_order_acquire));
 
     uint32_t refs = p->refs.fetch_add(1);
 

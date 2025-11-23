@@ -359,11 +359,14 @@ public:
     Node *preds[MAX_LEVEL + 1];
     Node *succs[MAX_LEVEL + 1];
 
+printf("bbb\n");
+
+
     while (true)
     {
-      if (findByHashKey(h, key, preds, succs))
-        return false; // Key already exists
-
+      if (findByHashKey(h, key, preds, succs)) {
+        return false;
+      }
       Node *newNode = new Node(h, key, value, topLevel);
       for (int level = 0; level <= topLevel; ++level)
       {

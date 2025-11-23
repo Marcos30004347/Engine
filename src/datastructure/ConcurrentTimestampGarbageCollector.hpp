@@ -69,8 +69,6 @@ template <typename T, typename Allocator = memory::allocator::SystemAllocator<T>
           continue;
         }
 
-        // os::print("Thread %u curr = %u\n", os::Thread::getCurrentThreadId(), curr->key);
-
         out = curr->data;
         hazardAllocator.release(rec);
         return true;
@@ -109,19 +107,8 @@ template <typename T, typename Allocator = memory::allocator::SystemAllocator<T>
           return false;
         }
 
-        // Node *p = prev->load();
-
-        // if (curr)
-        // {
-        //   if ((uintptr_t)p & 1L)
-        //   {
-        //     p = (Node *)((uintptr_t)p - 1L);
-        //   }
-        // }
-
         if (curr && curr->key <= key)
         {
-          //   os::print("iter = %u, %u %u\n", iter++, curr->key, key);
           continue;
         }
 
@@ -172,6 +159,7 @@ template <typename T, typename Allocator = memory::allocator::SystemAllocator<T>
         }
       }
     }
+
     bool find(uint64_t key, HazardPointerRecord *rec, Node *&curr, std::atomic<Node *> *&prev, Node *&next, std::atomic<Node *> *head)
     {
       bool found = false;
@@ -190,8 +178,6 @@ template <typename T, typename Allocator = memory::allocator::SystemAllocator<T>
         {
           break;
         }
-
-        // os::print("Thread %u curr = %u, key = %u\n", os::Thread::getCurrentThreadId(), curr->key, key);
 
         while (curr != nullptr)
         {
@@ -470,7 +456,7 @@ public:
   {
     return record.timestamp;
   }
-  // void (*gc)(T *, uint64_t tts, uint64_t gts) = nullptr
+
   void collect()
   {
     uint64_t threadTimestamp = minActiveTimestamp.load();
@@ -479,8 +465,6 @@ public:
 
     while (garbageRecords.front(garbage))
     {
-      // os::print("Thread %u collect garbage = %u, timestamp = %u\n", os::Thread::getCurrentThreadId(), garbage.timestamp, timestamp);
-
       if (garbage.timestamp >= minActiveTimestamp.load())
       {
         break;
@@ -488,24 +472,9 @@ public:
 
       if (garbageRecords.remove(garbage.timestamp, garbage))
       {
-        // os::print("Thread %u removed hehe\n", os::Thread::getCurrentThreadId(), garbage.timestamp, timestamp);
-
         for (size_t i = 0; i < garbage.size; i++)
         {
-          // if (gc)
-          // {
-          //   gc(garbage.garbage[i], threadTimestamp, garbage.timestamp);
-          // }
-          // else
-          // {
-          // os::print(
-          //     "Thread %u, garbage timestamp = %u, current timestamp = %u, freeing %p\n",
-          //     os::Thread::getCurrentThreadId(),
-          //     garbage.timestamp,
-          //     threadTimestamp,
-          //     garbage.garbage[i]);
           allocator.deallocate(garbage.garbage[i]);
-          // }
         }
 
         delete[] garbage.garbage;

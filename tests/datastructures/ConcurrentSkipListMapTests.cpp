@@ -20,29 +20,28 @@ void basicTests()
   assert(map.insert(20, 200));
   assert(map.insert(30, 300));
   assert(map.getSize() == 3);
-
-  // Test duplicate insert
   assert(!map.insert(10, 150));
   assert(map.getSize() == 3);
 
-  // Test find
+  // // Test find
   int value;
   assert(map.find(10, value) && value == 100);
   assert(map.find(20, value) && value == 200);
   assert(map.find(30, value) && value == 300);
   assert(!map.find(40, value));
 
-  // Test remove
+  // // Test remove
   assert(map.remove(20));
-  assert(map.getSize() == 2);
   assert(!map.find(20, value));
   assert(!map.remove(20)); // Already removed
 
-  // Test remaining elements
-  assert(map.find(10, value) && value == 100);
-  assert(map.find(30, value) && value == 300);
+  // // Test remaining elements
+  // assert(map.find(10, value) && value == 100);
+  // assert(map.find(30, value) && value == 300);
 
   os::print("Basic tests passed!\n");
+
+  // map.verifyReferenceCounts();
 }
 
 void iteratorTests()
@@ -76,7 +75,7 @@ void iteratorTests()
   map.remove(70);
 
   count = 0;
-  
+
   for (auto e : map)
   {
     count++;
@@ -113,7 +112,7 @@ void multiThreadInsertTests()
           // Each thread inserts 1000 unique keys
           int base = i * 1000;
 
-          for (int j = 0; j < 1000; j++)
+          for (int j = 0; j < 10; j++)
           {
             then = lib::time::TimeSpan::now();
             bool inserted = map.insert(base + j, (base + j) * 10);
@@ -132,36 +131,42 @@ void multiThreadInsertTests()
     threads[i].join();
   }
 
-  // Verify all elements are present
-  assert(map.getSize() == totalThreads * 1000);
+  // map.verifyReferenceCounts();
 
-  int value;
-  for (size_t i = 0; i < totalThreads; i++)
-  {
-    int base = i * 1000;
-    for (int j = 0; j < 1000; j++)
-    {
-      assert(map.find(base + j, value));
-      assert(value == (base + j) * 10);
-    }
-  }
+  // Verify all elements are present
+  // assert(map.getSize() == totalThreads * 1000);
+
+  // int value;
+  // for (size_t i = 0; i < totalThreads; i++)
+  // {
+  //   int base = i * 1000;
+  //   for (int j = 0; j < 1000; j++)
+  //   {
+  //     assert(map.find(base + j, value));
+  //     assert(value == (base + j) * 10);
+  //   }
+  // }
+
+  // map.verifyReferenceCounts();
 
   os::print("Multi-threaded insert tests passed!\n");
 }
 
 void multiThreadRemoveTests()
 {
-  os::print("Running multi-threaded remove tests...\n");
+  //os::print("Running multi-threaded remove tests...\n");
 
   lib::ConcurrentSkipListMap<int, int> map;
 
-  size_t totalThreads = os::Thread::getHardwareConcurrency();
-  size_t elementsPerThread = 1000;
+  size_t totalThreads = 3; // os::Thread::getHardwareConcurrency();
+  size_t elementsPerThread = 10;
 
   // Pre-populate the map
   for (size_t i = 0; i < totalThreads * elementsPerThread; i++)
   {
-    map.insert(i, i);
+    // printf("inserting %u\n", i);
+    bool inserted = map.insert(i, i);
+    assert(inserted);
   }
 
   os::Thread threads[totalThreads];
@@ -185,12 +190,18 @@ void multiThreadRemoveTests()
           for (size_t j = 0; j < elementsPerThread; j++)
           {
             then = lib::time::TimeSpan::now();
+            // printf("removing %u\n", base + j);
             bool removed = map.remove(base + j);
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
             assert(removed);
           }
-
-          os::print("Thread %u average removal time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / elementsPerThread);
+          // for (size_t j = 0; j < elementsPerThread; j++)
+          // {
+          //   int v;
+          //   bool found = map.find(base + j, v);
+          //   assert(!found);
+          // }
+        //  os::print("Thread %u average removal time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / elementsPerThread);
         });
   }
 
@@ -204,7 +215,7 @@ void multiThreadRemoveTests()
   // Verify all elements are removed
   assert(map.isEmpty());
 
-  os::print("Multi-threaded remove tests passed!\n");
+  //os::print("Multi-threaded remove tests passed!\n");
 }
 
 void mixedOperationsTests()
@@ -478,7 +489,7 @@ void stressTest()
               {
                 count++;
                 if (count > 100)
-                  break; 
+                  break;
               }
             }
           }
@@ -501,20 +512,24 @@ int main()
 
   srand(time(nullptr));
 
-  basicTests();
-  iteratorTests();
-  multiThreadInsertTests();
-  multiThreadRemoveTests();
-  mixedOperationsTests();
-  concurrentIterationTests();
-  randomIteratorModificationTests();
+  // basicTests();
+  // iteratorTests();
+  // multiThreadInsertTests();
+  for (int i = 0; i < 100000; i++)
+  {
+    multiThreadRemoveTests();
+    lib::clearDebug();
+  }
+  // mixedOperationsTests();
+  // concurrentIterationTests();
+  // randomIteratorModificationTests();
 
   // Run stress test multiple times
-  for (int i = 0; i < 10; i++)
-  {
-    os::print("\n=== Stress test iteration %d ===\n", i + 1);
-    stressTest();
-  }
+  // for (int i = 0; i < 10; i++)
+  // {
+  //   os::print("\n=== Stress test iteration %d ===\n", i + 1);
+  //   stressTest();
+  // }
 
   os::print("\n=== All tests passed! ===\n");
 

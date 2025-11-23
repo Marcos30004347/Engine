@@ -43,8 +43,10 @@ public:
   using HazardPointerRecord = typename HazardPointerManager::Record;
 
   ConcurrentLinkedListIterator(Node *node, HazardPointerRecord *rec, HazardPointerManager &hazardAllocator, Allocator &allocator)
-      : curr(node), prev(nullptr), rec(rec), hazardAllocator(&hazardAllocator), allocator(&allocator)
+      : curr(node), rec(rec), hazardAllocator(&hazardAllocator), allocator(&allocator)
   {
+
+    assert(!rec || rec->get(0) == curr);
   }
 
   ~ConcurrentLinkedListIterator()
@@ -56,75 +58,11 @@ public:
     }
   }
 
-  ConcurrentLinkedListIterator(const ConcurrentLinkedListIterator &other) : curr(other.curr), prev(other.prev), hazardAllocator(other.hazardAllocator), allocator(other.allocator)
-  {
-    if (other.rec && curr)
-    {
-      rec = hazardAllocator->acquire(*allocator);
-      rec->assign(curr, 0);
-    }
-    else
-    {
-      rec = nullptr;
-    }
-  }
+  ConcurrentLinkedListIterator(const ConcurrentLinkedListIterator &other) = delete;
+  ConcurrentLinkedListIterator(ConcurrentLinkedListIterator &&other) = delete;
 
-  ConcurrentLinkedListIterator(ConcurrentLinkedListIterator &&other) noexcept
-      : curr(other.curr), prev(other.prev), rec(other.rec), hazardAllocator(other.hazardAllocator), allocator(other.allocator)
-  {
-    other.rec = nullptr;
-    other.curr = nullptr;
-    other.prev = nullptr;
-  }
-
-  ConcurrentLinkedListIterator &operator=(const ConcurrentLinkedListIterator &other)
-  {
-    if (this != &other)
-    {
-      if (rec)
-      {
-        hazardAllocator->release(rec);
-      }
-
-      curr = other.curr;
-      prev = other.prev;
-      hazardAllocator = other.hazardAllocator;
-      allocator = other.allocator;
-
-      if (other.rec && curr)
-      {
-        rec = hazardAllocator->acquire(*allocator);
-        rec->assign(curr, 0);
-      }
-      else
-      {
-        rec = nullptr;
-      }
-    }
-    return *this;
-  }
-
-  ConcurrentLinkedListIterator &operator=(ConcurrentLinkedListIterator &&other) noexcept
-  {
-    if (this != &other)
-    {
-      if (rec)
-      {
-        hazardAllocator->release(rec);
-      }
-
-      curr = other.curr;
-      prev = other.prev;
-      rec = other.rec;
-      hazardAllocator = other.hazardAllocator;
-      allocator = other.allocator;
-
-      other.rec = nullptr;
-      other.curr = nullptr;
-      other.prev = nullptr;
-    }
-    return *this;
-  }
+  ConcurrentLinkedListIterator &operator=(const ConcurrentLinkedListIterator &other) = delete;
+  ConcurrentLinkedListIterator &operator=(const ConcurrentLinkedListIterator &&other) = delete;
 
   T &operator*() const
   {
@@ -139,29 +77,26 @@ public:
   ConcurrentLinkedListIterator &operator++()
   {
     if (!curr)
+    {
       return *this;
-
-    HazardPointerRecord *nrec = hazardAllocator->acquire(*allocator);
-
+    }
+    
+    Node *next;
+    
     while (true)
     {
-      Node *next = curr->next.load(std::memory_order_acquire);
+      next = curr->next.load(std::memory_order_acquire);
+      rec->assign(next, 1);
 
-      if (next)
-        nrec->assign(next, 0);
-
-      if (curr->next.load(std::memory_order_acquire) == next)
+      if (curr->next.load(std::memory_order_acquire) != next)
       {
-        // Update prev and curr
-        prev = curr;
-        hazardAllocator->release(rec);
-        rec = nrec;
-        curr = next;
-        break;
+        continue;
       }
-    }
 
-    return *this;
+      curr = next;
+      rec->assign(curr, 0);
+      return *this;
+    }
   }
 
   ConcurrentLinkedListIterator operator++(int)
@@ -183,7 +118,6 @@ public:
 
 private:
   Node *curr;
-  Node *prev; // Track previous node for O(1) erase during iteration
   HazardPointerRecord *rec;
   HazardPointerManager *hazardAllocator;
   Allocator *allocator;
@@ -254,68 +188,6 @@ public:
     return it;
   }
 
-  // O(1) erase if iterator has valid prev pointer (e.g., obtained during iteration)
-  // Returns iterator to next element, or end() if erase failed
-  iterator erase(iterator &it)
-  {
-    if (!it.curr)
-    {
-      return end();
-    }
-
-    ConcurrentListNode<T> *toDelete = it.curr;
-    ConcurrentListNode<T> *next = toDelete->next.load(std::memory_order_acquire);
-
-    // Try to unlink the node
-    bool success = false;
-    if (it.prev)
-    {
-      // We have prev pointer - try O(1) deletion
-      success = it.prev->next.compare_exchange_strong(toDelete, next);
-    }
-    else
-    {
-      // No prev pointer, must be head (or iterator not from iteration)
-      success = head.compare_exchange_strong(toDelete, next);
-    }
-
-    if (success)
-    {
-      // Successfully unlinked
-      HazardPointerRecord *oldRec = it.rec;
-
-      // Acquire new hazard pointer for next node
-      HazardPointerRecord *newRec = nullptr;
-      if (next)
-      {
-        newRec = hazardAllocator.acquire(allocator);
-        newRec->assign(next, 0);
-      }
-
-      // Retire the deleted node
-      if (oldRec)
-      {
-        oldRec->retire(toDelete);
-        hazardAllocator.release(oldRec);
-      }
-
-      size.fetch_sub(1);
-
-      // Update the iterator to point to next
-      it.curr = next;
-      it.rec = newRec;
-      // it.prev stays the same
-
-      return it;
-    }
-    else
-    {
-      // CAS failed - node was already modified/deleted by another thread
-      // Return end() to indicate failure
-      return end();
-    }
-  }
-
   void clear()
   {
     using Node = ConcurrentListNode<T>;
@@ -345,12 +217,14 @@ public:
     while (true)
     {
       ConcurrentListNode<T> *prev = nullptr;
+
       ConcurrentListNode<T> *curr = head.load();
+      rec->assign(curr, 0);
+      if (head.load() != curr)
+        continue;
 
       while (curr)
       {
-        rec->assign(curr, 0);
-
         if (head.load() != curr && !prev)
         {
           break;
@@ -381,9 +255,13 @@ public:
           size.fetch_sub(1);
           return true;
         }
+
         prev = curr;
+
         curr = next;
+        rec->assign(curr, 0);
       }
+
       hazardAllocator.release(rec);
       return false;
     }
@@ -433,9 +311,7 @@ public:
 
       if (head.load(std::memory_order_acquire) == curr)
       {
-        iterator it(curr, rec, hazardAllocator, allocator);
-        it.prev = nullptr; // First element has no predecessor
-        return it;
+        return iterator(curr, rec, hazardAllocator, allocator);
       }
     }
   }
@@ -450,15 +326,15 @@ public:
     return iterator(nullptr, nullptr, hazardAllocator, allocator);
   }
 
-  const_iterator begin() const
-  {
-    return const_cast<ConcurrentLinkedList *>(this)->begin();
-  }
+  // const_iterator begin() const
+  // {
+  //   return const_cast<ConcurrentLinkedList *>(this)->begin();
+  // }
 
-  const_iterator end() const
-  {
-    return const_cast<ConcurrentLinkedList *>(this)->end();
-  }
+  // const_iterator end() const
+  // {
+  //   return const_cast<ConcurrentLinkedList *>(this)->end();
+  // }
 };
 
 template <typename T> class ConcurrentShardedList
