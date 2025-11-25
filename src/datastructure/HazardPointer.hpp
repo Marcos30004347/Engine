@@ -11,26 +11,6 @@
 namespace lib
 {
 
-// TODO: get rid of this
-// struct SpinLock
-// {
-//   std::atomic_flag flag = ATOMIC_FLAG_INIT;
-
-//   void lock()
-//   {
-//     while (flag.test_and_set(std::memory_order_acquire))
-//     {
-//       os::print("....locked\n");
-//       // assert(false);
-//     }
-//   }
-
-//   void unlock()
-//   {
-//     flag.clear(std::memory_order_release);
-//   }
-// };
-
 template <size_t K, typename T, typename Allocator = memory::allocator::SystemAllocator<T>> class HazardPointer
 {
 public:
@@ -129,7 +109,6 @@ public:
 
         if (index == hp.size()) // not found
         {
-
           allocator.deallocate((T *)retiredList[i]);
 
           if (i != retiredList.size() - 1)
