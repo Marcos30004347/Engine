@@ -294,8 +294,9 @@ namespace lib
 //   }
 // };
 
-#define CACHE_LINE_SIZE 128
-#define ALIGNED_ATOMIC_PTR_ALIGNMENT 64
+#define CACHE_LINE_SIZE 8
+#define ALIGNED_ATOMIC_PTR_ALIGNMENT 8
+
 template <typename K, typename V, size_t MAX_LEVEL = 16> struct ConcurrentSkipListMapNode
 {
 private:
@@ -303,6 +304,7 @@ private:
 
   alignas(CACHE_LINE_SIZE) std::atomic<uint32_t> refCount; // Own cache line
   alignas(CACHE_LINE_SIZE) std::atomic<bool> marked;       // Own cache line
+   
 
   struct alignas(ALIGNED_ATOMIC_PTR_ALIGNMENT) AlignedAtomicPtr
   {
@@ -387,7 +389,7 @@ public:
   bool ref()
   {
     uint32_t old = refCount.fetch_add(1, std::memory_order_acquire);
-    // printf("+ %p %u\n", this, old);
+    //printf("+ %p %u\n", this, old);
     if (old == 0 && marked.load(std::memory_order_release))
     {
       // Node was already freed, undo the increment
@@ -401,7 +403,7 @@ public:
   bool unref()
   {
     uint32_t old = refCount.fetch_sub(1, std::memory_order_acquire);
-    // printf("- %p %u\n", this, old);
+    //printf("- %p %u\n", this, old);
 
     if (old == 0)
     {
@@ -453,9 +455,9 @@ private:
     {
       return;
     }
+
     if (node->unref())
     {
-      // printf("freed %p\n", node);
       for (int i = 0; i <= MAX_LEVEL; i++)
       {
         Node *child = node->next[i].load(std::memory_order_acquire);
@@ -474,12 +476,10 @@ private:
     HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
 
     Node *curr = nullptr, *pred = nullptr;
-    bool referenced = false;
-    uint32_t retries = 0;
+
   retry:
     pred = nullptr;
     curr = nullptr;
-
     for (uint32_t i = 0; i <= MAX_LEVEL; i++)
     {
       if (preds[i] != nullptr)
@@ -505,15 +505,15 @@ private:
 
       if (curr != pred->next[level].load(std::memory_order_acquire))
       {
-        removeLinksAndRetireNode(pred, rec);
+        // removeLinksAndRetireNode(pred, rec);
         goto retry;
       }
 
-      if (!curr->ref())
-      {
-        removeLinksAndRetireNode(pred, rec);
-        goto retry;
-      }
+      // if (!curr->ref())
+      // {
+      //   removeLinksAndRetireNode(pred, rec);
+      //   goto retry;
+      // }
 
       while (true)
       {
@@ -528,17 +528,17 @@ private:
 
         if (!succ || succ != curr->next[level].load(std::memory_order_acquire))
         {
-          removeLinksAndRetireNode(pred, rec);
-          removeLinksAndRetireNode(curr, rec);
+          // removeLinksAndRetireNode(pred, rec);
+          // removeLinksAndRetireNode(curr, rec);
           goto retry;
         }
 
-        if (!succ->ref())
-        {
-          removeLinksAndRetireNode(pred, rec);
-          removeLinksAndRetireNode(curr, rec);
-          goto retry;
-        }
+        // if (!succ->ref())
+        // {
+        //   removeLinksAndRetireNode(pred, rec);
+        //   removeLinksAndRetireNode(curr, rec);
+        //   goto retry;
+        // }
 
         while (curr->isMarked())
         {
@@ -550,21 +550,21 @@ private:
 
           if (!succ->ref())
           {
-            removeLinksAndRetireNode(pred, rec);
-            removeLinksAndRetireNode(curr, rec);
-            removeLinksAndRetireNode(succ, rec);
+            // removeLinksAndRetireNode(pred, rec);
+            // removeLinksAndRetireNode(curr, rec);
+            // removeLinksAndRetireNode(succ, rec);
             goto retry;
           }
 
           if (!pred->next[level].compare_exchange_strong(expected, succ, std::memory_order_release, std::memory_order_acquire))
           {
-            removeLinksAndRetireNode(pred, rec);
-            removeLinksAndRetireNode(curr, rec);
+            // removeLinksAndRetireNode(pred, rec);
+            // removeLinksAndRetireNode(curr, rec);
             removeLinksAndRetireNode(succ, rec);
-            removeLinksAndRetireNode(succ, rec);
+            // removeLinksAndRetireNode(succ, rec);
             goto retry;
           }
-          removeLinksAndRetireNode(curr, rec);
+
           removeLinksAndRetireNode(curr, rec);
 
           curr = succ;
@@ -572,8 +572,8 @@ private:
           rec->assign(curr, 0);
           if (!curr || pred->next[level].load(std::memory_order_acquire) != curr)
           {
-            removeLinksAndRetireNode(pred, rec);
-            removeLinksAndRetireNode(curr, rec);
+            // removeLinksAndRetireNode(pred, rec);
+            // removeLinksAndRetireNode(curr, rec);
             goto retry;
           }
 
@@ -589,29 +589,29 @@ private:
 
           if (!succ || succ != curr->next[level].load(std::memory_order_acquire))
           {
-            removeLinksAndRetireNode(pred, rec);
-            removeLinksAndRetireNode(curr, rec);
+            // removeLinksAndRetireNode(pred, rec);
+            // removeLinksAndRetireNode(curr, rec);
             goto retry;
           }
 
-          if (!succ->ref())
-          {
-            removeLinksAndRetireNode(pred, rec);
-            removeLinksAndRetireNode(curr, rec);
-            goto retry;
-          }
+          // if (!succ->ref())
+          // {
+          //   removeLinksAndRetireNode(pred, rec);
+          //   removeLinksAndRetireNode(curr, rec);
+          //   goto retry;
+          // }
         }
 
         if (curr == tail || curr->key >= key)
         {
-          if (succ)
-          {
-            removeLinksAndRetireNode(succ, rec);
-          }
+          // if (succ)
+          // {
+          //   removeLinksAndRetireNode(succ, rec);
+          // }
           break;
         }
 
-        removeLinksAndRetireNode(pred, rec);
+        // removeLinksAndRetireNode(pred, rec);
         pred = curr;
 
         assert(curr != succ);
@@ -624,28 +624,74 @@ private:
       predsRec->assign(pred, level);
       succRec->assign(curr, level);
 
+      // if (!pred->ref())
+      // {
+      //   abort();
+      // }
+
+      // if (!curr->ref())
+      // {
+      //   abort();
+      // }
       if (!pred->ref())
       {
-        abort();
-      }
-
-      if (!curr->ref())
-      {
-        abort();
+        goto retry;
       }
 
       preds[level] = pred;
+
+      if (!curr->ref())
+      {
+        goto retry;
+      }
+
       succs[level] = curr;
 
-      removeLinksAndRetireNode(curr, rec);
+      // removeLinksAndRetireNode(curr, rec);
       rec->assign(pred, 2);
     }
+
+    // for (uint32_t i = 0; i <= MAX_LEVEL; i++)
+    // {
+    //   if (preds[i] != nullptr)
+    //   {
+    //     if (!preds[i]->ref())
+    //     {
+    //       for (uint32_t j = 0; j < i; j++)
+    //       {
+    //         removeLinksAndRetireNode(preds[j], predsRec);
+    //       }
+
+    //       goto retry;
+    //     }
+    //   }
+    // }
+
+    // for (uint32_t i = 0; i <= MAX_LEVEL; i++)
+    // {
+    //   if (succs[i] != nullptr)
+    //   {
+    //     if (!succs[i]->ref())
+    //     {
+    //       for (uint32_t j = 0; j < i; j++)
+    //       {
+    //         removeLinksAndRetireNode(succs[j], succRec);
+    //       }
+    //       for (uint32_t j = 0; j <= MAX_LEVEL; j++)
+    //       {
+    //         removeLinksAndRetireNode(preds[j], predsRec);
+    //       }
+
+    //       goto retry;
+    //     }
+    //   }
+    // }
 
     hazardAllocator.release(rec);
 
     bool result = curr != tail && curr->key == key;
 
-    removeLinksAndRetireNode(pred, rec);
+    // removeLinksAndRetireNode(pred, rec);
 
     return result;
   }
@@ -930,7 +976,7 @@ public:
       }
 
       Node *newNode = new Node(key, value, topLevel);
-      // printf("new node = %p, %p\n", newNode, topLevel);
+
       newNode->ref();
 
       rec->assign(newNode, 0);
