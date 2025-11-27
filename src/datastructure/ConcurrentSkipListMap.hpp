@@ -20,287 +20,14 @@ namespace lib
 #define MARK_BIT (1U << MARK_BIT_INDEX)
 #define REFCOUNT_MASK ~MARK_BIT
 
-// template <typename K, typename V> struct ConcurrentSkipListMapNode
-// {
-// private:
-//   std::atomic<uint32_t> metadata;
-
-// public:
-//   std::vector<std::atomic<ConcurrentSkipListMapNode<K, V> *>> next;
-
-//   K key;
-//   V value;
-
-//   ConcurrentSkipListMapNode(const K &k, const V &v, uint32_t level) : key(k), value(v), metadata(MARK_BIT), next(level + 1)
-//   {
-//     for (int i = 0; i <= level; ++i)
-//     {
-//       next[i].store(nullptr, std::memory_order_relaxed);
-//     }
-//   }
-
-//   ConcurrentSkipListMapNode(int level) : metadata(MARK_BIT), next(level + 1)
-//   {
-//     for (int i = 0; i <= level; ++i)
-//     {
-//       next[i].store(nullptr, std::memory_order_relaxed);
-//     }
-//   }
-
-//   bool ref()
-//   {
-//     uint32_t meta = 0;
-//     uint32_t mark = 0;
-//     uint32_t refs = 0;
-//     uint32_t attempt = 0;
-
-//     while (true)
-//     {
-//       meta = metadata.load(std::memory_order_acquire);
-//       mark = meta & MARK_BIT;
-//       refs = meta & REFCOUNT_MASK;
-
-//       V min = std::numeric_limits<int>::min();
-//       V max = std::numeric_limits<int>::max();
-
-//       // if (meta == 0 && value != min && value != max)
-//       // {
-//       //   printf("[%u] FAILED ref v=%u, %u, l=%u, %s\n", os::Thread::getCurrentThreadId(), value, next.size(), level, suffix);
-
-//       //   if (value >= 0 && value < 10000)
-//       //   {
-//       //     std::vector<std::pair<uint64_t, std::string>> out;
-
-//       //     for (auto &s : debug[value]) // iterate your list
-//       //     {
-//       //       uint64_t ts = std::strtoull(s.c_str(), nullptr, 10);
-//       //       out.emplace_back(ts, s);
-//       //     }
-
-//       //     std::sort(
-//       //         out.begin(),
-//       //         out.end(),
-//       //         [](auto &a, auto &b)
-//       //         {
-//       //           return a.first < b.first;
-//       //         });
-
-//       //     for (auto &entry : out)
-//       //     {
-//       //       printf("%s", entry.second.c_str());
-//       //     }
-//       //   }
-
-//       //   abort();
-//       // }
-
-//       if (meta == 0)
-//       {
-//         return false;
-//       }
-
-//       // uint32_t old = metadata.fetch_add(1, std::memory_order_acquire);
-
-//       // if (value >= 0 && value < 10000)
-//       // {
-//       //   uint64_t ts = nowNs();
-//       //   char buffer[1024];
-//       //   std::snprintf(
-//       //       buffer,
-//       //       sizeof(buffer),
-//       //       "%llu [%u] ref v=%u, %u, l=%u, alive=%u, refs=%u, attempt=%u, %s\n",
-//       //       (unsigned long long)ts,
-//       //       os::Thread::getCurrentThreadId(),
-//       //       value,
-//       //       next.size(),
-//       //       level,
-//       //       mark ? 1 : 0,
-//       //       (REFCOUNT_MASK & refs) + 1,
-//       //       attempt++,
-//       //       suffix);
-//       //   debug[value].insert(std::string(buffer));
-//       // }
-
-//       // if (old == 0)
-//       // {
-//       //   printf("[%u] FAILED ref v=%u, %u, l=%u, %s\n", os::Thread::getCurrentThreadId(), value, next.size(), level, suffix);
-//       //   if (value >= 0 && value < 10000)
-//       //   {
-//       //     std::vector<std::pair<uint64_t, std::string>> out;
-
-//       //     for (auto &s : debug[value]) // iterate your list
-//       //     {
-//       //       uint64_t ts = std::strtoull(s.c_str(), nullptr, 10);
-//       //       out.emplace_back(ts, s);
-//       //     }
-
-//       //     std::sort(
-//       //         out.begin(),
-//       //         out.end(),
-//       //         [](auto &a, auto &b)
-//       //         {
-//       //           return a.first < b.first;
-//       //         });
-
-//       //     for (auto &entry : out)
-//       //     {
-//       //       printf("%s", entry.second.c_str());
-//       //     }
-//       //   }
-
-//       //   abort();
-//       // }
-
-//       if (metadata.compare_exchange_strong(meta, mark | (refs + 1), std::memory_order_release, std::memory_order_acquire))
-//       {
-//         return true;
-//       }
-//     }
-
-//     return false;
-//   }
-
-//   // void debugMessage(const char *suffix)
-//   // {
-//   //   uint32_t meta = 0;
-//   //   uint32_t mark = 0;
-//   //   uint32_t refs = 0;
-//   //   uint32_t attempt = 0;
-//   //   meta = metadata.load(std::memory_order_acquire);
-//   //   mark = meta & MARK_BIT;
-//   //   refs = meta & REFCOUNT_MASK;
-
-//   //   if (value >= 0 && value < 10000)
-//   //   {
-//   //     uint64_t ts = nowNs();
-//   //     char buffer[1024];
-//   //     std::snprintf(buffer, sizeof(buffer), "%llu [%u] debug v=%u, refs=%u, %s\n", (unsigned long long)ts, os::Thread::getCurrentThreadId(), value, refs, suffix);
-//   //     debug[value].insert(std::string(buffer));
-//   //   }
-//   // }
-
-//   bool unref()
-//   {
-//     uint32_t meta = 0;
-//     uint32_t mark = 0;
-//     uint32_t refs = 0;
-//     uint32_t attempt = 0;
-
-//     while (true)
-//     {
-//       meta = metadata.load(std::memory_order_acquire);
-//       mark = meta & MARK_BIT;
-//       refs = meta & REFCOUNT_MASK;
-
-//       if (meta == 0)
-//       {
-//         printf("[%u] FAILED unref v=%u, level=%u\n", os::Thread::getCurrentThreadId(), value, next.size());
-//         return false;
-//       }
-
-//       // uint32_t old = metadata.fetch_sub(1, std::memory_order_acquire);
-
-//       // if (value >= 0 && value < 10000)
-//       // {
-//       //   uint64_t ts = nowNs();
-//       //   char buffer[1024];
-//       //   std::snprintf(
-//       //       buffer,
-//       //       sizeof(buffer),
-//       //       "%llu [%u] der v=%u, %u, l=%u, alive=%u, refs=%u, attempt=%u, %s\n",
-//       //       (unsigned long long)ts,
-//       //       os::Thread::getCurrentThreadId(),
-//       //       value,
-//       //       next.size(),
-//       //       level,
-//       //       mark ? 1 : 0,
-//       //       (REFCOUNT_MASK & refs) - 1,
-//       //       attempt++,
-//       //       suffix);
-//       //   debug[value].insert(std::string(buffer));
-//       // }
-
-//       if (metadata.compare_exchange_strong(meta, mark | (refs - 1), std::memory_order_release, std::memory_order_acquire))
-//       {
-//         if ((refs - 1) == 0)
-//         {
-//           // for (auto &succ : next)
-//           // {
-//           //   succ.load(std::memory_order_acquire)->unref("deref destroy");
-//           // }
-
-//           return true;
-//         }
-
-//         return false;
-//       }
-//     }
-
-//     return false;
-//   }
-
-//   bool isMarked()
-//   {
-//     return (metadata.load(std::memory_order_acquire) & MARK_BIT) == 0;
-//   }
-//   bool isInvalid()
-//   {
-//     return (metadata.load(std::memory_order_acquire)) == 0;
-//   }
-
-//   bool mark()
-//   {
-//     uint32_t meta;
-//     uint32_t newMeta;
-//     uint32_t refs;
-//     uint32_t attempt = 0;
-
-//     while (true)
-//     {
-//       meta = metadata.load(std::memory_order_acquire);
-
-//       if ((meta & MARK_BIT) == 0)
-//       {
-//         return false;
-//       }
-
-//       refs = meta & REFCOUNT_MASK;
-
-//       // if (value >= 0 && value < 10000)
-//       // {
-//       //   uint64_t ts = nowNs();
-//       //   char buffer[1024];
-//       //   std::snprintf(
-//       //       buffer,
-//       //       sizeof(buffer),
-//       //       "%llu [%u] mark v=%u, level=%u, refs=%u, attempt=%u, %s\n",
-//       //       (unsigned long long)ts,
-//       //       os::Thread::getCurrentThreadId(),
-//       //       value,
-//       //       level,
-//       //       refs,
-//       //       attempt++,
-//       //       suffix);
-//       //   debug[value].insert(std::string(buffer));
-//       // }
-
-//       newMeta = refs;
-
-//       if (metadata.compare_exchange_strong(meta, newMeta, std::memory_order_release, std::memory_order_acquire))
-//       {
-//         return true;
-//       }
-//     }
-//   }
-// };
 
 #define CACHE_LINE_SIZE 8
 #define ALIGNED_ATOMIC_PTR_ALIGNMENT 8
 
-template <typename K, typename V, size_t MAX_LEVEL = 16> struct ConcurrentMapNode
+template <typename K, typename V, size_t MAX_LEVEL = 16> struct ConcurrentSkipListMapNode
 {
 private:
-  using Node = ConcurrentMapNode<K, V, MAX_LEVEL>;
+  using Node = ConcurrentSkipListMapNode<K, V, MAX_LEVEL>;
 
   alignas(CACHE_LINE_SIZE) std::atomic<uint32_t> refCount; // Own cache line
   alignas(CACHE_LINE_SIZE) std::atomic<bool> marked;       // Own cache line
@@ -369,7 +96,7 @@ public:
   K key;
   V value;
 
-  ConcurrentMapNode(const K &k, const V &v, uint32_t level) : key(k), value(v), refCount(0), marked(false)
+  ConcurrentSkipListMapNode(const K &k, const V &v, uint32_t level) : key(k), value(v), refCount(0), marked(false)
   {
     for (int i = 0; i <= MAX_LEVEL; ++i)
     {
@@ -377,7 +104,7 @@ public:
     }
   }
 
-  ConcurrentMapNode(int level) : refCount(0), marked(false)
+  ConcurrentSkipListMapNode(int level) : refCount(0), marked(false)
   {
     for (int i = 0; i <= MAX_LEVEL; ++i)
     {
@@ -425,12 +152,12 @@ public:
   }
 };
 
-template <typename K, typename V, size_t MAX_LEVEL = 16, typename Allocator = memory::allocator::SystemAllocator<ConcurrentMapNode<K, V, MAX_LEVEL>>> class ConcurrentMap
+template <typename K, typename V, size_t MAX_LEVEL = 16, typename Allocator = memory::allocator::SystemAllocator<ConcurrentSkipListMapNode<K, V, MAX_LEVEL>>> class ConcurrentSkipListMap
 {
-  using HazardPointerManager = HazardPointer<MAX_LEVEL + 1, ConcurrentMapNode<K, V, MAX_LEVEL>, Allocator>;
+  using HazardPointerManager = HazardPointer<MAX_LEVEL + 1, ConcurrentSkipListMapNode<K, V, MAX_LEVEL>, Allocator>;
 
   using HazardPointerRecord = typename HazardPointerManager::Record;
-  using Node = ConcurrentMapNode<K, V, MAX_LEVEL>;
+  using Node = ConcurrentSkipListMapNode<K, V, MAX_LEVEL>;
 
   HazardPointerManager hazardAllocator;
   Allocator allocator;
@@ -469,7 +196,7 @@ private:
 
     if (node->unref())
     {
-      printf("freed %p\n", node);
+      // printf("freed %p\n", node);
       for (int i = 0; i <= MAX_LEVEL; i++)
       {
         Node *child = node->next[i].load(std::memory_order_acquire);
@@ -709,7 +436,7 @@ private:
   }
 
 public:
-  ConcurrentMap() : size_(0), hazardAllocator()
+  ConcurrentSkipListMap() : size_(0), hazardAllocator()
   {
     head = new Node(MAX_LEVEL);
     tail = new Node(MAX_LEVEL);
@@ -731,7 +458,7 @@ public:
     }
   }
 
-  ~ConcurrentMap()
+  ~ConcurrentSkipListMap()
   {
     Node *current = head->next[0].load(std::memory_order_acquire);
 
@@ -748,7 +475,7 @@ public:
 
   class Iterator
   {
-    template <typename A, typename B, size_t C, typename D> friend class ConcurrentMap;
+    template <typename A, typename B, size_t C, typename D> friend class ConcurrentSkipListMap;
 
   private:
     Node *current;
@@ -1002,7 +729,7 @@ public:
           {
             removeLinksAndRetireNode(succs[level], succsRec);
           }
-          
+
           delete newNode;
           goto retry;
         }
@@ -1078,7 +805,7 @@ public:
     }
   }
 
-  bool remove(const K &key)
+  Iterator remove(const K &key)
   {
     Node *preds[MAX_LEVEL + 1] = {0};
     Node *succs[MAX_LEVEL + 1] = {0};
@@ -1132,10 +859,6 @@ public:
     }
 
   result:
-    if (ret)
-    {
-      removeLinksAndRetireNode(victim, rec);
-    }
 
     for (uint32_t i = 0; i <= MAX_LEVEL; i++)
     {
@@ -1152,9 +875,13 @@ public:
 
     hazardAllocator.release(predsRec);
     hazardAllocator.release(succsRec);
-    hazardAllocator.release(rec);
 
-    return ret;
+    if (ret)
+    {
+      return Iterator(victim, tail, rec, &hazardAllocator, false);
+    }
+
+    return end();
   }
 
   Iterator find(const K &key)

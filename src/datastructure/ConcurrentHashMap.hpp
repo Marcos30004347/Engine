@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ConcurrentMap.hpp"
+#include "ConcurrentSkipListMap.hpp"
 #include <functional>
 
 namespace lib
@@ -11,11 +11,11 @@ template <
     typename V,
     size_t MAX_LEVEL = 16,
     typename Hasher = std::hash<K>,
-    typename Allocator = memory::allocator::SystemAllocator<ConcurrentMapNode<size_t, V, MAX_LEVEL>>>
+    typename Allocator = memory::allocator::SystemAllocator<ConcurrentSkipListMapNode<size_t, V, MAX_LEVEL>>>
 class ConcurrentHashMap
 {
 private:
-  using InternalMap = ConcurrentMap<size_t, V, MAX_LEVEL, Allocator>;
+  using InternalMap = ConcurrentSkipListMap<size_t, V, MAX_LEVEL, Allocator>;
   using InternalIterator = typename InternalMap::Iterator;
 
   InternalMap map;

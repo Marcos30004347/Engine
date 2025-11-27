@@ -109,7 +109,7 @@ public:
 
         if (index == hp.size()) // not found
         {
-          printf("deallocating %p\n", retiredList[i]);
+         // printf("deallocating %p\n", retiredList[i]);
           allocator.deallocate((T *)retiredList[i]);
 
           if (i != retiredList.size() - 1)
