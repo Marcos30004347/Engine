@@ -244,15 +244,8 @@ private:
 
       if (curr != pred->next[level].load(std::memory_order_acquire))
       {
-        // removeLinksAndRetireNode(pred, rec);
         goto retry;
       }
-
-      // if (!curr->ref())
-      // {
-      //   removeLinksAndRetireNode(pred, rec);
-      //   goto retry;
-      // }
 
       while (true)
       {
@@ -267,40 +260,23 @@ private:
 
         if (!succ || succ != curr->next[level].load(std::memory_order_acquire))
         {
-          // removeLinksAndRetireNode(pred, rec);
-          // removeLinksAndRetireNode(curr, rec);
           goto retry;
         }
-
-        // if (!succ->ref())
-        // {
-        //   removeLinksAndRetireNode(pred, rec);
-        //   removeLinksAndRetireNode(curr, rec);
-        //   goto retry;
-        // }
 
         while (curr->isMarked())
         {
           assert(succ != curr);
 
-          // curr->debugMessage("is marked");
-
           Node *expected = curr;
 
           if (!succ->ref())
           {
-            // removeLinksAndRetireNode(pred, rec);
-            // removeLinksAndRetireNode(curr, rec);
-            // removeLinksAndRetireNode(succ, rec);
             goto retry;
           }
 
           if (!pred->next[level].compare_exchange_strong(expected, succ, std::memory_order_release, std::memory_order_acquire))
           {
-            // removeLinksAndRetireNode(pred, rec);
-            // removeLinksAndRetireNode(curr, rec);
             removeLinksAndRetireNode(succ, rec);
-            // removeLinksAndRetireNode(succ, rec);
             goto retry;
           }
 
@@ -311,8 +287,6 @@ private:
           rec->assign(curr, 0);
           if (!curr || pred->next[level].load(std::memory_order_acquire) != curr)
           {
-            // removeLinksAndRetireNode(pred, rec);
-            // removeLinksAndRetireNode(curr, rec);
             goto retry;
           }
 
@@ -328,29 +302,15 @@ private:
 
           if (!succ || succ != curr->next[level].load(std::memory_order_acquire))
           {
-            // removeLinksAndRetireNode(pred, rec);
-            // removeLinksAndRetireNode(curr, rec);
             goto retry;
           }
-
-          // if (!succ->ref())
-          // {
-          //   removeLinksAndRetireNode(pred, rec);
-          //   removeLinksAndRetireNode(curr, rec);
-          //   goto retry;
-          // }
         }
 
         if (curr == tail || curr->key >= key)
         {
-          // if (succ)
-          // {
-          //   removeLinksAndRetireNode(succ, rec);
-          // }
           break;
         }
 
-        // removeLinksAndRetireNode(pred, rec);
         pred = curr;
 
         assert(curr != succ);
@@ -363,15 +323,6 @@ private:
       predsRec->assign(pred, level);
       succRec->assign(curr, level);
 
-      // if (!pred->ref())
-      // {
-      //   abort();
-      // }
-
-      // if (!curr->ref())
-      // {
-      //   abort();
-      // }
       if (!pred->ref())
       {
         goto retry;
@@ -386,52 +337,12 @@ private:
 
       succs[level] = curr;
 
-      // removeLinksAndRetireNode(curr, rec);
       rec->assign(pred, 2);
     }
-
-    // for (uint32_t i = 0; i <= MAX_LEVEL; i++)
-    // {
-    //   if (preds[i] != nullptr)
-    //   {
-    //     if (!preds[i]->ref())
-    //     {
-    //       for (uint32_t j = 0; j < i; j++)
-    //       {
-    //         removeLinksAndRetireNode(preds[j], predsRec);
-    //       }
-
-    //       goto retry;
-    //     }
-    //   }
-    // }
-
-    // for (uint32_t i = 0; i <= MAX_LEVEL; i++)
-    // {
-    //   if (succs[i] != nullptr)
-    //   {
-    //     if (!succs[i]->ref())
-    //     {
-    //       for (uint32_t j = 0; j < i; j++)
-    //       {
-    //         removeLinksAndRetireNode(succs[j], succRec);
-    //       }
-    //       for (uint32_t j = 0; j <= MAX_LEVEL; j++)
-    //       {
-    //         removeLinksAndRetireNode(preds[j], predsRec);
-    //       }
-
-    //       goto retry;
-    //     }
-    //   }
-    // }
 
     hazardAllocator.release(rec);
 
     bool result = curr != tail && curr->key == key;
-
-    // removeLinksAndRetireNode(pred, rec);
-
     return result;
   }
 
