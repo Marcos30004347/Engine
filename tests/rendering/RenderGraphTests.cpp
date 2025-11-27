@@ -316,7 +316,7 @@ int main()
   renderGraph->addPass(
       "passB",
       RenderGraph::ExecuteAlways,
-      [](const ResourceDatabase &resources, CommandRecorder &cmd)
+      [](ResourceDatabase &resources, CommandRecorder &cmd)
       {
         Texture textureA = resources.getTexture("TextureA");
         Buffer buffer = resources.getBuffer("BufferA");
@@ -330,7 +330,7 @@ int main()
   renderGraph->addPass(
       "passC",
       RenderGraph::ExecuteAlways,
-      [](const ResourceDatabase &resources, CommandRecorder &cmd)
+      [](ResourceDatabase &resources, CommandRecorder &cmd)
       {
         Buffer buffer = resources.getBuffer("BufferA");
         Buffer bufferC = resources.getBuffer("BufferC");
@@ -343,7 +343,7 @@ int main()
   renderGraph->addPass(
       "passD",
       RenderGraph::ExecuteAlways,
-      [](const ResourceDatabase &resources, CommandRecorder &cmd)
+      [](ResourceDatabase &resources, CommandRecorder &cmd)
       {
         BindingGroups bindings = resources.getBindingGroups("BindingsPassD");
         Buffer buffer = resources.getBuffer("BufferA");
@@ -355,7 +355,7 @@ int main()
   renderGraph->addPass(
       "passE",
       RenderGraph::ExecuteAlways,
-      [](const ResourceDatabase &resources, CommandRecorder &cmd)
+      [](ResourceDatabase &resources, CommandRecorder &cmd)
       {
         Buffer buffer = resources.getBuffer("BufferA");
         BindingGroups bindings = resources.getBindingGroups("BindingsPassE");
@@ -367,7 +367,7 @@ int main()
   renderGraph->addPass(
       "passF",
       RenderGraph::ExecuteAlways,
-      [](const ResourceDatabase &resources, CommandRecorder &cmd)
+      [](ResourceDatabase &resources, CommandRecorder &cmd)
       {
         Buffer buffer = resources.getBuffer("BufferA");
         BindingGroups bindings = resources.getBindingGroups("BindingsPassF");

@@ -685,15 +685,15 @@ public:
   ResourceDatabase(RenderGraph *renderGraph);
 
   const Buffer getScratchBuffer(BufferInfo &info);
-  const BindingGroups getBindingGroups(const std::string &name) const;
-  const GraphicsPipeline getGraphicsPipeline(const std::string &name) const;
-  const ComputePipeline getComputePipeline(const std::string &name) const;
+  const BindingGroups getBindingGroups(const std::string &name);
+  const GraphicsPipeline getGraphicsPipeline(const std::string &name);
+  const ComputePipeline getComputePipeline(const std::string &name);
 
-  const BindingsLayout getBindingsLayout(const std::string &name) const;
-  const Sampler getSampler(const std::string &name) const;
-  const Buffer getBuffer(const std::string &name) const;
-  const Buffer getScratchBuffer(const std::string &name) const;
-  const Texture getTexture(const std::string &name) const;
+  const BindingsLayout getBindingsLayout(const std::string &name);
+  const Sampler getSampler(const std::string &name);
+  const Buffer getBuffer(const std::string &name);
+  const Buffer getScratchBuffer(const std::string &name);
+  const Texture getTexture(const std::string &name);
   // const TextureView getNextSwapChainTexture(const SwapChain &swapChain) const;
 };
 
@@ -718,7 +718,7 @@ private:
   {
     std::string name;
     std::function<bool(const RenderGraph &)> shouldExecute;
-    std::function<void(const ResourceDatabase &, CommandRecorder &)> record;
+    std::function<void(ResourceDatabase &, CommandRecorder &)> record;
   };
 
   friend class Task;
@@ -726,7 +726,7 @@ private:
   uint64_t executions;
   RHI *renderingHardwareInterface;
 
-  lib::ConcurrentLinkedList<RenderGraphPass> passes;
+  lib::ConcurrentHashMap<std::string, RenderGraphPass> passes;
 
   std::vector<RenderGraphNode> nodes;
   std::vector<std::vector<RenderGraphEdge>> edges;
@@ -780,7 +780,7 @@ public:
 
   RenderGraph(RHI *rhi);
 
-  void addPass(std::string name, std::function<bool(const RenderGraph &)> shouldExecute, std::function<void(const ResourceDatabase &, CommandRecorder &)> handler);
+  void addPass(std::string name, std::function<bool(const RenderGraph &)> shouldExecute, std::function<void(ResourceDatabase &, CommandRecorder &)> handler);
   void compile();
 
   const Buffer createScratchBuffer(const BufferInfo &info);

@@ -1217,7 +1217,7 @@ void VulkanRHI::releaseBuffer(VulkanBuffer &buf)
   buf.memoryFlags = 0;
   buf.info = BufferInfo{};
 
-  vkBuffers.erase(buf.info.name);
+  vkBuffers.remove(buf.info.name);
   delete &buf;
 }
 
@@ -1292,7 +1292,7 @@ void VulkanRHI::releaseTexture(VulkanTexture &vkTex)
   tex->memoryFlags = 0;
   tex->currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-  vkTextures.erase(tex->info.name);
+  vkTextures.remove(tex->info.name);
   delete tex;
 }
 
@@ -1379,7 +1379,7 @@ void VulkanRHI::releaseSampler(VulkanSampler &sampler)
     sampler.sampler = VK_NULL_HANDLE;
   }
 
-  vkSamplers.erase(sampler.info.name);
+  vkSamplers.remove(sampler.info.name);
   delete vkSampler;
 }
 
@@ -1463,7 +1463,7 @@ void VulkanRHI::releaseBindingsLayout(VulkanBindingsLayout &layout)
   layout.groups.clear();
   layout.name.clear();
 
-  vkBindingsGroups.erase(layout.name);
+  vkBindingsGroups.remove(layout.name);
   delete l;
 }
 
@@ -1643,15 +1643,16 @@ void VulkanRHI::releaseBindingGroup(VulkanBindingGroups &groups)
     }
 
     group.descriptorSets.clear();
-    
-    for(auto& view : group.textureViews) {
+
+    for (auto &view : group.textureViews)
+    {
       destroyTextureView(view);
     }
   }
 
   groups.groups.clear();
 
-  vkBindingsGroups.erase(groups.info.name);
+  vkBindingsGroups.remove(groups.info.name);
   delete g;
 }
 
@@ -1945,114 +1946,98 @@ const TextureView VulkanRHI::getCurrentSwapChainTextureView(SwapChain swapChainH
 
 const VulkanTexture &VulkanRHI::getVulkanTexture(const std::string &obj)
 {
-  VulkanTexture *ptr;
+  auto result = vkTextures.find(obj);
 
-  bool result = vkTextures.find(obj, ptr);
-
-  if (!result)
+  if (result == vkTextures.end())
   {
     throw std::runtime_error("VulkanTexture not found");
   }
 
-  return *ptr;
+  return *result.value(); //->value();
 }
 
 const VulkanSampler &VulkanRHI::getVulkanSampler(const std::string &obj)
 {
-  VulkanSampler *ptr;
+  auto result = vkSamplers.find(obj);
 
-  bool result = vkSamplers.find(obj, ptr);
-
-  if (!result)
+  if (result == vkSamplers.end())
   {
     throw std::runtime_error("VulkanSampler not found");
   }
 
-  return *ptr;
+  return *result.value();
 }
 
 const VulkanBuffer &VulkanRHI::getVulkanBuffer(const std::string &obj)
 {
-  VulkanBuffer *ptr;
+  auto result = vkBuffers.find(obj);
 
-  bool result = vkBuffers.find(obj, ptr);
-
-  if (!result)
+  if (result == vkBuffers.end())
   {
     throw std::runtime_error("VulkanBuffer not found");
   }
 
-  return *ptr;
+  return *result.value();
 }
 
 const VulkanBindingsLayout &VulkanRHI::getVulkanBindingsLayout(const std::string &obj)
 {
-  VulkanBindingsLayout *ptr;
+  auto result = vkBindingsLayout.find(obj);
 
-  bool result = vkBindingsLayout.find(obj, ptr);
-
-  if (!result)
+  if (result == vkBindingsLayout.end())
   {
     throw std::runtime_error("VulkanBindingsLayout not found");
   }
 
-  return *ptr;
+  return *result.value();
 }
 
 const VulkanBindingGroups &VulkanRHI::getVulkanBindingGroups(const std::string &obj)
 {
-  VulkanBindingGroups *ptr;
+  auto result = vkBindingsGroups.find(obj);
 
-  bool result = vkBindingsGroups.find(obj, ptr);
-
-  if (!result)
+  if (result == vkBindingsGroups.end())
   {
     throw std::runtime_error("VulkanBindingGroups not found");
   }
 
-  return *ptr;
+  return *result.value();
 }
 
 const VulkanGraphicsPipeline &VulkanRHI::getVulkanGraphicsPipeline(const std::string &obj)
 {
-  VulkanGraphicsPipeline *ptr;
+  auto result = vkGraphicsPipeline.find(obj);
 
-  bool result = vkGraphicsPipeline.find(obj, ptr);
-
-  if (!result)
+  if (result == vkGraphicsPipeline.end())
   {
     throw std::runtime_error("VulkanGraphicsPipeline not found");
   }
 
-  return *ptr;
+  return *result.value();
 }
 
 const VulkanComputePipeline &VulkanRHI::getVulkanComputePipeline(const std::string &obj)
 {
-  VulkanComputePipeline *ptr;
+  auto result = vkComputePipeline.find(obj);
 
-  bool result = vkComputePipeline.find(obj, ptr);
-
-  if (!result)
+  if (result == vkComputePipeline.end())
   {
     throw std::runtime_error("VulkanComputePipeline not found");
   }
 
-  return *ptr;
+  return *result.value();
 }
 
 const VulkanShader &VulkanRHI::getVulkanShader(const std::string &obj)
 {
-  VulkanShader *ptr;
+  auto result = vkShaders.find(obj);
 
-  bool result = vkShaders.find(obj, ptr);
-
-  if (!result)
+  if (result == vkShaders.end())
   {
     throw std::runtime_error("VulkanShader not found");
   }
 
-  return *ptr;
+  return *result.value();
 };
 
 void VulkanRHI::bufferMapRead(const Buffer &buffer, const uint64_t offset, const uint64_t size, void **ptr)
@@ -2440,7 +2425,7 @@ void VulkanRHI::releaseGraphicsPipeline(VulkanGraphicsPipeline &handle)
   VulkanGraphicsPipeline *pipeline = &handle;
   vkDestroyPipeline(device, handle.pipeline, NULL);
   vkDestroyRenderPass(device, handle.renderPass, NULL);
-  vkGraphicsPipeline.erase(handle.info.name);
+  vkGraphicsPipeline.remove(handle.info.name);
   delete pipeline;
 }
 
@@ -2494,7 +2479,7 @@ void VulkanRHI::releaseComputePipeline(VulkanComputePipeline &vkPipeline)
     vkDestroyPipeline(device, vkPipeline.pipeline, nullptr);
   }
 
-  vkComputePipeline.erase(vkPipeline.info.name);
+  vkComputePipeline.remove(vkPipeline.info.name);
   delete pipeline;
 }
 

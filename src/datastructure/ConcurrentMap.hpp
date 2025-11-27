@@ -297,14 +297,13 @@ namespace lib
 #define CACHE_LINE_SIZE 8
 #define ALIGNED_ATOMIC_PTR_ALIGNMENT 8
 
-template <typename K, typename V, size_t MAX_LEVEL = 16> struct ConcurrentSkipListMapNode
+template <typename K, typename V, size_t MAX_LEVEL = 16> struct ConcurrentMapNode
 {
 private:
-  using Node = ConcurrentSkipListMapNode<K, V, MAX_LEVEL>;
+  using Node = ConcurrentMapNode<K, V, MAX_LEVEL>;
 
   alignas(CACHE_LINE_SIZE) std::atomic<uint32_t> refCount; // Own cache line
   alignas(CACHE_LINE_SIZE) std::atomic<bool> marked;       // Own cache line
-   
 
   struct alignas(ALIGNED_ATOMIC_PTR_ALIGNMENT) AlignedAtomicPtr
   {
@@ -370,7 +369,7 @@ public:
   K key;
   V value;
 
-  ConcurrentSkipListMapNode(const K &k, const V &v, uint32_t level) : key(k), value(v), refCount(0), marked(false)
+  ConcurrentMapNode(const K &k, const V &v, uint32_t level) : key(k), value(v), refCount(0), marked(false)
   {
     for (int i = 0; i <= MAX_LEVEL; ++i)
     {
@@ -378,7 +377,7 @@ public:
     }
   }
 
-  ConcurrentSkipListMapNode(int level) : refCount(0), marked(false)
+  ConcurrentMapNode(int level) : refCount(0), marked(false)
   {
     for (int i = 0; i <= MAX_LEVEL; ++i)
     {
@@ -389,7 +388,7 @@ public:
   bool ref()
   {
     uint32_t old = refCount.fetch_add(1, std::memory_order_acquire);
-    //printf("+ %p %u\n", this, old);
+    // printf("+ %p %u\n", this, old);
     if (old == 0 && marked.load(std::memory_order_release))
     {
       // Node was already freed, undo the increment
@@ -403,11 +402,11 @@ public:
   bool unref()
   {
     uint32_t old = refCount.fetch_sub(1, std::memory_order_acquire);
-    //printf("- %p %u\n", this, old);
+    // printf("- %p %u\n", this, old);
 
     if (old == 0)
     {
-      printf("[%u] FAILED unref v=%u\n", os::Thread::getCurrentThreadId(), value);
+      printf("[%u] FAILED unref ptr=%p\n", os::Thread::getCurrentThreadId(), this);
       return false;
     }
 
@@ -426,13 +425,12 @@ public:
   }
 };
 
-template <typename K, typename V, size_t MAX_LEVEL = 16, typename Allocator = memory::allocator::SystemAllocator<ConcurrentSkipListMapNode<K, V, MAX_LEVEL>>>
-class ConcurrentSkipListMap
+template <typename K, typename V, size_t MAX_LEVEL = 16, typename Allocator = memory::allocator::SystemAllocator<ConcurrentMapNode<K, V, MAX_LEVEL>>> class ConcurrentMap
 {
-  using HazardPointerManager = HazardPointer<MAX_LEVEL + 1, ConcurrentSkipListMapNode<K, V, MAX_LEVEL>, Allocator>;
+  using HazardPointerManager = HazardPointer<MAX_LEVEL + 1, ConcurrentMapNode<K, V, MAX_LEVEL>, Allocator>;
 
   using HazardPointerRecord = typename HazardPointerManager::Record;
-  using Node = ConcurrentSkipListMapNode<K, V, MAX_LEVEL>;
+  using Node = ConcurrentMapNode<K, V, MAX_LEVEL>;
 
   HazardPointerManager hazardAllocator;
   Allocator allocator;
@@ -442,13 +440,26 @@ private:
   Node *tail;
   std::atomic<int> size_;
 
+  // int randomLevel()
+  // {
+  //   static thread_local std::mt19937 gen(std::random_device{}());
+  //   static thread_local std::geometric_distribution<int> dist(0.5);
+  //   return std::min(dist(gen), (int)MAX_LEVEL);
+  // }
   int randomLevel()
   {
-    static thread_local std::mt19937 gen(std::random_device{}());
-    static thread_local std::geometric_distribution<int> dist(0.5);
-    return std::min(dist(gen), (int)MAX_LEVEL);
-  }
+    static thread_local uint64_t state = std::chrono::steady_clock::now().time_since_epoch().count();
 
+    // Wyrand - fastest quality PRNG
+    state += 0xa0761d6478bd642f;
+    uint64_t result = state;
+    result ^= result >> 32;
+    result *= 0xe7037ed1a0b428db;
+    result ^= result >> 32;
+
+    int level = __builtin_ctzll(~result);
+    return level % (MAX_LEVEL + 1);
+  }
   void removeLinksAndRetireNode(Node *node, HazardPointerRecord *rec)
   {
     if (node == head || node == tail)
@@ -458,6 +469,7 @@ private:
 
     if (node->unref())
     {
+      printf("freed %p\n", node);
       for (int i = 0; i <= MAX_LEVEL; i++)
       {
         Node *child = node->next[i].load(std::memory_order_acquire);
@@ -697,7 +709,7 @@ private:
   }
 
 public:
-  ConcurrentSkipListMap(V min = std::numeric_limits<int>::min(), V max = std::numeric_limits<int>::max()) : size_(0), hazardAllocator()
+  ConcurrentMap() : size_(0), hazardAllocator()
   {
     head = new Node(MAX_LEVEL);
     tail = new Node(MAX_LEVEL);
@@ -705,10 +717,8 @@ public:
     head->ref();
     tail->ref();
 
-    head->value = min;
-    tail->value = max;
-    head->key = min;
-    tail->key = max;
+    head->key = std::numeric_limits<K>::min();
+    tail->key = std::numeric_limits<K>::max();
 
     for (int i = 0; i <= MAX_LEVEL; ++i)
     {
@@ -721,7 +731,7 @@ public:
     }
   }
 
-  ~ConcurrentSkipListMap()
+  ~ConcurrentMap()
   {
     Node *current = head->next[0].load(std::memory_order_acquire);
 
@@ -738,13 +748,14 @@ public:
 
   class Iterator
   {
-    template <typename A, typename B, size_t C, typename D> friend class ConcurrentSkipListMap;
+    template <typename A, typename B, size_t C, typename D> friend class ConcurrentMap;
 
   private:
     Node *current;
     Node *tail;
     HazardPointerRecord *rec;
     HazardPointerManager *hazardManager;
+    Allocator *allocator;
 
     void removeLinksAndRetireNode(Node *node, HazardPointerRecord *rec)
     {
@@ -801,13 +812,15 @@ public:
     }
 
     // Copy constructor
-    Iterator(const Iterator &other) : current(other.current), tail(other.tail), rec(other.hazardManager->acquire()), hazardManager(other.hazardManager)
+    Iterator(const Iterator &other)
+        : current(other.current), tail(other.tail), allocator(other.allocator), rec(other.hazardManager->acquire(*(other.allocator))), hazardManager(other.hazardManager)
     {
       if (current && current->ref())
       {
         rec->assign(current, 0);
       }
     }
+
     // Copy assignment operator
     Iterator &operator=(const Iterator &other)
     {
@@ -985,6 +998,11 @@ public:
       {
         if (!succs[level]->ref())
         {
+          for (int l = 0; l < level; ++l)
+          {
+            removeLinksAndRetireNode(succs[level], succsRec);
+          }
+          
           delete newNode;
           goto retry;
         }
@@ -1139,7 +1157,7 @@ public:
     return ret;
   }
 
-  Iterator at(const K &key)
+  Iterator find(const K &key)
   {
     Node *preds[MAX_LEVEL + 1] = {};
     Node *succs[MAX_LEVEL + 1] = {};
@@ -1203,7 +1221,7 @@ public:
     return iter;
   }
 
-  int getSize() const
+  int size() const
   {
     return size_.load(std::memory_order_relaxed);
   }
@@ -1248,11 +1266,19 @@ public:
     return Iterator(tail, tail, rec, &hazardAllocator, false);
   }
 
+  void clear()
+  {
+    for (auto it = begin(); it != end(); it++)
+    {
+      remove(it.key());
+    }
+  }
+
   Iterator operator[](const K &key)
   {
     while (true)
     {
-      auto iter = at(key);
+      auto iter = find(key);
 
       if (iter.current == tail)
       {
@@ -1267,6 +1293,11 @@ public:
 
       return iter;
     }
+  }
+
+  bool contains(const K &key)
+  {
+    return find(key) != end();
   }
 };
 

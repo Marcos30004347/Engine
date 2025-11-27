@@ -359,15 +359,16 @@ void RenderGraph::registerConsumer(const std::string &name, const InputResource 
   {
   case ResourceType::ResourceType_BufferView:
   {
-    uint64_t id;
 
-    if (!resources.bufferSymbols.find(name, id))
+    auto id = resources.bufferSymbols.find(name);
+
+    if (id == resources.bufferSymbols.end())
     {
       throw std::runtime_error("Buffer not found");
     }
 
-    resources.bufferMetadatas[id].id = id;
-    resources.bufferMetadatas[id].bufferUsages.push_back(
+    resources.bufferMetadatas[id.value()].id = id.value();
+    resources.bufferMetadatas[id.value()].bufferUsages.push_back(
         BufferResourceUsage{
           .view = res.bufferView,
           .consumer = taskId,
@@ -376,15 +377,15 @@ void RenderGraph::registerConsumer(const std::string &name, const InputResource 
   break;
   case ResourceType::ResourceType_TextureView:
   {
-    uint64_t id;
+    auto id = resources.textureSymbols.find(name);
 
-    if (!resources.textureSymbols.find(name, id))
+    if (id == resources.textureSymbols.end())
     {
       throw std::runtime_error("Texture not found");
     }
 
-    resources.textureMetadatas[id].id = id;
-    resources.textureMetadatas[id].textureUsages.push_back(
+    resources.textureMetadatas[id.value()].id = id.value();
+    resources.textureMetadatas[id.value()].textureUsages.push_back(
         TextureResourceUsage{
           .view = res.textureView,
           .consumer = taskId,
@@ -393,15 +394,15 @@ void RenderGraph::registerConsumer(const std::string &name, const InputResource 
   break;
   case ResourceType::ResourceType_Sampler:
   {
-    uint64_t id;
+    auto id = resources.samplerSymbols.find(name);
 
-    if (!resources.samplerSymbols.find(name, id))
+    if (id == resources.samplerSymbols.end())
     {
       throw std::runtime_error("Sampler not found");
     }
 
-    resources.samplerMetadatas[id].id = id;
-    resources.samplerMetadatas[id].samplerUsages.push_back(
+    resources.samplerMetadatas[id.value()].id = id.value();
+    resources.samplerMetadatas[id.value()].samplerUsages.push_back(
         SamplerResourceUsage{
           .sampler = res.sampler,
           .consumer = taskId,
@@ -410,16 +411,15 @@ void RenderGraph::registerConsumer(const std::string &name, const InputResource 
   break;
   case ResourceType::ResourceType_BindingsLayout:
   {
+    auto id = resources.bindingLayoutSymbols.find(name);
 
-    uint64_t id;
-
-    if (!resources.bindingLayoutSymbols.find(name, id))
+    if (id == resources.bindingLayoutSymbols.end())
     {
       throw std::runtime_error("BindingsLayout not found");
     }
 
-    resources.bindingsLayoutMetadata[id].id = id;
-    resources.bindingsLayoutMetadata[id].layoutUsages.push_back(
+    resources.bindingsLayoutMetadata[id.value()].id = id.value();
+    resources.bindingsLayoutMetadata[id.value()].layoutUsages.push_back(
         BindingsLayoutResourceUsage{
           .consumer = taskId,
         });
@@ -427,14 +427,15 @@ void RenderGraph::registerConsumer(const std::string &name, const InputResource 
   break;
   case ResourceType::ResourceType_BindingGroups:
   {
-    uint64_t id;
+    auto id = resources.bindingGroupsSymbols.find(name);
 
-    if (!resources.bindingGroupsSymbols.find(name, id))
+    if (id == resources.bindingGroupsSymbols.end())
     {
       throw std::runtime_error("BindingGroups not found");
     }
-    resources.bindingGroupsMetadata[id].id = id;
-    resources.bindingGroupsMetadata[id].layoutUsages.push_back(
+
+    resources.bindingGroupsMetadata[id.value()].id = id.value();
+    resources.bindingGroupsMetadata[id.value()].layoutUsages.push_back(
         BindingGroupsResourceUsage{
           .consumer = taskId,
         });
@@ -619,9 +620,10 @@ Queue inferQueue(const std::vector<Command> &commands)
   return Queue::None;
 }
 
-void RenderGraph::addPass(std::string name, std::function<bool(const RenderGraph &)> shouldExecute, std::function<void(const ResourceDatabase &, CommandRecorder &)> record)
+void RenderGraph::addPass(std::string name, std::function<bool(const RenderGraph &)> shouldExecute, std::function<void(ResourceDatabase &, CommandRecorder &)> record)
 {
   passes.insert(
+      name,
       RenderGraphPass{
         .name = name,
         .record = record,
@@ -633,7 +635,7 @@ void RenderGraph::analysePasses()
 {
   CommandRecorder **ref;
 
-  for (auto &pass : passes)
+  for (auto [name, pass] : passes)
   {
     CommandRecorder recorder;
 
@@ -730,6 +732,8 @@ void RenderGraph::analysePasses()
       //         .consumer = id,
       //       });
       // }
+      auto symbolId = resources.bindingGroupsSymbols.end();
+
       for (auto &cmd : commands.commands)
       {
         switch (cmd.type)
@@ -784,8 +788,8 @@ void RenderGraph::analysePasses()
 
           break;
         case BindBindingGroups:
-          uint64_t symbolId;
-          if (!resources.bindingGroupsSymbols.find(cmd.args.bindGroups->groups.name, symbolId))
+          symbolId = resources.bindingGroupsSymbols.find(cmd.args.bindGroups->groups.name);
+          if (symbolId == resources.bindingGroupsSymbols.end())
           {
             throw std::runtime_error("Bunding Groups not found");
           }
@@ -1031,13 +1035,15 @@ void RenderGraph::tasksTopologicalSort(std::vector<uint32_t> &order)
 //   }
 // }
 
-inline uint64_t getIdOrThrow(const lib::ConcurrentHashMap<std::string, uint64_t> &map, const std::string &name, const char *errorMsgPrefix)
+inline uint64_t getIdOrThrow(lib::ConcurrentHashMap<std::string, uint64_t> &map, const std::string &name, const char *errorMsgPrefix)
 {
-  uint64_t id;
-  if (!map.find(name, id))
+  auto id = map.find(name);
+
+  if (id == map.end())
   {
     throw std::runtime_error(std::string(errorMsgPrefix) + ": symbol '" + name + "' not found");
   }
+
   return id;
 }
 
@@ -1048,15 +1054,15 @@ void RenderGraph::analyseTaskLevels()
 
   for (auto &task : nodes)
 
-  for (uint32_t id : topologicalOrder)
-  {
-    uint32_t currentLevel = nodes[id].level;
-    for (auto &edge : edges[id])
+    for (uint32_t id : topologicalOrder)
     {
-      uint64_t increment = edge.type == EdgeType::ResourceShare ? 0 : 1;
-      nodes[edge.taskId].level = std::max(nodes[edge.taskId].level, currentLevel + increment);
+      uint32_t currentLevel = nodes[id].level;
+      for (auto &edge : edges[id])
+      {
+        uint64_t increment = edge.type == EdgeType::ResourceShare ? 0 : 1;
+        nodes[edge.taskId].level = std::max(nodes[edge.taskId].level, currentLevel + increment);
+      }
     }
-  }
 
   for (const auto &node : nodes)
   {
@@ -1068,7 +1074,7 @@ void RenderGraph::analyseTaskLevels()
       {
       case CopyBuffer:
       {
-        if (resources.scratchBufferSymbols.contains(cmd.args.copyBuffer->src.buffer.name))
+        if (resources.scratchBufferSymbols.find(cmd.args.copyBuffer->src.buffer.name) != resources.scratchBufferSymbols.end())
         {
           uint64_t srcId = getIdOrThrow(resources.scratchBufferSymbols, cmd.args.copyBuffer->src.buffer.name, "Scratch buffer not found");
           auto &srcMeta = resources.scratchBuffersRequestsMetadatas[srcId];
@@ -1076,7 +1082,7 @@ void RenderGraph::analyseTaskLevels()
           srcMeta.lastUsedAt = std::max(srcMeta.lastUsedAt, node.level);
         }
 
-        if (resources.scratchBufferSymbols.contains(cmd.args.copyBuffer->dst.buffer.name))
+        if (resources.scratchBufferSymbols.find(cmd.args.copyBuffer->dst.buffer.name) != resources.scratchBufferSymbols.end())
         {
           uint64_t dstId = getIdOrThrow(resources.scratchBufferSymbols, cmd.args.copyBuffer->dst.buffer.name, "Scratch buffer not found");
           auto &dstMeta = resources.scratchBuffersRequestsMetadatas[dstId];
@@ -1096,7 +1102,7 @@ void RenderGraph::analyseTaskLevels()
         {
           for (const auto &buffer : group.buffers)
           {
-            if (resources.scratchBufferSymbols.contains(buffer.bufferView.buffer.name))
+            if (resources.scratchBufferSymbols.find(buffer.bufferView.buffer.name) != resources.scratchBufferSymbols.end())
             {
               uint64_t bufId = getIdOrThrow(resources.scratchBufferSymbols, buffer.bufferView.buffer.name, "Scratch buffer not found");
               auto &meta = resources.scratchBuffersRequestsMetadatas[bufId];
@@ -1110,7 +1116,7 @@ void RenderGraph::analyseTaskLevels()
 
       case BindVertexBuffer:
       {
-        if (resources.scratchBufferSymbols.contains(cmd.args.bindVertexBuffer->buffer.buffer.name))
+        if (resources.scratchBufferSymbols.find(cmd.args.bindVertexBuffer->buffer.buffer.name) != resources.scratchBufferSymbols.end())
         {
           uint64_t bufId = getIdOrThrow(resources.scratchBufferSymbols, cmd.args.bindVertexBuffer->buffer.buffer.name, "Scratch buffer not found");
           auto &meta = resources.scratchBuffersRequestsMetadatas[bufId];
@@ -1122,7 +1128,7 @@ void RenderGraph::analyseTaskLevels()
 
       case BindIndexBuffer:
       {
-        if (resources.scratchBufferSymbols.contains(cmd.args.bindIndexBuffer->buffer.buffer.name))
+        if (resources.scratchBufferSymbols.find(cmd.args.bindIndexBuffer->buffer.buffer.name) != resources.scratchBufferSymbols.end())
         {
           uint64_t bufId = getIdOrThrow(resources.scratchBufferSymbols, cmd.args.bindIndexBuffer->buffer.buffer.name, "Scratch buffer not found");
           auto &meta = resources.scratchBuffersRequestsMetadatas[bufId];
@@ -1134,7 +1140,7 @@ void RenderGraph::analyseTaskLevels()
 
       case DrawIndexedIndirect:
       {
-        if (resources.scratchBufferSymbols.contains(cmd.args.drawIndexedIndirect->buffer.buffer.name))
+        if (resources.scratchBufferSymbols.find(cmd.args.drawIndexedIndirect->buffer.buffer.name) != resources.scratchBufferSymbols.end())
         {
           uint64_t bufId = getIdOrThrow(resources.scratchBufferSymbols, cmd.args.drawIndexedIndirect->buffer.buffer.name, "Scratch buffer not found");
           auto &meta = resources.scratchBuffersRequestsMetadatas[bufId];
@@ -2273,9 +2279,9 @@ const Buffer RenderGraph::createBuffer(const BufferInfo &info)
 {
   const auto &name = info.name;
 
-  uint64_t id;
+  auto id = resources.bufferSymbols.find(name);
 
-  if (resources.bufferSymbols.find(name, id))
+  if (id == resources.bufferSymbols.end())
   {
     throw std::runtime_error("Buffer already created");
   }
@@ -2297,9 +2303,9 @@ const Texture RenderGraph::createTexture(const TextureInfo &info)
 {
   const auto &name = info.name;
 
-  uint64_t id;
+  auto id = resources.textureSymbols.find(name);
 
-  if (resources.textureSymbols.find(name, id))
+  if (id == resources.textureSymbols.end())
   {
     throw std::runtime_error("Texture already created");
   }
@@ -2321,9 +2327,9 @@ const Sampler RenderGraph::createSampler(const SamplerInfo &info)
 {
   const auto &name = info.name;
 
-  uint64_t id;
+  auto id = resources.samplerSymbols.find(name);
 
-  if (resources.samplerSymbols.find(name, id))
+  if (id == resources.samplerSymbols.end())
   {
     throw std::runtime_error("Sampler already created");
   }
@@ -2344,9 +2350,9 @@ const Sampler RenderGraph::createSampler(const SamplerInfo &info)
 const BindingGroups RenderGraph::createBindingGroups(const BindingGroupsInfo &info)
 {
   const auto &name = info.name;
-  uint64_t id;
+  auto id = resources.bindingGroupsSymbols.find(name);
 
-  if (resources.bindingGroupsSymbols.find(name, id))
+  if (id == resources.bindingGroupsSymbols.end())
   {
     throw std::runtime_error("BindingGroups already created");
   }
@@ -2368,12 +2374,13 @@ const GraphicsPipeline RenderGraph::createGraphicsPipeline(const GraphicsPipelin
 {
   const auto &name = info.name;
 
-  uint64_t id;
+  auto id = resources.graphicsPipelineSymbols.find(name);
 
-  if (resources.graphicsPipelineSymbols.find(name, id))
+  if (id == resources.graphicsPipelineSymbols.end())
   {
     throw std::runtime_error("GraphicsPipeline already created");
   }
+
   id = resources.graphicsPipelinesAllocated.fetch_add(1);
 
   resources.graphicsPipelineSymbols.insert(name, id);
@@ -2391,9 +2398,9 @@ const ComputePipeline RenderGraph::createComputePipeline(const ComputePipelineIn
 {
   const auto &name = info.name;
 
-  uint64_t id;
+  auto id = resources.computePipelineSymbols.find(name);
 
-  if (resources.computePipelineSymbols.find(name, id))
+  if (id == resources.computePipelineSymbols.end())
   {
     throw std::runtime_error("ComputePipeline already created");
   }
@@ -2414,9 +2421,9 @@ const BindingsLayout RenderGraph::createBindingsLayout(const BindingsLayoutInfo 
 {
   const auto &name = info.name;
 
-  uint64_t id;
+  auto id = resources.bindingLayoutSymbols.find(name);
 
-  if (resources.bindingLayoutSymbols.find(name, id))
+  if (id == resources.bindingLayoutSymbols.end())
   {
     throw std::runtime_error("BindingsLayout already created");
   }
@@ -2438,9 +2445,9 @@ const Buffer RenderGraph::createScratchBuffer(const BufferInfo &info)
 {
   const auto &name = info.name;
 
-  uint64_t id;
+  auto id = resources.scratchBufferSymbols.find(name);
 
-  if (resources.scratchBufferSymbols.find(name, id))
+  if (id == resources.scratchBufferSymbols.end())
   {
     throw std::runtime_error("Scratch Buffer already created");
   }
@@ -2458,7 +2465,7 @@ const Buffer RenderGraph::createScratchBuffer(const BufferInfo &info)
   };
 }
 
-const Buffer ResourceDatabase::getScratchBuffer(const std::string &name) const
+const Buffer ResourceDatabase::getScratchBuffer(const std::string &name)
 {
   if (!scratchBufferSymbols.contains(name))
   {
@@ -2470,7 +2477,7 @@ const Buffer ResourceDatabase::getScratchBuffer(const std::string &name) const
   };
 }
 
-const Buffer ResourceDatabase::getBuffer(const std::string &name) const
+const Buffer ResourceDatabase::getBuffer(const std::string &name)
 {
   if (!bufferSymbols.contains(name))
   {
@@ -2482,7 +2489,7 @@ const Buffer ResourceDatabase::getBuffer(const std::string &name) const
   };
 }
 
-const BindingsLayout ResourceDatabase::getBindingsLayout(const std::string &name) const
+const BindingsLayout ResourceDatabase::getBindingsLayout(const std::string &name)
 {
   if (!bindingLayoutSymbols.contains(name))
   {
@@ -2494,7 +2501,7 @@ const BindingsLayout ResourceDatabase::getBindingsLayout(const std::string &name
   };
 }
 
-const BindingGroups ResourceDatabase::getBindingGroups(const std::string &name) const
+const BindingGroups ResourceDatabase::getBindingGroups(const std::string &name)
 {
   if (!bindingGroupsSymbols.contains(name))
   {
@@ -2505,7 +2512,7 @@ const BindingGroups ResourceDatabase::getBindingGroups(const std::string &name) 
     .name = name,
   };
 }
-const GraphicsPipeline ResourceDatabase::getGraphicsPipeline(const std::string &name) const
+const GraphicsPipeline ResourceDatabase::getGraphicsPipeline(const std::string &name)
 {
   if (!graphicsPipelineSymbols.contains(name))
   {
@@ -2517,7 +2524,7 @@ const GraphicsPipeline ResourceDatabase::getGraphicsPipeline(const std::string &
   };
 }
 
-const ComputePipeline ResourceDatabase::getComputePipeline(const std::string &name) const
+const ComputePipeline ResourceDatabase::getComputePipeline(const std::string &name)
 {
   if (!computePipelineSymbols.contains(name))
   {
@@ -2529,7 +2536,7 @@ const ComputePipeline ResourceDatabase::getComputePipeline(const std::string &na
   };
 }
 
-const Sampler ResourceDatabase::getSampler(const std::string &name) const
+const Sampler ResourceDatabase::getSampler(const std::string &name)
 {
   if (!samplerSymbols.contains(name))
   {
@@ -2540,7 +2547,7 @@ const Sampler ResourceDatabase::getSampler(const std::string &name) const
   };
 }
 
-const Texture ResourceDatabase::getTexture(const std::string &name) const
+const Texture ResourceDatabase::getTexture(const std::string &name)
 {
   if (!textureSymbols.contains(name))
   {

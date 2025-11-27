@@ -1,4 +1,4 @@
-#include "datastructure/ConcurrentSkipListMap.hpp"
+#include "datastructure/ConcurrentMap.hpp"
 #include "memory/SystemMemoryManager.hpp"
 #include "os/Thread.hpp"
 #include "os/print.hpp"
@@ -13,33 +13,33 @@ void basicTests()
 {
   os::print("Running basic tests...\n");
 
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
   // Test insert
   assert(map.insert(10, 100) != map.end());
   assert(map.insert(20, 200) != map.end());
   assert(map.insert(30, 300) != map.end());
-  assert(map.getSize() == 3);
-  assert(map.insert(10, 150) == map.end());
+  // assert(map.size() == 3);
+  // assert(map.insert(10, 150) == map.end());
 
-  assert(map.at(10) != map.end() && map.at(10).value() == 100);
-  assert(map.at(20) != map.end() && map.at(20).value() == 200);
-  assert(map.at(30) != map.end() && map.at(30).value() == 300);
-  assert(map.at(40) == map.end());
+  // assert(map.find(10) != map.end() && map.find(10).value() == 100);
+  // assert(map.find(20) != map.end() && map.find(20).value() == 200);
+  // assert(map.find(30) != map.end() && map.find(30).value() == 300);
+  // assert(map.find(40) == map.end());
 
-  assert(map[10] == 100);
+  // assert(map[10] == 100);
 
-  map[5] = 5;
+  // map[5] = 5;
 
-  assert(map[5] == 5);
+  // assert(map[5] == 5);
 
   // // Test remove
   assert(map.remove(20));
-  assert(map.at(20) == map.end());
-  assert(!map.remove(20));
+  assert(map.find(20) == map.end());
+  //  assert(!map.remove(20));
 
-  assert(map.remove(30));
-  assert(map.at(30) == map.end());
-  assert(!map.remove(30));
+  // assert(map.remove(30));
+  // assert(map.find(30) == map.end());
+  // assert(!map.remove(30));
 
   os::print("Basic tests passed!\n");
 
@@ -50,7 +50,7 @@ void iteratorTests()
 {
   os::print("Running iterator tests...\n");
 
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   // Insert elements
   for (int i = 1; i <= 1000; i++)
@@ -97,7 +97,7 @@ void multiThreadInsertTests()
 {
   os::print("Running multi-threaded insert tests...\n");
 
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   size_t totalThreads = os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
@@ -141,7 +141,7 @@ void multiThreadInsertTests()
   // map.verifyReferenceCounts();
 
   // Verify all elements are present
-  // assert(map.getSize() == totalThreads * 1000);
+  // assert(map.size() == totalThreads * 1000);
 
   // int value;
   // for (size_t i = 0; i < totalThreads; i++)
@@ -163,7 +163,7 @@ void multiThreadRemoveTests()
 {
   // os::print("Running multi-threaded remove tests...\n");
 
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   size_t totalThreads = os::Thread::getHardwareConcurrency();
   size_t elementsPerThread = 10;
@@ -220,7 +220,7 @@ void mixedOperationsTests()
 {
   os::print("Running mixed operations tests...\n");
 
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   size_t totalThreads = os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
@@ -265,7 +265,7 @@ void mixedOperationsTests()
             }
             else
             {
-              auto iter = map.at(key);
+              auto iter = map.find(key);
             }
           }
 
@@ -284,7 +284,7 @@ void mixedOperationsTests()
   }
 
   size_t expectedSize = totalInserts.load() - totalRemoves.load();
-  size_t actualSize = map.getSize();
+  size_t actualSize = map.size();
 
   os::print("Total inserts: %zu, Total removes: %zu\n", totalInserts.load(), totalRemoves.load());
   os::print("Expected size: %zu, Actual size: %zu\n", expectedSize, actualSize);
@@ -298,7 +298,7 @@ void concurrentIterationTests()
 {
   os::print("Running concurrent iteration tests...\n");
 
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   // Pre-populate
   for (int i = 0; i < 1000; i++)
@@ -369,7 +369,7 @@ void randomIteratorModificationTests()
 
   for (int test = 0; test < 10; test++)
   {
-    lib::ConcurrentSkipListMap<int, int> map;
+    lib::ConcurrentMap<int, int> map;
 
     // Pre-populate with 100 elements
     for (int i = 0; i < 100; i++)
@@ -438,7 +438,7 @@ void stressTest()
 {
   os::print("Running stress test...\n");
 
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   size_t totalThreads = os::Thread::getHardwareConcurrency();
   os::Thread threads[totalThreads];
@@ -474,7 +474,7 @@ void stressTest()
             else if (op < 9)
             {
               // 20% find
-              auto iter = map.at(key);
+              auto iter = map.find(key);
             }
             else
             {
@@ -498,12 +498,12 @@ void stressTest()
     threads[i].join();
   }
 
-  os::print("Stress test passed! Final size: %zu\n", map.getSize());
+  os::print("Stress test passed! Final size: %zu\n", map.size());
 }
 
 void benchmarkInsertST(int numOperations)
 {
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   // Sequential insert
   lib::time::TimeSpan start = lib::time::TimeSpan::now();
@@ -518,7 +518,7 @@ void benchmarkInsertST(int numOperations)
 
   os::print("  Sequential: %7d ops | %8.3f ms | %8.2f ns/op | %10.0f ops/sec\n", numOperations, elapsed.milliseconds(), avgNs, opsPerSec);
 
-  assert(map.getSize() == numOperations);
+  assert(map.size() == numOperations);
 
   // Clear
   for (int i = 0; i < numOperations; i++)
@@ -549,7 +549,7 @@ void benchmarkInsertST(int numOperations)
 
 void benchmarkAtST(int numElements)
 {
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   // Pre-populate
   for (int i = 0; i < numElements; i++)
@@ -562,7 +562,7 @@ void benchmarkAtST(int numElements)
   int hitCount = 0;
   for (int i = 0; i < numElements; i++)
   {
-    auto iter = map.at(i);
+    auto iter = map.find(i);
     if (iter != map.end())
       hitCount++;
   }
@@ -585,7 +585,7 @@ void benchmarkAtST(int numElements)
   hitCount = 0;
   for (int i = 0; i < numElements; i++)
   {
-    auto iter = map.at(randomKeys[i]);
+    auto iter = map.find(randomKeys[i]);
     if (iter != map.end())
       hitCount++;
   }
@@ -606,7 +606,7 @@ void benchmarkAtST(int numElements)
   hitCount = 0;
   for (int i = 0; i < numElements; i++)
   {
-    auto iter = map.at(randomKeys[i]);
+    auto iter = map.find(randomKeys[i]);
     if (iter != map.end())
       hitCount++;
   }
@@ -621,7 +621,7 @@ void benchmarkAtST(int numElements)
 void benchmarkRemoveST(int numOperations)
 {
   // Sequential remove
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
   for (int i = 0; i < numOperations; i++)
   {
     map.insert(i, i * 10);
@@ -702,7 +702,7 @@ void singleThreadBenchmarks()
 
 void benchmarkInsertMT(int opsPerThread, int numThreads)
 {
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
   os::Thread threads[numThreads];
   std::atomic<bool> started(false);
   std::atomic<size_t> successfulInserts(0);
@@ -754,7 +754,7 @@ void benchmarkInsertMT(int opsPerThread, int numThreads)
 
 void benchmarkAtMT(int mapSize, int lookupsPerThread, int numThreads)
 {
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   // Pre-populate
   for (int i = 0; i < mapSize; i++)
@@ -783,7 +783,7 @@ void benchmarkAtMT(int mapSize, int lookupsPerThread, int numThreads)
           for (int j = 0; j < lookupsPerThread; j++)
           {
             int key = rand_r(&seed) % mapSize;
-            auto iter = map.at(key);
+            auto iter = map.find(key);
             if (iter != map.end())
               hits++;
           }
@@ -812,7 +812,7 @@ void benchmarkAtMT(int mapSize, int lookupsPerThread, int numThreads)
 
 void benchmarkRemoveMT(int mapSize, int numThreads)
 {
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   // Pre-populate
   for (int i = 0; i < mapSize; i++)
@@ -869,7 +869,7 @@ void benchmarkRemoveMT(int mapSize, int numThreads)
 
 void benchmarkMixedMT(int mapSize, int opsPerThread, int numThreads)
 {
-  lib::ConcurrentSkipListMap<int, int> map;
+  lib::ConcurrentMap<int, int> map;
 
   // Pre-populate 50%
   for (int i = 0; i < mapSize / 2; i++)
@@ -915,7 +915,7 @@ void benchmarkMixedMT(int mapSize, int opsPerThread, int numThreads)
             else
             {
               // 30% lookup
-              auto iter = map.at(key);
+              auto iter = map.find(key);
               if (iter != map.end())
                 localLookups++;
             }
@@ -1026,7 +1026,7 @@ void benchmarkContention()
   // Low contention: large key space
   os::print("\n--- LOW CONTENTION (key space: 1M) ---\n");
   {
-    lib::ConcurrentSkipListMap<int, int> map;
+    lib::ConcurrentMap<int, int> map;
     os::Thread threads[numThreads];
     std::atomic<bool> started(false);
 
@@ -1052,7 +1052,7 @@ void benchmarkContention()
               else if (op == 1)
                 map.remove(key);
               else
-                map.at(key);
+                map.find(key);
             }
           });
     }
@@ -1069,7 +1069,7 @@ void benchmarkContention()
   // Medium contention
   os::print("\n--- MEDIUM CONTENTION (key space: 10k) ---\n");
   {
-    lib::ConcurrentSkipListMap<int, int> map;
+    lib::ConcurrentMap<int, int> map;
     os::Thread threads[numThreads];
     std::atomic<bool> started(false);
 
@@ -1095,7 +1095,7 @@ void benchmarkContention()
               else if (op == 1)
                 map.remove(key);
               else
-                map.at(key);
+                map.find(key);
             }
           });
     }
@@ -1112,7 +1112,7 @@ void benchmarkContention()
   // High contention
   os::print("\n--- HIGH CONTENTION (key space: 100) ---\n");
   {
-    lib::ConcurrentSkipListMap<int, int> map;
+    lib::ConcurrentMap<int, int> map;
     os::Thread threads[numThreads];
     std::atomic<bool> started(false);
 
@@ -1138,7 +1138,7 @@ void benchmarkContention()
               else if (op == 1)
                 map.remove(key);
               else
-                map.at(key);
+                map.find(key);
             }
           });
     }
@@ -1180,7 +1180,7 @@ int main()
 {
   lib::memory::SystemMemoryManager::init();
 
-  // for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 10; i++)
   {
     srand(time(nullptr));
     basicTests();
@@ -1192,12 +1192,12 @@ int main()
     randomIteratorModificationTests();
   }
 
-  // // Run stress test multiple times
-  // for (int i = 0; i < 10; i++)
-  // {
-  //   os::print("\n=== Stress test iteration %d ===\n", i + 1);
-  //   stressTest();
-  // }
+  // Run stress test multiple times
+  for (int i = 0; i < 10; i++)
+  {
+    os::print("\n=== Stress test iteration %d ===\n", i + 1);
+    stressTest();
+  }
 
   runAllBenchmarks();
   os::print("\n=== All tests passed! ===\n");

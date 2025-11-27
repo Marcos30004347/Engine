@@ -1,111 +1,214 @@
 #pragma once
-#include <array>
+
+#include "ConcurrentMap.hpp"
 #include <functional>
-#include <mutex>
-#include <unordered_map>
 
 namespace lib
 {
 
-template <typename K, typename V, size_t NumShards = 64> class ConcurrentHashMap
+template <
+    typename K,
+    typename V,
+    size_t MAX_LEVEL = 16,
+    typename Hasher = std::hash<K>,
+    typename Allocator = memory::allocator::SystemAllocator<ConcurrentMapNode<size_t, V, MAX_LEVEL>>>
+class ConcurrentHashMap
 {
-  static_assert((NumShards & (NumShards - 1)) == 0, "NumShards must be a power of two");
-
 private:
-  struct Shard
+  using InternalMap = ConcurrentMap<size_t, V, MAX_LEVEL, Allocator>;
+  using InternalIterator = typename InternalMap::Iterator;
+
+  InternalMap map;
+  Hasher hasher;
+
+  size_t hashKey(const K &key) const
   {
-    mutable std::mutex mtx;
-    std::unordered_map<K, V> map;
-  };
-
-  std::array<Shard, NumShards> shards;
-
-  static size_t shardIndex(const K &key)
-  {
-    size_t h = std::hash<K>{}(key);
-    return h & (NumShards - 1);
-  }
-
-  Shard &shardFor(const K &key)
-  {
-    return shards[shardIndex(key)];
-  }
-
-  //   const Shard &shardFor(const K &key) const
-  //   {
-  //     return shards[shardIndex(key)];
-  //   }
-
-  size_t getShardIndex(const K &key) const
-  {
-    return std::hash<K>{}(key) % NumShards;
+    return hasher(key);
   }
 
 public:
-  ConcurrentHashMap() = default;
+  ConcurrentHashMap() : map(), hasher()
+  {
+  }
+
   ~ConcurrentHashMap() = default;
 
-  ConcurrentHashMap(const ConcurrentHashMap &) = delete;
-  ConcurrentHashMap &operator=(const ConcurrentHashMap &) = delete;
-
-  void insert(const K &key, const V &value)
+  class Iterator
   {
-    auto &s = shards[getShardIndex(key)];
+    template <typename A, typename B, size_t C, typename H, typename D> friend class ConcurrentHashMap;
 
-    std::lock_guard<std::mutex> lock(s.mtx);
-    s.map[key] = value;
-  }
+  private:
+    InternalIterator internal_iter;
+    K original_key;
 
-  void insert(K &&key, V &&value)
-  {
-    auto &s = shards[getShardIndex(key)];
-    std::lock_guard<std::mutex> lock(s.mtx);
-    s.map[key] = std::move(value);//.emplace(std::move(key), std::move(value));
-  }
-
-  bool find(const K &key, V &out) const
-  {
-    auto &s = shards[getShardIndex(key)];
-    std::lock_guard<std::mutex> lock(s.mtx);
-    auto it = s.map.find(key);
-    if (it == s.map.end())
-      return false;
-    out = it->second;
-    return true;
-  }
-
-  bool contains(const K &key) const
-  {
-    auto &s = shards[getShardIndex(key)];
-    std::lock_guard<std::mutex> lock(s.mtx);
-    return s.map.find(key) != s.map.end();
-  }
-
-  bool erase(const K &key)
-  {
-    auto &s = shardFor(key);
-    std::lock_guard<std::mutex> lock(s.mtx);
-    return s.map.erase(key) > 0;
-  }
-
-  size_t size() const
-  {
-    size_t total = 0;
-    for (auto &s : shards)
+    Iterator(InternalIterator iter, const K &key) : internal_iter(std::move(iter)), original_key(key)
     {
-      std::lock_guard<std::mutex> lock(s.mtx);
-      total += s.map.size();
     }
-    return total;
+
+  public:
+    // Copy constructor
+    Iterator(const Iterator &other) : internal_iter(other.internal_iter), original_key(other.original_key)
+    {
+    }
+
+    // Copy assignment operator
+    Iterator &operator=(const Iterator &other)
+    {
+      if (this != &other)
+      {
+        internal_iter = other.internal_iter;
+        original_key = other.original_key;
+      }
+      return *this;
+    }
+
+    // Move constructor
+    Iterator(Iterator &&other) noexcept : internal_iter(std::move(other.internal_iter)), original_key(std::move(other.original_key))
+    {
+    }
+
+    // Move assignment operator
+    Iterator &operator=(Iterator &&other) noexcept
+    {
+      if (this != &other)
+      {
+        internal_iter = std::move(other.internal_iter);
+        original_key = std::move(other.original_key);
+      }
+      return *this;
+    }
+
+    Iterator &operator=(const V &val)
+    {
+      internal_iter = val;
+      return *this;
+    }
+
+    ~Iterator() = default;
+
+    const K &key() const
+    {
+      return original_key;
+    }
+
+    V &value()
+    {
+      return internal_iter.value();
+    }
+
+    const V &value() const
+    {
+      return internal_iter.value();
+    }
+
+    operator V &()
+    {
+      return internal_iter.value();
+    }
+
+    operator const V &() const
+    {
+      return internal_iter.value();
+    }
+
+    Iterator &operator++()
+    {
+      ++internal_iter;
+      return *this;
+    }
+
+    Iterator operator++(int)
+    {
+      Iterator tmp = *this;
+      ++internal_iter;
+      return tmp;
+    }
+
+    std::pair<const K &, V &> operator*()
+    {
+      return std::pair<const K &, V &>(original_key, internal_iter.value());
+    }
+
+    bool operator==(const Iterator &other) const
+    {
+      return internal_iter == other.internal_iter;
+    }
+
+    bool operator!=(const Iterator &other) const
+    {
+      return internal_iter != other.internal_iter;
+    }
+
+    V *operator->()
+    {
+      return internal_iter.operator->();
+    }
+
+    const V *operator->() const
+    {
+      return internal_iter.operator->();
+    }
+  };
+
+  Iterator insert(const K &key, const V &value)
+  {
+    size_t hash = hashKey(key);
+    auto internal_result = map.insert(hash, value);
+    return Iterator(std::move(internal_result), key);
   }
 
-  void clear()
+  bool remove(const K &key)
   {
-    for (auto &s : shards)
-    {
-      std::lock_guard<std::mutex> lock(s.mtx);
-      s.map.clear();
-    }
+    size_t hash = hashKey(key);
+    return map.remove(hash);
+  }
+
+  Iterator find(const K &key)
+  {
+    size_t hash = hashKey(key);
+    auto internal_result = map.find(hash);
+    return Iterator(std::move(internal_result), key);
+  }
+
+  int getSize() const
+  {
+    return map.size();
+  }
+
+  bool isEmpty() const
+  {
+    return map.isEmpty();
+  }
+
+  Iterator begin()
+  {
+    auto internal_result = map.begin();
+    return Iterator(std::move(internal_result), K());
+  }
+
+  Iterator end()
+  {
+    auto internal_result = map.end();
+    return Iterator(std::move(internal_result), K());
+  }
+
+  Iterator operator[](const K &key)
+  {
+    size_t hash = hashKey(key);
+    auto internal_result = map[hash];
+    return Iterator(std::move(internal_result), key);
+  }
+
+  void clear() {
+    map.clear();
+  }
+
+  uint64_t size() {
+    return map.size();
+  }
+
+  bool contains(const K& key) {
+    return find(key) != end();
   }
 };
 
