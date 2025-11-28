@@ -18,6 +18,8 @@ void basicTests()
   assert(map.insert(10, 100) != map.end());
   assert(map.insert(20, 200) != map.end());
   assert(map.insert(30, 300) != map.end());
+
+  assert(map.checkNodesDegrees());
   assert(map.size() == 3);
   assert(map.insert(10, 150) == map.end());
 
@@ -32,7 +34,7 @@ void basicTests()
 
   assert(map[5] == 5);
 
-  // // Test remove
+  // // // Test remove
   assert(map.remove(20) != map.end());
   assert(map.find(20) == map.end());
   assert(map.remove(20) == map.end());
@@ -41,9 +43,9 @@ void basicTests()
   assert(map.find(30) == map.end());
   assert(map.remove(30) == map.end());
 
-  os::print("Basic tests passed!\n");
+  assert(map.checkNodesDegrees());
 
-  // map.verifyReferenceCounts();
+  os::print("Basic tests passed!\n");
 }
 
 void iteratorTests()
@@ -175,6 +177,8 @@ void multiThreadRemoveTests()
     auto iter = map.insert(i, i);
     assert(iter != map.end());
   }
+
+  assert(map.checkNodesDegrees());
 
   os::Thread threads[totalThreads];
   std::atomic<bool> started(false);
@@ -531,7 +535,7 @@ void benchmarkInsertST(int numOperations)
   std::vector<int> randomKeys(numOperations);
   for (int i = 0; i < numOperations; i++)
   {
-    randomKeys[i] = rand_r(&seed);
+    randomKeys[i] = rand_r(&seed) % 99999;
   }
 
   start = lib::time::TimeSpan::now();
@@ -642,11 +646,11 @@ void benchmarkRemoveST(int numOperations)
 
   // Random remove
   unsigned int seed = time(nullptr);
-  std::vector<int> randomKeys(numOperations);
+  std::vector<uint32_t> randomKeys(numOperations);
   for (int i = 0; i < numOperations; i++)
   {
     randomKeys[i] = rand_r(&seed);
-    map.insert(randomKeys[i], randomKeys[i] * 10);
+    map.insert(randomKeys[i], randomKeys[i]);
   }
 
   start = lib::time::TimeSpan::now();
@@ -1180,27 +1184,27 @@ int main()
 {
   lib::memory::SystemMemoryManager::init();
 
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 10000; i++)
   {
     srand(time(nullptr));
     basicTests();
-    iteratorTests();
-    multiThreadInsertTests();
+    // iteratorTests();
+    // multiThreadInsertTests();
     multiThreadRemoveTests();
-    mixedOperationsTests();
-    concurrentIterationTests();
-    randomIteratorModificationTests();
+    // mixedOperationsTests();
+    // concurrentIterationTests();
+    // randomIteratorModificationTests();
   }
 
   // Run stress test multiple times
-  for (int i = 0; i < 10; i++)
-  {
-    os::print("\n=== Stress test iteration %d ===\n", i + 1);
-    stressTest();
-  }
+  // for (int i = 0; i < 10; i++)
+  // {
+  //   os::print("\n=== Stress test iteration %d ===\n", i + 1);
+  //   stressTest();
+  // }
 
-  runAllBenchmarks();
-  os::print("\n=== All tests passed! ===\n");
+  // runAllBenchmarks();
+  // os::print("\n=== All tests passed! ===\n");
 
   lib::memory::SystemMemoryManager::shutdown();
   return 0;

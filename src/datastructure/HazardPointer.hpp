@@ -86,13 +86,16 @@ public:
     void scan(Record *h)
     {
       std::vector<void *> hp;
+
+      hp.reserve(os::Thread::getHardwareConcurrency() * K);
+
       size_t i = 0;
 
       while (h)
       {
         for (size_t k = 0; k < K; k++)
         {
-          if (h->pointers[k] != nullptr && h->isActive.load())
+          if (h->pointers[k] != nullptr && h->isActive.load(std::memory_order_acquire))
           {
             hp.push_back(h->pointers[k]);
           }
@@ -101,23 +104,18 @@ public:
         h = h->next;
       }
 
-      lib::algorithm::sort::quickSort(hp.data(), hp.size());
+      std::sort(hp.begin(), hp.end());
 
       for (size_t i = 0; i < retiredList.size();)
       {
-        size_t index = lib::algorithm::search::binarySearch(hp.data(), retiredList[i], hp.size());
-
-        if (index == hp.size()) // not found
+        if (!std::binary_search(hp.begin(), hp.end(), retiredList[i]))
         {
-         // printf("deallocating %p\n", retiredList[i]);
           allocator.deallocate((T *)retiredList[i]);
-
           if (i != retiredList.size() - 1)
           {
             retiredList[i] = retiredList[retiredList.size() - 1];
             retiredList[retiredList.size() - 1] = nullptr;
           }
-
           retiredList.pop_back();
         }
         else
@@ -125,7 +123,7 @@ public:
           i++;
         }
       }
-      //retiredLock.unlock();
+      // retiredLock.unlock();
     }
 
   public:
@@ -227,10 +225,10 @@ public:
 
   void release(Record *rec)
   {
-    for (size_t i = 0; i < K; i++)
-    {
-      rec->pointers[i] = nullptr;
-    }
+    // for (size_t i = 0; i < K; i++)
+    // {
+    //   rec->pointers[i] = nullptr;
+    // }
 
     rec->refs.fetch_sub(1);
 

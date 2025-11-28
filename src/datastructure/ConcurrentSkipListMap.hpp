@@ -20,124 +20,207 @@ namespace lib
 #define MARK_BIT (1U << MARK_BIT_INDEX)
 #define REFCOUNT_MASK ~MARK_BIT
 
-
 #define CACHE_LINE_SIZE 8
 #define ALIGNED_ATOMIC_PTR_ALIGNMENT 8
 
 template <typename K, typename V, size_t MAX_LEVEL = 16> struct ConcurrentSkipListMapNode
 {
-private:
+public:
   using Node = ConcurrentSkipListMapNode<K, V, MAX_LEVEL>;
 
   alignas(CACHE_LINE_SIZE) std::atomic<uint32_t> refCount; // Own cache line
   alignas(CACHE_LINE_SIZE) std::atomic<bool> marked;       // Own cache line
 
-  struct alignas(ALIGNED_ATOMIC_PTR_ALIGNMENT) AlignedAtomicPtr
+private:
+  struct alignas(ALIGNED_ATOMIC_PTR_ALIGNMENT) MarkedAtomicPtr
   {
   private:
-    std::atomic<Node *> internal_ptr;
+    std::atomic<uintptr_t> internal_ptr;
+
+    static constexpr uintptr_t MARK_BIT = 0x1;
+    static constexpr uintptr_t PTR_MASK = ~MARK_BIT;
+
+    static inline uintptr_t compose(Node *ptr, bool mark) noexcept
+    {
+      return reinterpret_cast<uintptr_t>(ptr) | (mark ? MARK_BIT : 0);
+    }
 
   public:
-    AlignedAtomicPtr() : internal_ptr(nullptr)
+    MarkedAtomicPtr() : internal_ptr(0)
     {
     }
 
-    AlignedAtomicPtr(Node *p) : internal_ptr(p)
+    MarkedAtomicPtr(Node *p, bool mark = false) : internal_ptr(compose(p, mark))
     {
     }
 
-    inline void store(Node *desired, std::memory_order order = std::memory_order_seq_cst) noexcept
+    inline Node *getReference(std::memory_order order = std::memory_order_seq_cst) const noexcept
     {
-      internal_ptr.store(desired, order);
+      uintptr_t value = internal_ptr.load(order);
+      return reinterpret_cast<Node *>(value & PTR_MASK);
+    }
+
+    inline bool isMarked(std::memory_order order = std::memory_order_seq_cst) const noexcept
+    {
+      uintptr_t value = internal_ptr.load(order);
+      return (value & MARK_BIT) != 0;
+    }
+
+    inline std::pair<Node *, bool> get(std::memory_order order = std::memory_order_seq_cst) const noexcept
+    {
+      uintptr_t value = internal_ptr.load(order);
+      return {reinterpret_cast<Node *>(value & PTR_MASK), (value & MARK_BIT) != 0};
+    }
+
+    inline bool tryMark(Node *expected_ptr, std::memory_order order = std::memory_order_seq_cst) noexcept
+    {
+      uintptr_t expected = compose(expected_ptr, false);
+      uintptr_t desired = compose(expected_ptr, true);
+      return internal_ptr.compare_exchange_strong(expected, desired, order);
+    }
+
+    inline void store(Node *desired, bool mark = false, std::memory_order order = std::memory_order_seq_cst) noexcept
+    {
+      internal_ptr.store(compose(desired, mark), order);
     }
 
     inline Node *load(std::memory_order order = std::memory_order_seq_cst) const noexcept
     {
-      return internal_ptr.load(order);
+      return getReference(order);
     }
 
-    inline Node *exchange(Node *desired, std::memory_order order = std::memory_order_seq_cst) noexcept
+    inline uintptr_t exchange(Node *desired, bool mark = false, std::memory_order order = std::memory_order_seq_cst) noexcept
     {
-      return internal_ptr.exchange(desired, order);
+      return internal_ptr.exchange(compose(desired, mark), order);
     }
 
-    inline bool compare_exchange_weak(Node *&expected, Node *desired, std::memory_order success, std::memory_order failure) noexcept
+    inline bool compare_exchange_weak(Node *&expected, Node *desired, bool expected_mark, bool desired_mark, std::memory_order success, std::memory_order failure) noexcept
     {
-      return internal_ptr.compare_exchange_weak(expected, desired, success, failure);
+      uintptr_t exp = compose(expected, expected_mark);
+      uintptr_t des = compose(desired, desired_mark);
+      bool result = internal_ptr.compare_exchange_weak(exp, des, success, failure);
+      expected = reinterpret_cast<Node *>(exp & PTR_MASK);
+      return result;
     }
 
-    inline bool compare_exchange_weak(Node *&expected, Node *desired, std::memory_order order = std::memory_order_seq_cst) noexcept
+    inline bool compare_exchange_weak(Node *&expected, Node *desired, bool expected_mark, bool desired_mark, std::memory_order order = std::memory_order_seq_cst) noexcept
     {
-      return internal_ptr.compare_exchange_weak(expected, desired, order);
+      return compare_exchange_weak(expected, desired, expected_mark, desired_mark, order, order);
     }
 
-    inline bool compare_exchange_strong(Node *&expected, Node *desired, std::memory_order success, std::memory_order failure) noexcept
+    inline bool compare_exchange_strong(Node *&expected, Node *desired, bool expected_mark, bool desired_mark, std::memory_order success, std::memory_order failure) noexcept
     {
-      return internal_ptr.compare_exchange_strong(expected, desired, success, failure);
+      uintptr_t exp = compose(expected, expected_mark);
+      uintptr_t des = compose(desired, desired_mark);
+      bool result = internal_ptr.compare_exchange_strong(exp, des, success, failure);
+      expected = reinterpret_cast<Node *>(exp & PTR_MASK);
+      return result;
     }
 
-    inline bool compare_exchange_strong(Node *&expected, Node *desired, std::memory_order order = std::memory_order_seq_cst) noexcept
+    inline bool compare_exchange_strong(Node *&expected, Node *desired, bool expected_mark, bool desired_mark, std::memory_order order = std::memory_order_seq_cst) noexcept
     {
-      return internal_ptr.compare_exchange_strong(expected, desired, order);
+      return compare_exchange_strong(expected, desired, expected_mark, desired_mark, order, order);
     }
 
     inline operator Node *() const noexcept
     {
-      return internal_ptr.load();
+      return getReference();
     }
 
-    AlignedAtomicPtr(const AlignedAtomicPtr &) = delete;
-    AlignedAtomicPtr &operator=(const AlignedAtomicPtr &) = delete;
+    MarkedAtomicPtr(const MarkedAtomicPtr &) = delete;
+    MarkedAtomicPtr &operator=(const MarkedAtomicPtr &) = delete;
   };
 
-public:
-  AlignedAtomicPtr next[MAX_LEVEL + 1];
+  MarkedAtomicPtr next[MAX_LEVEL + 1];
 
+public:
+  void *h;
+  void *t;
+
+  uint32_t level;
   K key;
   V value;
 
-  ConcurrentSkipListMapNode(const K &k, const V &v, uint32_t level) : key(k), value(v), refCount(0), marked(false)
+  ConcurrentSkipListMapNode(const K &k, const V &v, uint32_t level) : key(k), value(v), refCount(0), marked(false), level(level)
   {
-    for (int i = 0; i <= MAX_LEVEL; ++i)
+    for (int i = 0; i <= level; ++i)
     {
       next[i].store(nullptr, std::memory_order_relaxed);
     }
   }
 
-  ConcurrentSkipListMapNode(int level) : refCount(0), marked(false)
+  ConcurrentSkipListMapNode(int level) : refCount(0), marked(false), level(level)
   {
-    for (int i = 0; i <= MAX_LEVEL; ++i)
+    for (int i = 0; i <= level; ++i)
     {
       next[i].store(nullptr, std::memory_order_relaxed);
     }
+  }
+
+  ConcurrentListNode<K, V, MAX_LEVEL> *get(uint32_t level)
+  {
+    return next[level].getReference();
+  }
+
+  ConcurrentListNode<K, V, MAX_LEVEL> *get(uint32_t level, bool &marked)
+  {
+    auto p = next[level].get();
+    marked = p.second;
+    return p.first;
   }
 
   bool ref()
   {
-    uint32_t old = refCount.fetch_add(1, std::memory_order_acquire);
-    // printf("+ %p %u\n", this, old);
-    if (old == 0 && marked.load(std::memory_order_release))
+    while (true)
     {
-      // Node was already freed, undo the increment
-      refCount.fetch_sub(1, std::memory_order_release);
-      return false;
+      uint32_t degree = refCount.load(std::memory_order_acquire);
+
+      if (degree == 0 && marked.load(std::memory_order_acquire))
+      {
+        return false;
+      }
+
+      if (refCount.compare_exchange_strong(degree, degree + 1, std::memory_order_release, std::memory_order_acquire))
+      {
+        return true;
+      }
     }
 
-    return true;
+    return false;
   }
 
   bool unref()
   {
-    uint32_t old = refCount.fetch_sub(1, std::memory_order_acquire);
-    // printf("- %p %u\n", this, old);
-
-    if (old == 0)
+    while (true)
     {
-      printf("[%u] FAILED unref ptr=%p\n", os::Thread::getCurrentThreadId(), this);
-      return false;
+      uint32_t degree = refCount.load(std::memory_order_acquire);
+
+      if (degree <= 0 && marked.load(std::memory_order_acquire))
+      {
+        return false;
+      }
+
+      uint32_t expected = degree;
+
+      if (refCount.compare_exchange_strong(expected, degree - 1, std::memory_order_release, std::memory_order_acquire))
+      {
+        return expected == 1 && marked.load(std::memory_order_acquire);
+      }
     }
 
-    return old == 1; // Returns true if this was the last reference
+    return false;
+
+    // uint32_t old = refCount.fetch_sub(1, std::memory_order_acquire);
+    // if (this != h && this != t)
+    //   // printf("- %p %u\n", this, old - 1);
+
+    //   if (old == 0)
+    //   {
+    //     //        printf("[%u] FAILED unref ptr=%p\n", os::Thread::getCurrentThreadId(), this);
+    //     return false;
+    //   }
+
+    // return old == 1; // Returns true if this was the last reference
   }
 
   bool isMarked()
@@ -152,9 +235,10 @@ public:
   }
 };
 
-template <typename K, typename V, size_t MAX_LEVEL = 16, typename Allocator = memory::allocator::SystemAllocator<ConcurrentSkipListMapNode<K, V, MAX_LEVEL>>> class ConcurrentSkipListMap
+template <typename K, typename V, size_t MAX_LEVEL = 16, typename Allocator = memory::allocator::SystemAllocator<ConcurrentSkipListMapNode<K, V, MAX_LEVEL>>>
+class ConcurrentSkipListMap
 {
-  using HazardPointerManager = HazardPointer<MAX_LEVEL + 1, ConcurrentSkipListMapNode<K, V, MAX_LEVEL>, Allocator>;
+  using HazardPointerManager = HazardPointer<2 * (MAX_LEVEL + 1) + 6, ConcurrentSkipListMapNode<K, V, MAX_LEVEL>, Allocator>;
 
   using HazardPointerRecord = typename HazardPointerManager::Record;
   using Node = ConcurrentSkipListMapNode<K, V, MAX_LEVEL>;
@@ -167,26 +251,27 @@ private:
   Node *tail;
   std::atomic<int> size_;
 
-  // int randomLevel()
-  // {
-  //   static thread_local std::mt19937 gen(std::random_device{}());
-  //   static thread_local std::geometric_distribution<int> dist(0.5);
-  //   return std::min(dist(gen), (int)MAX_LEVEL);
-  // }
   int randomLevel()
   {
-    static thread_local uint64_t state = std::chrono::steady_clock::now().time_since_epoch().count();
-
-    // Wyrand - fastest quality PRNG
-    state += 0xa0761d6478bd642f;
-    uint64_t result = state;
-    result ^= result >> 32;
-    result *= 0xe7037ed1a0b428db;
-    result ^= result >> 32;
-
-    int level = __builtin_ctzll(~result);
-    return level % (MAX_LEVEL + 1);
+    static thread_local std::mt19937 gen(std::random_device{}());
+    static thread_local std::geometric_distribution<int> dist(0.5);
+    return std::min(dist(gen), (int)MAX_LEVEL);
   }
+  // int randomLevel()
+  // {
+  //   static thread_local uint64_t state = std::chrono::steady_clock::now().time_since_epoch().count();
+
+  //   // Wyrand - fastest quality PRNG
+  //   state += 0xa0761d6478bd642f;
+  //   uint64_t result = state;
+  //   result ^= result >> 32;
+  //   result *= 0xe7037ed1a0b428db;
+  //   result ^= result >> 32;
+
+  //   int level = __builtin_ctzll(~result);
+  //   return level % (MAX_LEVEL + 1);
+  // }
+
   void removeLinksAndRetireNode(Node *node, HazardPointerRecord *rec)
   {
     if (node == head || node == tail)
@@ -196,10 +281,10 @@ private:
 
     if (node->unref())
     {
-      // printf("freed %p\n", node);
       for (int i = 0; i <= MAX_LEVEL; i++)
       {
         Node *child = node->next[i].load(std::memory_order_acquire);
+
         if (child != nullptr)
         {
           removeLinksAndRetireNode(child, rec);
@@ -210,15 +295,18 @@ private:
     }
   }
 
-  bool find(const K &key, Node **preds, Node **succs, HazardPointerRecord *predsRec, HazardPointerRecord *succRec)
+  bool find(const K &key, Node **preds, Node **succs, HazardPointerRecord *rec)
   {
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
+    // printf("find internal\n");
+    // HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
+    constexpr uint32_t recStart = 3;
 
     Node *curr = nullptr, *pred = nullptr;
 
   retry:
     pred = nullptr;
     curr = nullptr;
+
     for (uint32_t i = 0; i <= MAX_LEVEL; i++)
     {
       if (preds[i] != nullptr)
@@ -235,15 +323,24 @@ private:
     }
 
     pred = head;
-    rec->assign(pred, 2);
+    pred->ref();
+
+    rec->assign(pred, recStart + 2);
 
     for (int level = MAX_LEVEL; level >= 0; --level)
     {
-      curr = pred->next[level].load(std::memory_order_acquire);
-      rec->assign(curr, 0);
+      curr = pred->next[level].load(std::memory_order_relaxed);
+      rec->assign(curr, recStart + 0);
 
       if (curr != pred->next[level].load(std::memory_order_acquire))
       {
+        removeLinksAndRetireNode(pred, rec);
+        goto retry;
+      }
+
+      if (!curr->ref())
+      {
+        removeLinksAndRetireNode(pred, rec);
         goto retry;
       }
 
@@ -254,12 +351,20 @@ private:
           break;
         }
 
-        Node *succ = curr->next[level].load(std::memory_order_acquire);
-
-        rec->assign(succ, 1);
+        Node *succ = curr->next[level].load(std::memory_order_relaxed);
+        rec->assign(succ, recStart + 1);
 
         if (!succ || succ != curr->next[level].load(std::memory_order_acquire))
         {
+          removeLinksAndRetireNode(pred, rec);
+          removeLinksAndRetireNode(curr, rec);
+          goto retry;
+        }
+
+        if (!succ->ref())
+        {
+          removeLinksAndRetireNode(pred, rec);
+          removeLinksAndRetireNode(curr, rec);
           goto retry;
         }
 
@@ -268,14 +373,21 @@ private:
           assert(succ != curr);
 
           Node *expected = curr;
+          assert(succ == rec->get(recStart + 1));
 
           if (!succ->ref())
           {
+            removeLinksAndRetireNode(pred, rec);
+            removeLinksAndRetireNode(curr, rec);
+            removeLinksAndRetireNode(succ, rec);
             goto retry;
           }
 
           if (!pred->next[level].compare_exchange_strong(expected, succ, std::memory_order_release, std::memory_order_acquire))
           {
+            removeLinksAndRetireNode(pred, rec);
+            removeLinksAndRetireNode(curr, rec);
+            removeLinksAndRetireNode(succ, rec);
             removeLinksAndRetireNode(succ, rec);
             goto retry;
           }
@@ -284,9 +396,11 @@ private:
 
           curr = succ;
 
-          rec->assign(curr, 0);
+          rec->assign(curr, recStart + 0);
           if (!curr || pred->next[level].load(std::memory_order_acquire) != curr)
           {
+            removeLinksAndRetireNode(pred, rec);
+            removeLinksAndRetireNode(curr, rec);
             goto retry;
           }
 
@@ -298,30 +412,43 @@ private:
           }
 
           succ = curr->next[level].load(std::memory_order_acquire);
-          rec->assign(succ, 1);
-
+          rec->assign(succ, recStart + 1);
           if (!succ || succ != curr->next[level].load(std::memory_order_acquire))
           {
+            removeLinksAndRetireNode(pred, rec);
+            removeLinksAndRetireNode(curr, rec);
+            goto retry;
+          }
+
+          if (!succ->ref())
+          {
+            removeLinksAndRetireNode(pred, rec);
+            removeLinksAndRetireNode(curr, rec);
             goto retry;
           }
         }
 
         if (curr == tail || curr->key >= key)
         {
+          if (succ)
+          {
+            removeLinksAndRetireNode(succ, rec);
+          }
           break;
         }
 
+        removeLinksAndRetireNode(pred, rec);
         pred = curr;
 
         assert(curr != succ);
         curr = succ;
 
-        rec->assign(pred, 2);
-        rec->assign(curr, 0);
+        rec->assign(pred, recStart + 2);
+        rec->assign(curr, recStart + 0);
       }
 
-      predsRec->assign(pred, level);
-      succRec->assign(curr, level);
+      rec->assign(pred, 6 + level);
+      rec->assign(curr, 6 + MAX_LEVEL + 1 + level);
 
       if (!pred->ref())
       {
@@ -337,12 +464,14 @@ private:
 
       succs[level] = curr;
 
-      rec->assign(pred, 2);
+      removeLinksAndRetireNode(curr, rec);
+      rec->assign(pred, recStart + 2);
     }
 
-    hazardAllocator.release(rec);
+    // hazardAllocator.release(rec);
 
     bool result = curr != tail && curr->key == key;
+    removeLinksAndRetireNode(pred, rec);
     return result;
   }
 
@@ -351,7 +480,10 @@ public:
   {
     head = new Node(MAX_LEVEL);
     tail = new Node(MAX_LEVEL);
-
+    head->h = head;
+    head->t = tail;
+    tail->h = head;
+    tail->t = tail;
     head->ref();
     tail->ref();
 
@@ -371,17 +503,61 @@ public:
 
   ~ConcurrentSkipListMap()
   {
-    Node *current = head->next[0].load(std::memory_order_acquire);
+    clear();
 
-    while (current != tail)
+    auto record = hazardAllocator.acquire(allocator);
+
+    record->retire(head);
+    record->retire(tail);
+
+    hazardAllocator.release(record);
+  }
+
+  bool checkDegree(Node *node, std::unordered_set<Node *> &visited)
+  {
+    if (visited.count(node))
     {
-      Node *next = current->next[0].load(std::memory_order_acquire);
-      delete current;
-      current = next;
+      return true;
     }
 
-    delete head;
-    delete tail;
+    visited.insert(node);
+
+    if (node == tail)
+    {
+      return true;
+    }
+
+    for (uint32_t i = 0; i <= node->level; i++)
+    {
+      if ((node == head && node->next[i].load(std::memory_order_acquire)) || node != head)
+      {
+        if (!checkDegree(node->next[i].load(std::memory_order_acquire), visited))
+        {
+          return false;
+        }
+      }
+    }
+
+    if (node == head || node == tail)
+    {
+      return true;
+    }
+
+    if (node->refCount.load() != node->level + 1)
+    {
+      if constexpr (std::is_integral<V>::value)
+      {
+        printf("node %p (%u) have degree %u and level %u\n", node, node->value, node->refCount.load(), node->level + 1);
+      }
+    }
+
+    return node->refCount.load() == node->level + 1;
+  }
+
+  bool checkNodesDegrees()
+  {
+    std::unordered_set<Node *> visited;
+    return checkDegree(head, visited);
   }
 
   class Iterator
@@ -395,52 +571,56 @@ public:
     HazardPointerManager *hazardManager;
     Allocator *allocator;
 
-    void removeLinksAndRetireNode(Node *node, HazardPointerRecord *rec)
-    {
-      if (node->unref())
-      {
-        for (int i = 0; i <= MAX_LEVEL; i++)
-        {
-          Node *child = node->next[i].load(std::memory_order_acquire);
-          if (child)
-          {
-            removeLinksAndRetireNode(child, rec);
-          }
-        }
-        // printf("freed %u\n", node->value);
-        rec->retire(node);
-      }
-    }
+    // void removeLinksAndRetireNode(Node *node, HazardPointerRecord *rec)
+    // {
+    //   if (node->unref())
+    //   {
+    //     for (int i = 0; i <= MAX_LEVEL; i++)
+    //     {
+    //       Node *child = node->next[i].load(std::memory_order_acquire);
+    //       if (child)
+    //       {
+    //         removeLinksAndRetireNode(child, rec);
+    //       }
+    //     }
+
+    //     // printf("freed %p\n", node);
+
+    //     rec->retire(node);
+    //   }
+    // }
 
     void next()
     {
       while (current != tail)
       {
         assert(rec->get(0) == current);
-        rec->assign(current, 2);
+
+        //        rec->assign(current, 2);
+
         Node *next = current->next[0].load(std::memory_order_acquire);
+
         rec->assign(next, 1);
+
         if (next != current->next[0].load(std::memory_order_acquire))
         {
           continue;
         }
-        if (!next->ref())
-        {
-          continue;
-        }
-        removeLinksAndRetireNode(current, rec);
+
         rec->assign(next, 0);
         current = next;
+
         if (current->isMarked())
         {
           continue;
         }
+
         break;
       };
     }
 
   public:
-    Iterator(Node *start, Node *end, HazardPointerRecord *rec, HazardPointerManager *hazardManager, bool requiresUnmarked)
+    Iterator(Node *start, Node *end, HazardPointerRecord *rec, HazardPointerManager *hazardManager, Allocator *allocator, bool requiresUnmarked)
         : current(start), tail(end), rec(rec), hazardManager(hazardManager)
     {
       while (requiresUnmarked && current != tail && current->isMarked())
@@ -450,10 +630,23 @@ public:
     }
 
     // Copy constructor
-    Iterator(const Iterator &other)
-        : current(other.current), tail(other.tail), allocator(other.allocator), rec(other.hazardManager->acquire(*(other.allocator))), hazardManager(other.hazardManager)
+    Iterator(const Iterator &other) : current(other.current), tail(other.tail), allocator(other.allocator), hazardManager(other.hazardManager)
     {
-      if (current && current->ref())
+      if (other.hazardManager)
+      {
+        if (other.allocator == nullptr)
+        {
+          *(int *)0 = 4;
+        }
+        rec = other.hazardManager->acquire(*(other.allocator));
+      }
+
+      if (current == tail)
+      {
+        return;
+      }
+
+      if (current)
       {
         rec->assign(current, 0);
       }
@@ -464,18 +657,25 @@ public:
     {
       if (this != &other)
       {
-        removeLinksAndRetireNode(current, rec);
-        hazardManager->release(rec);
+        if (rec)
+        {
+          // removeLinksAndRetireNode(current, rec);
+          hazardManager->release(rec);
+        }
 
         // Copy from other
         current = other.current;
         tail = other.tail;
         hazardManager = other.hazardManager;
-        rec = hazardManager->acquire();
+        allocator = other.allocator;
 
-        if (current && current->ref())
+        if (hazardManager)
         {
-          rec->assign(current, 0);
+          rec = hazardManager->acquire();
+          if (current)
+          {
+            rec->assign(current, 0);
+          }
         }
       }
       return *this;
@@ -486,25 +686,30 @@ public:
     {
       other.rec = nullptr;
       other.current = nullptr;
+      other.allocator = nullptr;
+      other.hazardManager = nullptr;
     }
 
     Iterator &operator=(Iterator &&other) noexcept
     {
       if (this != &other)
       {
-        if (rec)
-        {
-          removeLinksAndRetireNode(current, rec);
-          hazardManager->release(rec);
-        }
+        // if (rec)
+        // {
+        //   removeLinksAndRetireNode(current, rec);
+        //   hazardManager->release(rec);
+        // }
 
         current = other.current;
         tail = other.tail;
         rec = other.rec;
         hazardManager = std::move(other.hazardManager);
+        allocator = other.allocator;
 
         other.rec = nullptr;
         other.current = nullptr;
+        other.allocator = nullptr;
+        other.hazardManager = nullptr;
       }
       return *this;
     }
@@ -519,7 +724,7 @@ public:
     {
       if (rec)
       {
-        removeLinksAndRetireNode(current, rec);
+        // removeLinksAndRetireNode(current, rec);
         hazardManager->release(rec);
       }
     }
@@ -555,12 +760,12 @@ public:
       return *this;
     }
 
-    Iterator operator++(int)
-    {
-      Iterator tmp = *this;
-      next();
-      return tmp;
-    }
+    // Iterator operator++(int)
+    // {
+    //   Iterator tmp = *this;
+    //   next();
+    //   return tmp;
+    // }
 
     std::pair<const K &, V &> operator*()
     {
@@ -591,43 +796,41 @@ public:
   Iterator insert(const K &key, const V &value)
   {
     int topLevel = randomLevel();
-
+    // printf("insert\n");
     Node *preds[MAX_LEVEL + 1] = {};
     Node *succs[MAX_LEVEL + 1] = {};
 
     HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    HazardPointerRecord *predsRec = hazardAllocator.acquire(allocator);
-    HazardPointerRecord *succsRec = hazardAllocator.acquire(allocator);
 
     while (true)
     {
     retry:
-      if (find(key, preds, succs, predsRec, succsRec))
+      if (find(key, preds, succs, rec))
       {
         for (uint32_t i = 0; i <= MAX_LEVEL; i++)
         {
           if (preds[i] != nullptr)
           {
-            removeLinksAndRetireNode(preds[i], predsRec);
+            removeLinksAndRetireNode(preds[i], rec);
             preds[i] = nullptr;
           }
 
           if (succs[i] != nullptr)
           {
-            removeLinksAndRetireNode(succs[i], succsRec);
+            removeLinksAndRetireNode(succs[i], rec);
             succs[i] = nullptr;
           }
         }
 
-        hazardAllocator.release(predsRec);
-        hazardAllocator.release(succsRec);
         hazardAllocator.release(rec);
 
         return end();
       }
-
+      // printf("creating node\n");
       Node *newNode = new Node(key, value, topLevel);
 
+      newNode->h = head;
+      newNode->t = tail;
       newNode->ref();
 
       rec->assign(newNode, 0);
@@ -638,12 +841,14 @@ public:
         {
           for (int l = 0; l < level; ++l)
           {
-            removeLinksAndRetireNode(succs[level], succsRec);
+            removeLinksAndRetireNode(succs[level], rec);
           }
 
           delete newNode;
           goto retry;
         }
+
+        assert(succs[level] != nullptr);
 
         newNode->next[level].store(succs[level], std::memory_order_relaxed);
       }
@@ -658,37 +863,37 @@ public:
       {
         for (int level = 0; level <= topLevel; ++level)
         {
-          removeLinksAndRetireNode(succs[level], succsRec);
+          assert(succs[level] != nullptr);
+          removeLinksAndRetireNode(succs[level], rec);
         }
 
         delete newNode;
         goto retry;
       }
 
-      removeLinksAndRetireNode(succ, succsRec);
+      removeLinksAndRetireNode(succ, rec);
 
       for (int level = 1; level <= topLevel; ++level)
       {
+        if (!newNode->ref())
+        {
+          // TODO: maybe just return false is enough
+          abort();
+        }
+
         while (true)
         {
           pred = preds[level];
           succ = succs[level];
 
-          if (!newNode->ref())
-          {
-            // TODO: maybe just return false is enough
-            abort();
-          }
-
           Node *expected = succ;
           if (pred->next[level].compare_exchange_strong(expected, newNode, std::memory_order_release, std::memory_order_acquire))
           {
-            removeLinksAndRetireNode(succ, succsRec);
+            removeLinksAndRetireNode(succ, rec);
             break;
           }
 
-          removeLinksAndRetireNode(newNode, rec);
-          find(key, preds, succs, predsRec, succsRec);
+          find(key, preds, succs, rec);
         }
       }
 
@@ -698,36 +903,32 @@ public:
       {
         if (preds[i] != nullptr)
         {
-          removeLinksAndRetireNode(preds[i], predsRec);
+          removeLinksAndRetireNode(preds[i], rec);
         }
 
         if (succs[i] != nullptr)
         {
-          removeLinksAndRetireNode(succs[i], succsRec);
+          removeLinksAndRetireNode(succs[i], rec);
         }
       }
 
-      // removeLinksAndRetireNode(newNode, rec);
+      removeLinksAndRetireNode(newNode, rec);
 
-      hazardAllocator.release(predsRec);
-      hazardAllocator.release(succsRec);
-
-      return Iterator(newNode, tail, rec, &hazardAllocator, false);
+      return Iterator(newNode, tail, rec, &hazardAllocator, &allocator, false);
     }
   }
 
   Iterator remove(const K &key)
   {
+    // printf("remove\n");
     Node *preds[MAX_LEVEL + 1] = {0};
     Node *succs[MAX_LEVEL + 1] = {0};
     Node *victim = nullptr;
 
     // TODO: we dont need this if we dont ref victim that is already referenced in succs[0]
     HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    HazardPointerRecord *predsRec = hazardAllocator.acquire(allocator);
-    HazardPointerRecord *succsRec = hazardAllocator.acquire(allocator);
 
-    bool found = find(key, preds, succs, predsRec, succsRec);
+    bool found = find(key, preds, succs, rec);
     bool ret = false;
 
     if (!found)
@@ -739,10 +940,10 @@ public:
     victim = succs[0];
     rec->assign(victim, 0);
 
-    if (!victim->ref())
-    {
-      abort();
-    }
+    // if (!victim->ref())
+    // {
+    //   abort();
+    // }
 
     if (victim->isMarked())
     {
@@ -758,7 +959,7 @@ public:
       if (victim->mark())
       {
         size_.fetch_sub(1, std::memory_order_relaxed);
-        find(key, preds, succs, predsRec, succsRec);
+        find(key, preds, succs, rec);
         ret = true;
       }
       else
@@ -775,35 +976,35 @@ public:
     {
       if (preds[i] != nullptr)
       {
-        removeLinksAndRetireNode(preds[i], predsRec);
+        removeLinksAndRetireNode(preds[i], rec);
       }
 
       if (succs[i] != nullptr)
       {
-        removeLinksAndRetireNode(succs[i], succsRec);
+        removeLinksAndRetireNode(succs[i], rec);
       }
     }
 
-    hazardAllocator.release(predsRec);
-    hazardAllocator.release(succsRec);
-
     if (ret)
     {
-      return Iterator(victim, tail, rec, &hazardAllocator, false);
+      rec->assign(victim, 0);
+      return Iterator(victim, tail, rec, &hazardAllocator, &allocator, false);
     }
+
+    hazardAllocator.release(rec);
 
     return end();
   }
 
   Iterator find(const K &key)
   {
+    // printf("find\n");
     Node *preds[MAX_LEVEL + 1] = {};
     Node *succs[MAX_LEVEL + 1] = {};
 
-    HazardPointerRecord *predsRec = hazardAllocator.acquire(allocator);
-    HazardPointerRecord *succsRec = hazardAllocator.acquire(allocator);
+    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
 
-    bool found = find(key, preds, succs, predsRec, succsRec);
+    bool found = find(key, preds, succs, rec);
 
     if (!found)
     {
@@ -811,50 +1012,37 @@ public:
       {
         if (preds[i] != nullptr)
         {
-          removeLinksAndRetireNode(preds[i], predsRec);
+          removeLinksAndRetireNode(preds[i], rec);
         }
 
         if (succs[i] != nullptr)
         {
-          removeLinksAndRetireNode(succs[i], succsRec);
+          removeLinksAndRetireNode(succs[i], rec);
         }
       }
 
-      hazardAllocator.release(predsRec);
-      hazardAllocator.release(succsRec);
+      hazardAllocator.release(rec);
 
       return end();
     }
 
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    Iterator iter(head, tail, rec, &hazardAllocator, false);
+    // succs[0]->ref();
+    rec->assign(succs[0], 0);
 
-    if (found && !succs[0]->isMarked())
-    {
-      rec->assign(succs[0], 0);
-      iter.current = succs[0];
-
-      if (!iter.current->ref())
-      {
-        abort();
-      }
-    }
+    Iterator iter(succs[0], tail, rec, &hazardAllocator, &allocator, false);
 
     for (uint32_t i = 0; i <= MAX_LEVEL; i++)
     {
       if (preds[i] != nullptr)
       {
-        removeLinksAndRetireNode(preds[i], predsRec);
+        removeLinksAndRetireNode(preds[i], rec);
       }
 
       if (succs[i] != nullptr)
       {
-        removeLinksAndRetireNode(succs[i], succsRec);
+        removeLinksAndRetireNode(succs[i], rec);
       }
     }
-
-    hazardAllocator.release(predsRec);
-    hazardAllocator.release(succsRec);
 
     return iter;
   }
@@ -885,28 +1073,24 @@ public:
         continue;
       }
 
-      if (!first->ref())
-      {
-        continue;
-      }
-
       break;
     }
 
-    return Iterator(first, tail, rec, &hazardAllocator, true);
+    return Iterator(first, tail, rec, &hazardAllocator, &allocator, true);
   }
 
   Iterator end()
   {
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    rec->assign(tail, 0);
-    tail->ref();
-    return Iterator(tail, tail, rec, &hazardAllocator, false);
+    //     printf("end\n");
+    // HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
+    // rec->assign(tail, 0);
+    // tail->ref();
+    return Iterator(tail, tail, nullptr, nullptr, nullptr, false);
   }
 
   void clear()
   {
-    for (auto it = begin(); it != end(); it++)
+    for (auto it = begin(); it != end(); ++it)
     {
       remove(it.key());
     }
@@ -914,6 +1098,7 @@ public:
 
   Iterator operator[](const K &key)
   {
+    // printf("[]\n");
     while (true)
     {
       auto iter = find(key);
