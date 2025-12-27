@@ -11,6 +11,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/datastructures/ConcurrentBoundedDictionary.c
 include(${CMAKE_CURRENT_SOURCE_DIR}/datastructures/ConcurrentSkipListMapTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/datastructures/ConcurrentUnorderedSkipListMapTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/datastructures/ConcurrentHashMapTests.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/datastructures/ConcurrentSortedListTests.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/datastructures/ConcurrentEpochGarbageCollectorTests.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/async/ThreadCacheTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/async/JobTests.cmake)

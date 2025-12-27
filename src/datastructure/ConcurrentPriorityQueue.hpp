@@ -1,8 +1,8 @@
 #pragma once
 
-#include "datastructure/ConcurrentTimestampGarbageCollector.hpp"
+#include "datastructure/ConcurrentEpochGarbageCollector.hpp"
 #include <atomic>
-
+#include <unordered_set>
 namespace lib
 {
 
@@ -55,8 +55,7 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
 
   // HazardPointerManager hazardAllocator;
 
-  memory::allocator::SystemAllocator<Node> allocator;
-  ConcurrentTimestampGarbageCollector<Node> garbageCollector;
+  ConcurrentEpochGarbageCollector<Node> garbageCollector;
 
   // TODO: padding
   static constexpr size_t LEFT_DIRECTION = 1;
@@ -80,13 +79,6 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
   static inline Node *mark(volatile Node *ptr, size_t mark)
   {
     return reinterpret_cast<Node *>((reinterpret_cast<uintptr_t>(ptr) & ~uintptr_t(0x3)) | mark);
-  }
-
-  Node *allocateNode(T v, P p)
-  {
-    // TODO: use aligned allocator
-    Node *node = allocator.allocate(1);
-    return new (node) Node(v, p);
   }
 
 #define LOAD_ADDR(c, b, a)                                                                                                                                                         \
@@ -582,14 +574,15 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
   }
 
 public:
-  ConcurrentPriorityQueue() : garbageCollector(allocator)
+  ConcurrentPriorityQueue() : garbageCollector()
   {
     // previousHead.set(nullptr);
     // previousDummy.set(nullptr);
+    auto scope = garbageCollector.openEpochGuard();
 
-    Node *headNode = allocateNode(0, 0);
-    Node *rootNode = allocateNode(0, 1);
-    Node *dummyNode = allocateNode(0, 0);
+    Node *headNode = garbageCollector.template allocate<T,P>(scope, 0, 0);
+    Node *rootNode = garbageCollector.template allocate<T,P>(scope, 0, 1);
+    Node *dummyNode = garbageCollector.template allocate<T,P>(scope, 0, 0);
 
     // 2) set up dummyNode exactly as in C
     dummyNode->priority = 0;
@@ -618,26 +611,28 @@ public:
 
   ~ConcurrentPriorityQueue()
   {
+    auto scope = garbageCollector.openEpochGuard();
+
     while (head.load())
     {
       Node *tmp = head.load();
       head.store(address(tmp->next));
-      allocator.deallocate(tmp);
+      scope.retire(tmp);
     }
 
-    allocator.deallocate(root.load());
+    // root.store(garbageCollector.allocate());
   }
 
   bool enqueue(const T &value, P priority)
   {
-    garbageCollector.openThreadContext();
+    auto scope = garbageCollector.openEpochGuard();
 
     // dump = "enqueing " + std::to_string(priority) + "\n";
     assert(priority != 0);
 
     // HazardPointer<16>::Record *record = hazardAllocator.acquire();
 
-    Node *newNode = allocateNode(value, priority);
+    Node *newNode = garbageCollector.allocate(scope, value, priority);
     newNode->right.store(mark(newNode, LEAF_MARK), std::memory_order_relaxed);
 
     while (true)
@@ -646,7 +641,6 @@ public:
 
       if (ins.duplicate == DUPLICATE_DIRECTION)
       {
-        garbageCollector.closeThreadContext();
         return false;
       }
 
@@ -656,8 +650,7 @@ public:
         continue;
       }
 
-
-      Node *cas1 = ins.cast1; 
+      Node *cas1 = ins.cast1;
       Node *cas2 = ins.cast2;
       Node *nextLeaf = ins.next;
 
@@ -693,8 +686,6 @@ public:
                 }
               }
 
-              garbageCollector.closeThreadContext();
-
               return true;
             }
           }
@@ -718,7 +709,6 @@ public:
               }
 
               // os::print("%s---------\n", dump.c_str());
-              garbageCollector.closeThreadContext();
               return true;
             }
           }
@@ -736,7 +726,7 @@ public:
 
   bool dequeue(T &out)
   {
-    garbageCollector.openThreadContext();
+    auto scope = garbageCollector.openEpochGuard();
 
     Node *hNode = head.load()->next;
 
@@ -764,7 +754,6 @@ public:
 
         if (randomGen(100) < 50)
         {
-          garbageCollector.closeThreadContext();
           return true;
         }
 
@@ -784,9 +773,6 @@ public:
           }
         }
 
-        garbageCollector.collect();
-        garbageCollector.closeThreadContext();
-
         return true;
       }
 
@@ -794,9 +780,9 @@ public:
     }
   }
 
-  bool tryDequeue(T &outValue, P& priority)
+  bool tryDequeue(T &outValue, P &priority)
   {
-    garbageCollector.openThreadContext();
+    auto scope = garbageCollector.openEpochGuard();
 
     // outValue = -1;
     Node *h; // = head.load(std::memory_order_acquire);
@@ -831,7 +817,6 @@ public:
       if (!nextLeaf)
       {
         // previousDummy.set(leafNode);
-        garbageCollector.closeThreadContext();
         return false;
       }
 
@@ -860,7 +845,7 @@ public:
         // os::print("Thread %u moving %u\n", i, xorNode->value);
         outValue = std::move(xorNode->value);
         priority = std::move(xorNode->priority);
-        
+
         // os::print("Thread %u moved %u, %u\n", i, xorNode->value, outValue);
 
         // previousDummy.set(xorNode);
@@ -887,41 +872,22 @@ public:
           physicalDelete(xorNode, r);
 
           nextLeaf = headItemNode;
-          size_t count = 0;
-
-          while (nextLeaf != xorNode)
-          {
-            // std::atomic<uintptr_t> &raw = reinterpret_cast<std::atomic<uintptr_t> &>(nextLeaf->next);
-            nextLeaf = address(nextLeaf->next.load(std::memory_order_acquire));
-
-            // raw.fetch_or(1LL, std::memory_order_acquire);
-
-            // assert(getMark(nextLeaf) == DELETE_MARK);
-            // if (getMark(nextLeaf) == DELETE_MARK)
-            // {
-            count++;
-            // }
-          }
 
           nextLeaf = headItemNode;
-          Node **buff = new Node *[count];
           size_t at = 0;
 
           while (nextLeaf != xorNode)
           {
             // if (getMark(nextLeaf) == DELETE_MARK)
             // {
-            buff[at++] = nextLeaf;
+            // buff[at++] = nextLeaf;
+            scope.retire(nextLeaf);
+
             // }
 
             nextLeaf = address(nextLeaf->next.load(std::memory_order_acquire));
           }
-
-          garbageCollector.free(buff, count);
         }
-
-        garbageCollector.closeThreadContext();
-        garbageCollector.collect();
 
         return true;
       }

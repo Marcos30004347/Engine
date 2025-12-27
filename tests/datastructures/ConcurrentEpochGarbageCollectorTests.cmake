@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.10)
+
+project (ConcurrentEpochGarbageCollectorTests)
+get_filename_component(TEST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+add_executable(ConcurrentEpochGarbageCollectorTests ${TEST_DIR}/ConcurrentEpochGarbageCollectorTests.cpp)
+target_link_libraries(ConcurrentEpochGarbageCollectorTests PRIVATE Engine)
+add_test(NAME ConcurrentEpochGarbageCollectorTests COMMAND ConcurrentEpochGarbageCollectorTests)

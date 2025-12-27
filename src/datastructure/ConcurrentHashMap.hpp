@@ -10,12 +10,11 @@ template <
     typename K,
     typename V,
     size_t MAX_LEVEL = 16,
-    typename Hasher = std::hash<K>,
-    typename Allocator = memory::allocator::SystemAllocator<ConcurrentSkipListMapNode<size_t, V, MAX_LEVEL>>>
+    typename Hasher = std::hash<K>>
 class ConcurrentHashMap
 {
 private:
-  using InternalMap = ConcurrentSkipListMap<size_t, V, MAX_LEVEL, Allocator>;
+  using InternalMap = ConcurrentSkipListMap<size_t, V, MAX_LEVEL>;
   using InternalIterator = typename InternalMap::Iterator;
 
   InternalMap map;
@@ -35,7 +34,7 @@ public:
 
   class Iterator
   {
-    template <typename A, typename B, size_t C, typename H, typename D> friend class ConcurrentHashMap;
+    template <typename A, typename B, size_t C, typename H> friend class ConcurrentHashMap;
 
   private:
     InternalIterator internal_iter;
