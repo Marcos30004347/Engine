@@ -25,7 +25,7 @@ namespace lib
 // #define MARK_BIT (1U << MARK_BIT_INDEX)
 // #define REFCOUNT_MASK ~MARK_BIT
 
-#define CACHE_LINE_SIZE 8
+#define CONCURRENT_EGC_CACHE_SIZE 16
 
 template <typename K, typename V, size_t MAX_LEVEL = 16> struct ConcurrentSkipListMapNode
 {
@@ -33,6 +33,7 @@ private:
 
 public:
   using Node = ConcurrentSkipListMapNode<K, V, MAX_LEVEL>;
+  using GC = ConcurrentEpochGarbageCollector<Node, CONCURRENT_EGC_CACHE_SIZE>;
 
   std::atomic<uint32_t> refCount; // Own cache line
   MarkedAtomicPointer<Node> next[MAX_LEVEL + 1];
@@ -64,7 +65,7 @@ public:
     return expected;
   }
 
-  uint32_t refSub(uint32_t value, typename ConcurrentEpochGarbageCollector<Node>::EpochGuard &scope)
+  uint32_t refSub(uint32_t value, typename GC::EpochGuard &scope)
   {
     uint32_t expected = 0;
     do
@@ -109,8 +110,8 @@ public:
   ~ConcurrentSkipListMapNode()
   {
     // freed.store(true);
-    //  auto allocation = reinterpret_cast<typename ConcurrentEpochGarbageCollector<Node>::Allocation *>(reinterpret_cast<char *>(this) - offsetof(typename
-    //  ConcurrentEpochGarbageCollector<Node>::Allocation, data)); uint64_t epoch = gc.minimumEpoch();
+    //  auto allocation = reinterpret_cast<typename GC::Allocation *>(reinterpret_cast<char *>(this) - offsetof(typename
+    //  GC::Allocation, data)); uint64_t epoch = gc.minimumEpoch();
   }
 
   ConcurrentSkipListMapNode(int level) : refCount(1), level(level)
@@ -125,8 +126,8 @@ public:
   {
     // if (freed.load())
     // {
-    //   auto allocation = reinterpret_cast<typename ConcurrentEpochGarbageCollector<Node>::Allocation *>(
-    //       reinterpret_cast<char *>(this) - offsetof(typename ConcurrentEpochGarbageCollector<Node>::Allocation, data));
+    //   auto allocation = reinterpret_cast<typename GC::Allocation *>(
+    //       reinterpret_cast<char *>(this) - offsetof(typename GC::Allocation, data));
     //   os::print(">>> [%u] was freed %u, %p, prev=%u, %u\n", os::Thread::getCurrentThreadId(), key, allocation, prev != nullptr ? prev->key : -1, l);
     //   int *t = 0;
     //   *t = 3;
@@ -139,8 +140,8 @@ public:
   {
     // if (freed.load())
     // {
-    //   auto allocation = reinterpret_cast<typename ConcurrentEpochGarbageCollector<Node>::Allocation *>(
-    //       reinterpret_cast<char *>(this) - offsetof(typename ConcurrentEpochGarbageCollector<Node>::Allocation, data));
+    //   auto allocation = reinterpret_cast<typename GC::Allocation *>(
+    //       reinterpret_cast<char *>(this) - offsetof(typename GC::Allocation, data));
     //   os::print(">>> [%u] was freed %u, %p, prev=%u, %u\n", os::Thread::getCurrentThreadId(), key, allocation, prev != nullptr ? prev->key : -1, l);
     //   int *t = 0;
     //   *t = 3;
@@ -179,11 +180,7 @@ public:
   //   return 0;
   // }
 
-  bool setNext(
-      uint32_t level,
-      ConcurrentSkipListMapNode<K, V, MAX_LEVEL> *expected,
-      ConcurrentSkipListMapNode<K, V, MAX_LEVEL> *to,
-      typename ConcurrentEpochGarbageCollector<Node>::EpochGuard &scope)
+  bool setNext(uint32_t level, ConcurrentSkipListMapNode<K, V, MAX_LEVEL> *expected, ConcurrentSkipListMapNode<K, V, MAX_LEVEL> *to, typename GC::EpochGuard &scope)
   {
     if (next[level].compare_exchange_strong(expected, to, std::memory_order_release, std::memory_order_acquire))
     {
@@ -198,8 +195,9 @@ template <typename K, typename V, size_t MAX_LEVEL = 16> class ConcurrentSkipLis
 {
 private:
   using Node = ConcurrentSkipListMapNode<K, V, MAX_LEVEL>;
+  using GC = ConcurrentEpochGarbageCollector<Node, CONCURRENT_EGC_CACHE_SIZE>;
 
-  ConcurrentEpochGarbageCollector<Node> epochGarbageCollector;
+  GC epochGarbageCollector;
 
   Node *head;
   Node *tail;
@@ -236,7 +234,7 @@ private:
   //     return std::min((int)MAX_LEVEL, level);
   // }
 
-  template <bool NeedSuccs = true> Node *find(const K &key, Node **preds, Node **succs, typename ConcurrentEpochGarbageCollector<Node>::EpochGuard &scope)
+  template <bool NeedSuccs = true> Node *find(const K &key, Node **preds, Node **succs, typename GC::EpochGuard &scope)
   {
     Node *curr = nullptr, *pred = nullptr;
     bool isMarked = false;
@@ -293,7 +291,7 @@ private:
 
     return curr->key == key ? curr : nullptr;
   }
-  void clearInternal(typename ConcurrentEpochGarbageCollector<Node>::EpochGuard &scope)
+  void clearInternal(typename GC::EpochGuard &scope)
   {
     bool marked = false;
     Node *prev = head;
@@ -358,7 +356,7 @@ public:
   private:
     Node *current;
     Node *tail;
-    typename ConcurrentEpochGarbageCollector<Node>::EpochGuard scope;
+    typename GC::EpochGuard scope;
 
     void next()
     {
@@ -386,7 +384,7 @@ public:
     }
 
   public:
-    Iterator(Node *start, Node *end, typename ConcurrentEpochGarbageCollector<Node>::EpochGuard &scope, bool requiresUnmarked) : current(start), tail(end), scope(scope)
+    Iterator(Node *start, Node *end, typename GC::EpochGuard &scope, bool requiresUnmarked) : current(start), tail(end), scope(scope)
     {
       bool isMarked = false;
       current->get(0, isMarked);
@@ -401,10 +399,6 @@ public:
     // Copy constructor
     Iterator(const Iterator &other) : current(other.current), tail(other.tail), scope(other.scope)
     {
-      if (current == tail)
-      {
-        return;
-      }
     }
 
     // Copy assignment operator

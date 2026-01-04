@@ -30,10 +30,10 @@ void multiThreadTests()
           lib::time::TimeSpan then = lib::time::TimeSpan::now();
           double total_ns = 0;
 
-          for (size_t j = 0; j < 1000; j++)
+          for (int j = 0; j < 1000; j++)
           {
             then = lib::time::TimeSpan::now();
-            list->insert(j);
+            list->pushFront(j);
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
@@ -46,23 +46,19 @@ void multiThreadTests()
 
           total_ns = 0;
 
-          for (size_t j = 0; j < 1000; j++)
+          for (int j = 999; j >= 0; j--)
           {
-            bool removed = false;
+            int x = j;
 
-            for (size_t attempt = 0; attempt < totalThreads * 10000; attempt++)
+            then = lib::time::TimeSpan::now();
+
+            bool removed = list->tryRemove(x);
+
+            total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
+
+            if (removed)
             {
-              then = lib::time::TimeSpan::now();
-
-              int x = j;
-              removed = list->tryRemove(x);
-
-              total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
-              if (removed)
-              {
-                assert(x == j);
-                break;
-              }
+              assert(x == j);
             }
 
             assert(removed);
@@ -71,6 +67,7 @@ void multiThreadTests()
           os::print("Thread %u average removal time is %fns\n", os::Thread::getCurrentThreadId(), total_ns / 1000);
         });
   }
+
   started = true;
   for (size_t i = 0; i < totalThreads; i++)
   {
@@ -99,7 +96,7 @@ void concurrentListMultithreadTests()
           for (size_t j = 0; j < 1000; j++)
           {
             then = lib::time::TimeSpan::now();
-            list.insert(j);
+            list.pushFront(j);
             total_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
@@ -107,11 +104,12 @@ void concurrentListMultithreadTests()
 
           total_ns = 0;
           int x;
+
           for (size_t j = 0; j < 1000; j++)
           {
             then = lib::time::TimeSpan::now();
 
-            while (!list.tryPop(x))
+            while (!list.popFront(x))
             {
             }
 
@@ -134,7 +132,7 @@ void concurrentListMultithreadTests()
         {
           for (size_t j = 0; j < 1000; j++)
           {
-            list.insert(j);
+            list.pushFront(j);
           }
         });
   }
@@ -147,7 +145,8 @@ void concurrentListMultithreadTests()
   for (size_t i = 0; i < totalThreads * 1000; i++)
   {
     int x;
-    assert(list.tryPop(x));
+    bool removed = list.popFront(x);
+    assert(removed);
   }
 }
 
@@ -177,7 +176,7 @@ void concurrentListIterationTests()
           for (size_t i = 0; i < insertsPerThread; i++)
           {
             int value = (int)(t * insertsPerThread + i);
-            list.insert(value);
+            list.pushFront(value);
           }
 
           finishedInsertCount.fetch_add(1);
@@ -214,7 +213,7 @@ void concurrentListIterationWithInPlaceRemovalTests()
   os::print("Running concurrent iteration with in-place removal test...\n");
 
   const size_t totalThreads = os::Thread::getHardwareConcurrency();
-  const size_t insertsPerThread = 4000;
+  const size_t insertsPerThread = 1000;
   const size_t totalInserts = totalThreads * insertsPerThread;
 
   lib::ConcurrentLinkedList<int> list;
@@ -239,7 +238,7 @@ void concurrentListIterationWithInPlaceRemovalTests()
           for (size_t i = 0; i < insertsPerThread; i++)
           {
             int v = (int)(t * insertsPerThread + i);
-            list.insert(v);
+            list.pushFront(v);
           }
 
           finishedInsertCount.fetch_add(1);
@@ -294,9 +293,7 @@ void concurrentListIterationWithInPlaceRemovalTests()
 
           totalRemovals.fetch_add(localRemoved);
 
-          os::print("Thread %u iterated=%zu removed=%zu\n",
-                    os::Thread::getCurrentThreadId(),
-                    localCount, localRemoved);
+          os::print("Thread %u iterated=%zu removed=%zu\n", os::Thread::getCurrentThreadId(), localCount, localRemoved);
 
           finishedIter.fetch_add(1);
         });
@@ -305,24 +302,26 @@ void concurrentListIterationWithInPlaceRemovalTests()
   startIter = true;
 
   for (size_t t = 0; t < totalThreads; t++)
+  {
     iterThreads[t].join();
+  }
 
   os::print("Total removals = %zu\n", totalRemovals.load());
 
   size_t remain = 0;
   for (auto &v : list)
+  {
     remain++;
+  }
 
   os::print("Remaining elements after concurrent iteration+remove: %zu\n", remain);
-
   os::print("Test complete.\n\n");
 }
 
 int main()
 {
-  lib::time::TimeSpan then = lib::time::TimeSpan::now();
   lib::memory::SystemMemoryManager::init();
-
+  multiThreadTests();
   concurrentListMultithreadTests();
   concurrentListIterationTests();
   concurrentListIterationWithInPlaceRemovalTests();

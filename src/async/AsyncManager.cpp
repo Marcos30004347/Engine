@@ -2,116 +2,87 @@
 
 using namespace async;
 using namespace async::fiber;
-
-// static thread_local fiber::Fiber *workerFiber = nullptr;
-thread_local Job *AsyncManager::workerJob = nullptr;
-thread_local Job *AsyncManager::currentJob = nullptr;
-thread_local Job *AsyncManager::yieldedJob = nullptr;
-thread_local Job *AsyncManager::runningJob = nullptr;
-thread_local Job *AsyncManager::waitedJob = nullptr;
-thread_local uint64_t AsyncManager::waitingTime;
-
-// static thread_local uint64_t tickCount;
+using namespace async::detail;
 
 std::vector<os::Thread> AsyncManager::workerThreads;
-std::vector<lib::ConcurrentQueue<Job *> *> AsyncManager::jobQueues;
-std::vector<JobAllocator *> AsyncManager::jobAllocators;
-std::vector<FiberPool *> AsyncManager::pools;
+lib::ConcurrentShardedQueue<Job *> AsyncManager::jobQueue;
+JobAllocator *AsyncManager::jobAllocator;
 uint64_t AsyncManager::pendingQueueIndex;
 std::atomic<bool> AsyncManager::isRunning(false);
 std::vector<JobQueueInfo> AsyncManager::jobQueuesInfo;
-lib::ConcurrentPriorityQueue<Job *, uint64_t> *AsyncManager::waitingQueue = nullptr;
 
-void AsyncManager::init(void (*entry)(), SystemSettings *settings)
+void AsyncManager::init(void (*entry)(), SystemSettings settings)
 {
-  isRunning.store(false);
+  jobAllocator = new JobAllocator(settings.stackSize, settings.jobsCapacity + 1, settings.jobsCapacity + 1);
 
-  Fiber::initializeSubSystems();
+  auto workerJob = Job::currentThreadToJob();
+  workerJob->ref();
 
-  for (size_t i = 0; i < settings->jobStackSettingsCount; i++)
-  {
-    pools.push_back(new FiberPool(settings->jobStackSettings[i].stackSize, settings->jobStackSettings[i].cacheSize, settings->threadsCount));
-  }
-
-  for (size_t i = 0; i < settings->jobAllocatorSettingsCount; i++)
-  {
-    jobAllocators.push_back(new JobAllocator(settings->jobAllocatorsSettings[i].payloadSize, settings->jobAllocatorsSettings[i].capacity + (i == 0 ? 1 : 0)));
-  }
-
-  for (size_t i = 0; i < settings->jobQueueSettingsCount; i++)
-  {
-    jobQueuesInfo.push_back(JobQueueInfo());
-    jobQueues.push_back(new lib::ConcurrentQueue<Job *>());
-  }
-
-  pendingQueueIndex = jobQueues.size();
-  jobQueues.push_back(new lib::ConcurrentQueue<Job *>());
-
-  waitingQueue = new lib::ConcurrentPriorityQueue<Job *, uint64_t>();
+  jobAllocator->initializeThread();
 
   isRunning = true;
 
-  AsyncEnqueueData data;
-
-  data.allocatorIndex = 0;
-  data.queueIndex = pendingQueueIndex;
-  data.stackSize = settings->jobStackSettings[0].stackSize;
-
-  for (size_t i = 0; i < settings->threadsCount - 1; ++i)
+  for (size_t i = 0; i < settings.threadsCount - 1; ++i)
   {
     workerThreads.emplace_back(
-        []()
+        [settings]()
         {
-          for (size_t i = 0; i < pools.size(); i++)
+          jobAllocator->initializeThread();
+
+          // Add elements to queue cache cache
+          Job *n;
+          for (uint32_t i = 0; i < settings.jobsCapacity; i++)
           {
-            pools[i]->initializeThread();
+            jobQueue.enqueue(nullptr);
+          }
+          for (uint32_t i = 0; i < settings.jobsCapacity; i++)
+          {
+            jobQueue.dequeue(n);
           }
 
-          for (size_t i = 0; i < jobAllocators.size(); i++)
-          {
-            jobAllocators[i]->initializeThread();
-          }
+          auto workerJob = Job::currentThreadToJob();
+          workerJob->ref();
 
-          workerLoop();
+          auto j = jobAllocator->allocate(
+              [](void *data, fiber::Fiber *self)
+              {
+                workerLoop();
+              });
 
-          for (size_t i = 0; i < pools.size(); i++)
-          {
-            pools[i]->deinitializeThread();
-          }
+          j->manager = workerJob;
+          j->resume();
 
-          for (size_t i = 0; i < jobAllocators.size(); i++)
-          {
-            jobAllocators[i]->deinitializeThread();
-          }
+          workerJob->deref();
+          jobAllocator->deinitializeThread();
         });
 
     workerThreads.back().setAffinity(i % os::Thread::getHardwareConcurrency());
   }
-
-  for (size_t i = 0; i < pools.size(); i++)
+  // Add elements to queue cache cache
+  Job *n;
+  for (uint32_t i = 0; i < settings.jobsCapacity; i++)
   {
-    pools[i]->initializeThread();
+    jobQueue.enqueue(nullptr);
+  }
+  for (uint32_t i = 0; i < settings.jobsCapacity; i++)
+  {
+    jobQueue.dequeue(n);
   }
 
-  for (size_t i = 0; i < jobAllocators.size(); i++)
-  {
-    jobAllocators[i]->initializeThread();
-  }
+  enqueue(entry);
 
-  enqueue(&data, entry);
-  workerLoop();
+  auto j = jobAllocator->allocate(
+      [](void *data, fiber::Fiber *self)
+      {
+        workerLoop();
+      });
 
-  for (size_t i = 0; i < pools.size(); i++)
-  {
-    pools[i]->deinitializeThread();
-  }
+  j->ref();
 
-  for (size_t i = 0; i < jobAllocators.size(); i++)
-  {
-    jobAllocators[i]->deinitializeThread();
-  }
+  j->manager = workerJob;
+  j->resume();
 
-  for (uint32_t i = 0; i < settings->threadsCount - 1; ++i)
+  for (uint32_t i = 0; i < settings.threadsCount - 1; ++i)
   {
     if (workerThreads[i].isRunning())
     {
@@ -119,7 +90,11 @@ void AsyncManager::init(void (*entry)(), SystemSettings *settings)
     }
   }
 
-  Fiber::deinitializeSubSystems();
+  j->deref();
+  workerJob->deref();
+  jobAllocator->deinitializeThread();
+  
+  delete jobAllocator;
 }
 
 void AsyncManager::stop()
@@ -129,176 +104,161 @@ void AsyncManager::stop()
 
 void AsyncManager::shutdown()
 {
-  workerThreads.clear();
-
-  for (uint32_t i = 0; i < jobAllocators.size(); i++)
+  for (auto &t : workerThreads)
   {
-    delete jobAllocators[i];
-    jobAllocators[i] = nullptr;
+    t.join();
   }
 
-  jobAllocators.clear();
+  // for (uint32_t i = 0; i < jobAllocators.size(); i++)
+  // {
+  //   delete jobAllocators[i];
+  //   jobAllocators[i] = nullptr;
+  // }
 
-  for (uint32_t i = 0; i < jobQueues.size(); i++)
-  {
-    delete jobQueues[i];
-    jobQueues[i] = nullptr;
-  }
+  // jobAllocator.clear();
 
-  jobQueues.clear();
+  // for (uint32_t i = 0; i < jobQueues.size(); i++)
+  // {
+  //   delete jobQueues[i];
+  //   jobQueues[i] = nullptr;
+  // }
 
-  for (uint32_t i = 0; i < pools.size(); i++)
-  {
-    delete pools[i];
-    pools[i] = nullptr;
-  }
-  pools.clear();
+  // jobQueues.clear();
+
+  // for (uint32_t i = 0; i < pools.size(); i++)
+  // {
+  //   delete pools[i];
+  //   pools[i] = nullptr;
+  // }
+  // pools.clear();
+
+#ifdef ASYNC_MANAGER_LOG_TIMES
+  async::profiling::report();
+#endif
 }
 
 void AsyncManager::processYieldedJobs()
 {
-  if (runningJob)
-  {
-    assert(yieldedJob != nullptr);
-    assert(yieldedJob == currentJob);
-
-    runningJob->lock();
-
-    if (runningJob->finished.load())
-    {
-      assert(yieldedJob != workerJob);
-      jobQueues[pendingQueueIndex]->enqueue(yieldedJob);
-    }
-    else
-    {
-      runningJob->setWaiter(yieldedJob);
-    }
-
-    runningJob->unlock();
-
-    runningJob = nullptr;
-    yieldedJob = nullptr;
-  }
-
-  if (yieldedJob != nullptr)
-  {
-    assert(yieldedJob == currentJob);
-    assert(yieldedJob != workerJob);
-
-    jobQueues[pendingQueueIndex]->enqueue(yieldedJob);
-  }
-
-  yieldedJob = nullptr;
-
-  if (waitedJob)
-  {
-    assert(waitingTime != UINT64_MAX);
-    assert(waitedJob != workerJob);
-
-    waitedJob->ref();
-    waitingQueue->enqueue(waitedJob, waitingTime);
-    waitingTime = UINT64_MAX;
-  }
-
-  waitedJob = nullptr;
 }
 
 void AsyncManager::workerLoop()
 {
-  workerJob = jobAllocators[0]->currentThreadToJob();
-  workerJob->ref();
+  auto workerJob = Job::currentJob; // jobAllocator->currentThreadToJob();
+  auto threadJob = workerJob->manager;
+
+  // os::print("%u worker start %p %p\n", os::Thread::getCurrentThreadId(), workerJob, &workerJob->fiber);
 
   while (AsyncManager::isRunning)
   {
-    // uint64_t priority, dequeuedPriority;
+#ifdef ASYNC_MANAGER_LOG_TIMES
+    async::profiling::ScopedTimer timer(async::profiling::gStats.workerLoop);
+#endif
+    Job *job = nullptr;
+    // os::print("#### %u %p %p\n", os::Thread::getCurrentThreadId(), &job, job);
 
-    // Job *nextJob = nullptr;
-
-    // if (waitingQueue->tryDequeue(nextJob, dequeuedPriority))
-    // {
-    //   if (dequeuedPriority > lib::time::TimeSpan::now().nanoseconds())
-    //   {
-    //     waitingQueue->enqueue(nextJob, dequeuedPriority);
-    //   }
-    //   else
-    //   {
-    //     nextJob->refInRuntime();
-    //     nextJob->derefInQueue();
-
-    //     currentJob = nextJob;
-
-    //     nextJob->resume();
-
-    //     assert(currentJob == nextJob);
-
-    //     if (nextJob->finished.load())
-    //     {
-    //       pools[nextJob->fiberPoolIndex]->release(nextJob->fiber);
-    //       nextJob->fiber = nullptr;
-    //     }
-
-    //     processYieldedJobs();
-
-    //     nextJob->derefInRuntime();
-    //   }
-    // }
-    // os::print("Thread %u wf=%p cf=%p, &cf=%p\n", os::Thread::getCurrentThreadId(), workerJob->fiber, fiber::Fiber::current(), 0);
-
-    for (size_t i = 0; i < jobQueues.size(); i++)
+    if (jobQueue.dequeue(job))
     {
-      currentJob = nullptr;
+      assert(Fiber::current() == &workerJob->fiber);
+      // os::print("%u resuming %p %p\n", os::Thread::getCurrentThreadId(), job, &job->fiber);
+      Job *dequeuedJob = job;
 
-      while (jobQueues[i]->tryDequeue(currentJob))
+      job->manager = workerJob;
+
+      assert(job == dequeuedJob);
+
+      job->resume();
+
+      // os::print(">>>> %u resuming %p %p %p\n", os::Thread::getCurrentThreadId(), &job, job, dequeuedJob);
+
+      assert(job == dequeuedJob);
+
+      assert(job->manager == workerJob);
+
+      job->manager = nullptr;
+
+      // os::print("%u back at worker loop %p %p --- %p %p\n", os::Thread::getCurrentThreadId(), workerJob, &workerJob->fiber, currentJob, &currentJob->fiber);
+
+      assert(job == dequeuedJob);
+
+      assert(Fiber::current() == &workerJob->fiber);
+
+      assert(dequeuedJob->refs.load() >= 1);
+
+      if (dequeuedJob->waiting != nullptr)
       {
-        assert(currentJob->fiber != nullptr);
+        Job *waiting = dequeuedJob->waiting;
+        dequeuedJob->waiting = nullptr;
 
-        currentJob->resume();
-
-        if (currentJob->finished.load())
+        if (!waiting->setWaiter(dequeuedJob))
         {
-          pools[currentJob->fiberPoolIndex]->release((Fiber *)currentJob->fiber);
-          currentJob->fiber = nullptr;
-          currentJob->deref("finished job");
+          // os::print("%u enqueueing waiter, failed case %p %p\n", os::Thread::getCurrentThreadId(), waiting, &waiting->fiber);
+          jobQueue.enqueue(dequeuedJob);
         }
+      }
+      else if (job->yielding)
+      {
+        job->yielding = false;
 
-        processYieldedJobs();
-        currentJob = nullptr;
+        assert(job != workerJob);
+
+        jobQueue.enqueue(job);
+      }
+      else
+      {
+        // os::print("%u processed yield jobs\n", os::Thread::getCurrentThreadId());
+
+        if (job->isFinished())
+        {
+          thread_local bool isMarked = false;
+
+          async::Job *waiter = job->waiter.read(isMarked);
+
+          if (waiter)
+          {
+            // os::print("%u enqueueing waiter %p %p\n", os::Thread::getCurrentThreadId(), waiter, &waiter->fiber);
+            jobQueue.enqueue(waiter);
+          }
+
+          job->deref(1, "finished");
+        }
       }
     }
   }
 
-  pools[0]->release((Fiber *)workerJob->fiber);
-  // os::print("worker job ref = %u\n", workerJob->refs.load());
-  workerJob->deref("worker");
+  threadJob->resume();
 }
 
 void AsyncManager::yield()
 {
-  Job *curr = currentJob;
-  yieldedJob = currentJob;
-  workerJob->resume();
-  currentJob = curr;
+  Job::currentJob->yielding = true;
+  Job::currentJob->manager->resume();
 }
 
 void AsyncManager::sleepAndWakeOnPromiseResolve(Job *job)
 {
-  if (job->finished.load())
-  {
-    return;
-  }
+  assert(Job::currentJob != Job::currentJob->manager);
 
-  runningJob = job;
-  yieldedJob = currentJob;
+  Job::currentJob->waiting = job;
 
-  assert(currentJob->fiber == Fiber::current());
-  workerJob->resume();
+  job->ref();
+  Job::currentJob->manager->resume();
+  job->deref();
+
+  // Job::currentJob->waiting = nullptr;
+
+  assert(&Job::currentJob->fiber == Fiber::current());
 }
 
-void AsyncManager::delay(lib::time::TimeSpan span)
+void AsyncManager::fiberEntry(void *data, fiber::Fiber *)
 {
-  waitingTime = lib::time::TimeSpan::now().nanoseconds() + span.nanoseconds();
+#ifdef ASYNC_MANAGER_LOG_TIMES
+  async::profiling::ScopedTimer t(async::profiling::gStats.jobExecution);
+#endif
 
-  waitedJob = currentJob;
+  auto *job = static_cast<Job *>(data);
+  auto *jobData = job->jobData;
 
-  workerJob->resume();
+  jobData->invoke(jobData);
+
+  job->resolve();
 }

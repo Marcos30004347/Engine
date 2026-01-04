@@ -414,8 +414,8 @@ private:
   // Debug
   VkDebugUtilsMessengerEXT debugMessenger;
 
-  lib::ConcurrentQueue<VkFence> *fences;
-  lib::ConcurrentQueue<VkSemaphore> *semaphores;
+  lib::ConcurrentShardedQueue<VkFence> *fences;
+  lib::ConcurrentShardedQueue<VkSemaphore> *semaphores;
 
   VulkanQueueFamilyIndices indices;
 

@@ -76,7 +76,7 @@ public:
     return newNode;
   }
 
-  bool tryPop(T &value)
+  bool pop(T &value)
   {
     HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
 
@@ -150,7 +150,7 @@ public:
     local->get()->push(value);
   }
 
-  bool tryPop(T &value)
+  bool pop(T &value)
   {
     detail::ConcurrentStackNode<detail::ConcurrentStackProducer<T> *> *local = nullptr;
 
@@ -177,7 +177,7 @@ public:
     {
       while (node && !(looping && node == start))
       {
-        if (node->get()->tryPop(value))
+        if (node->get()->pop(value))
         {
           return true;
         }

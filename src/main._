@@ -67,7 +67,7 @@ using namespace lib;
 //   delete l;
 // }
 
-void push_to_queue(uint32_t count, lib::ConcurrentQueue<uint32_t> *l)
+void push_to_queue(uint32_t count, lib::ConcurrentShardedQueue<uint32_t> *l)
 {
   std::vector<lib::time::TimeSpan> push_times = std::vector<lib::time::TimeSpan>(count);
   std::vector<lib::time::TimeSpan> pop_times = std::vector<lib::time::TimeSpan>(count);
@@ -102,7 +102,7 @@ void push_to_queue(uint32_t count, lib::ConcurrentQueue<uint32_t> *l)
 
 void enqueue_queue_pushes_and_pops()
 {
-  lib::ConcurrentQueue<uint32_t> *l = new lib::ConcurrentQueue<uint32_t>();
+  lib::ConcurrentShardedQueue<uint32_t> *l = new lib::ConcurrentShardedQueue<uint32_t>();
 
   auto p0 = AsyncManager::enqueue(push_to_queue, 10000, l);
   auto p1 = AsyncManager::enqueue(push_to_queue, 10000, l);

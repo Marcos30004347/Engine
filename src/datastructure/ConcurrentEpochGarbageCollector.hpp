@@ -2,6 +2,7 @@
 
 #include "MarkedAtomicPointer.hpp"
 #include "ThreadLocalStorage.hpp"
+#include "algorithm/bit.hpp"
 #include "os/Thread.hpp"
 #include "os/print.hpp"
 #include <algorithm>
@@ -30,12 +31,18 @@ public:
   struct Allocation
   {
     Allocation *next;
-    Epoch epoch;
+    std::atomic<Epoch> epoch;
     T data;
 
     template <typename... Args, typename = std::enable_if_t<std::is_constructible_v<T, Args...>>>
     explicit Allocation(Epoch e, Args &&...args) : next(nullptr), epoch(e), data(std::forward<Args>(args)...)
     {
+    }
+
+    Allocation()
+    {
+      epoch.store(0, std::memory_order_relaxed);
+      new (&data) T();
     }
   };
 
@@ -48,7 +55,7 @@ public:
 
     char pad[256 - sizeof(bool) - sizeof(ThreadRecord *) - sizeof(std::atomic<uint32_t>)];
 
-    Epoch epoch;
+    std::atomic<Epoch> epoch;
     uint64_t retiredSize;
     Allocation *retiredListHead;
     Allocation *retiredListTail;
@@ -100,9 +107,13 @@ public:
     {
       bool is_active = curr->active.load(std::memory_order_acquire);
 
-      if (is_active && curr->epoch > 0 && curr->epoch < m)
+      if (is_active)
       {
-        m = curr->epoch;
+        Epoch e = curr->epoch.load(std::memory_order_relaxed);
+        if (e > 0 && e < m)
+        {
+          m = e;
+        }
       }
 
       curr = curr->next.load();
@@ -111,9 +122,9 @@ public:
     return m;
   }
 
-  void release(ThreadRecord *record, bool ignoreThreshold = false)
+  void release(ThreadRecord *record)
   {
-    if (record->retiredSize < 16 && !ignoreThreshold)
+    if (record->retiredSize < 16)
     {
       return;
     }
@@ -121,14 +132,17 @@ public:
     globalEpoch.fetch_add(1);
 
     uint64_t minimum = minimumEpoch();
-
-    while (record->retiredListHead != nullptr && record->retiredListHead->epoch < minimum)
+    while (record->retiredListHead != nullptr && record->retiredListHead->epoch.load(std::memory_order_relaxed) < minimum)
     {
       auto curr = record->retiredListHead;
-      record->retiredListHead = record->retiredListHead->next;
+      record->retiredListHead = curr->next;
+      curr->next = nullptr;
       record->retiredSize -= 1;
       curr->data.~T();
-      // os::print("freeing %p freed at epoch %u during epoch %u\n", curr, curr->epoch, minimum);
+
+#ifdef CONCURRENT_EGC_DEBUG_LOG
+      os::print("[%u] freeing %p freed at epoch %u during epoch %u\n", os::Thread::getCurrentThreadId(), curr, curr->epoch.load(std::memory_order_relaxed), minimum);
+#endif
 
       if (record->cacheSize < CacheSize)
       {
@@ -138,7 +152,7 @@ public:
       }
       else
       {
-        delete curr;
+        free(static_cast<void *>(curr));
       }
     }
 
@@ -151,18 +165,17 @@ public:
   void releaseThreadRecord(ThreadRecord *record)
   {
     release(record);
-
     assert(record->active.load() == true);
     record->active.store(false);
   }
 
-  inline bool shouldRunRelease()
+  int random16()
   {
-    static thread_local uint32_t rng = 0x12345678u ^ os::Thread::getCurrentThreadId();
-    rng ^= rng << 13;
-    rng ^= rng >> 17;
-    rng ^= rng << 5;
-    return (rng % (2 * os::Thread::getHardwareConcurrency())) == 0;
+    static thread_local std::mt19937 generator(std::random_device{}());
+    uint32_t r = generator();
+    r |= (1U << (16 - 1));
+    int level = countrZero(r) + 1;
+    return level;
   }
 
 public:
@@ -172,10 +185,10 @@ public:
 
   private:
     ThreadRecord *record;
-    ConcurrentEpochGarbageCollector<T> *gc;
+    ConcurrentEpochGarbageCollector<T, CacheSize> *gc;
 
   public:
-    EpochGuard(ThreadRecord *r, ConcurrentEpochGarbageCollector<T> *gc) : record(r), gc(gc)
+    EpochGuard(ThreadRecord *r, ConcurrentEpochGarbageCollector<T, CacheSize> *gc) : record(r), gc(gc)
     {
       if (record)
       {
@@ -264,7 +277,10 @@ public:
     void retire(T *ptr)
     {
       auto allocation = reinterpret_cast<Allocation *>(reinterpret_cast<char *>(ptr) - offsetof(Allocation, data));
-      allocation->epoch = gc->globalEpoch.load();
+      allocation->epoch.store(gc->globalEpoch.load(), std::memory_order_relaxed);
+#ifdef CONCURRENT_EGC_DEBUG_LOG
+      os::print("[%u] retiring %p\n", os::Thread::getCurrentThreadId(), allocation);
+#endif
       record->free(allocation);
     }
 
@@ -298,7 +314,7 @@ public:
       auto newNode = &recordsCache[i];
 
       newNode->retiredSize = 0;
-      newNode->epoch = 0;
+      newNode->epoch.store(0, std::memory_order_relaxed);
       newNode->retiredListHead = nullptr;
       newNode->retiredListTail = nullptr;
       newNode->active.store(false);
@@ -318,7 +334,7 @@ public:
 
     capacity.fetch_add(initialRecordsSize);
 
-    recordsCache[0].epoch = UINT64_MAX;
+    recordsCache[0].epoch.store(UINT64_MAX, std::memory_order_relaxed);
 
     head = &recordsCache[0];
   }
@@ -326,18 +342,34 @@ public:
   ~ConcurrentEpochGarbageCollector()
   {
     ThreadRecord *curr = head->next.load();
-    ThreadRecord *newNode = nullptr;
 
     while (curr != nullptr)
     {
+      assert(curr->active.load() == false);
+
       auto succ = curr->next.load();
-      release(curr, true);
+
+      while (curr->retiredListHead)
+      {
+        auto h = curr->retiredListHead;
+        auto next = h->next;
+        h->next = nullptr;
+        h->data.~T();
+#ifdef CONCURRENT_EGC_DEBUG_LOG
+        os::print("[%u] freeing %p\n", os::Thread::getCurrentThreadId(), h);
+#endif
+        free(static_cast<void *>(h));
+
+        curr->retiredListHead = next;
+      }
+
+      curr->retiredListTail = nullptr;
 
       while (curr->cache)
       {
         auto next = curr->cache->next;
         curr->cache->data.~T();
-        delete curr->cache;
+        free(static_cast<void *>(curr->cache));
         curr->cache = next;
       }
 
@@ -346,20 +378,21 @@ public:
 
       if (curr < begin || curr >= end)
       {
-        delete curr; 
+        free(static_cast<void *>(curr));
       }
-   
 
       curr = succ;
     }
 
-    delete recordsCache;
+    delete[] recordsCache;
+
+    recordsCache = nullptr;
+    head = nullptr;
   }
 
   EpochGuard openEpochGuard()
   {
   retry:
-    ThreadRecord *curr = head->next.load();
     ThreadRecord *newNode = nullptr;
 
     if (localCache.get(newNode))
@@ -367,11 +400,14 @@ public:
       bool expected = false;
       if (newNode->active.load() == false && newNode->active.compare_exchange_strong(expected, true, std::memory_order_release, std::memory_order_acquire))
       {
+        newNode->epoch.store(globalEpoch.load(), std::memory_order_relaxed);
         return EpochGuard(newNode, this);
       }
 
       newNode = nullptr;
     }
+
+    ThreadRecord *curr = head->next.load();
 
     while (curr != nullptr)
     {
@@ -389,14 +425,17 @@ public:
     if (newNode == nullptr)
     {
       newNode = new ThreadRecord();
+
       newNode->retiredSize = 0;
       newNode->retiredListHead = nullptr;
       newNode->retiredListTail = nullptr;
       newNode->refCount.store(0, std::memory_order_relaxed);
       newNode->cache = nullptr;
       newNode->cacheSize = 0;
+      newNode->active.store(true);
 
       ThreadRecord *oldNext = head->next.load();
+
       do
       {
         newNode->next.store(oldNext);
@@ -405,28 +444,83 @@ public:
       capacity.fetch_add(1);
     }
 
-    newNode->epoch = globalEpoch.load();
+    newNode->epoch.store(globalEpoch.load(), std::memory_order_relaxed);
     localCache.set(newNode);
+
+    if (random16() > 8)
+    {
+      flush();
+    }
 
     return EpochGuard(newNode, this);
   }
 
   void flush()
   {
-    ThreadRecord *curr = head->next.load();
-    ThreadRecord *newNode = nullptr;
+    ThreadRecord *record = head->next.load();
+    uint64_t minimum = minimumEpoch();
+    globalEpoch.fetch_add(1);
 
-    while (curr != nullptr)
+    while (record != nullptr)
     {
-      auto succ = curr->next.load();
+      auto succ = record->next.load();
       bool expected = false;
-      if (curr->active.load() == false && curr->active.compare_exchange_strong(expected, true, std::memory_order_release, std::memory_order_acquire))
+
+      if (record->active.load() == false && record->active.compare_exchange_strong(expected, true, std::memory_order_release, std::memory_order_acquire))
       {
-        release(curr, true);
-        curr->active.store(false);
+        while (record->retiredListHead != nullptr && record->retiredListHead->epoch.load(std::memory_order_relaxed) < minimum)
+        {
+          auto curr = record->retiredListHead;
+          record->retiredListHead = record->retiredListHead->next;
+          record->retiredSize -= 1;
+
+          curr->data.~T();
+#ifdef CONCURRENT_EGC_DEBUG_LOG
+          os::print("[%u] freeing %p freed at epoch %u during epoch %u\n", os::Thread::getCurrentThreadId(), curr, curr->epoch.load(std::memory_order_relaxed), minimum);
+#endif
+          if (record->cacheSize < CacheSize)
+          {
+            curr->next = record->cache;
+            record->cache = curr;
+            record->cacheSize += 1;
+          }
+          else
+          {
+            free(static_cast<void *>(curr));
+          }
+        }
+
+        if (record->retiredListHead == nullptr)
+        {
+          record->retiredListTail = nullptr;
+        }
+
+        record->active.store(false);
       }
-      curr = succ;
+
+      record = succ;
     }
+  }
+
+  T *allocateUnitialized(EpochGuard &scope)
+  {
+    // if (scope.record->cache != nullptr)
+    // {
+    //   Allocation *reused = scope.record->cache;
+    //   scope.record->cache = reused->next;
+    //   scope.record->cacheSize -= 1;
+
+    //   reused->epoch.store(UINT64_MAX, std::memory_order_relaxed);
+    //   new (reused)(Allocation);
+    //   return &reused->data;
+    // }
+
+    Allocation *allocation = new Allocation(UINT64_MAX); // (Allocation *)malloc(sizeof(Allocation));
+#ifdef CONCURRENT_EGC_DEBUG_LOG
+    os::print("[%u] allocating %p\n", os::Thread::getCurrentThreadId(), allocation);
+#endif
+
+    return &allocation->data;
   }
 
   template <typename... Args> T *allocate(EpochGuard &scope, Args &&...args)
@@ -435,14 +529,24 @@ public:
     {
       Allocation *reused = scope.record->cache;
       scope.record->cache = reused->next;
+      scope.record->cacheSize -= 1;
+
       new (reused) Allocation(UINT64_MAX, std::forward<Args>(args)...);
+#ifdef CONCURRENT_EGC_DEBUG_LOG
+      os::print("[%u] allocating %p\n", os::Thread::getCurrentThreadId(), reused);
+#endif
       return &reused->data;
     }
 
     static_assert(std::is_constructible_v<T, Args...>, "T must be constructible from the provided arguments");
     Allocation *allocation = new Allocation(UINT64_MAX, std::forward<Args>(args)...);
+#ifdef CONCURRENT_EGC_DEBUG_LOG
+    os::print("[%u] allocating %p\n", os::Thread::getCurrentThreadId(), allocation);
+#endif
     return &allocation->data;
   }
 };
+
+template <typename T, uint32_t C> typename ConcurrentEpochGarbageCollector<T, C>::EpochGuard nullGuard = {nullptr, nullptr};
 
 } // namespace lib

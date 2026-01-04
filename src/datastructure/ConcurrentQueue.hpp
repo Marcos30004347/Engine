@@ -1,369 +1,233 @@
 #pragma once
 
+#include "ConcurrentEpochGarbageCollector.hpp"
 #include "algorithm/random.hpp"
 #include "datastructure/ConcurrentLinkedList.hpp"
-#include "datastructure/HazardPointer.hpp"
-#include "memory/allocator/SystemAllocator.hpp"
+
+// #include "memory/allocator/SystemAllocator.hpp"
 #include "os/Thread.hpp"
 #include <atomic>
 #include <cstddef>
 
 #include <type_traits>
 
-// #include "async/Fiber.hpp"
-// #include "async/AsyncManager.hpp"
-
-template <typename T> struct is_shared_ptr : std::false_type
-{
-};
-
-template <typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type
-{
-};
-
 namespace lib
 {
-namespace detail
+
+template <typename T, uint64_t CacheSize = 128> class ConcurrentQueue
 {
-template <typename K> class ConcurrentQueue;
-template <typename T> struct ConcurrentQueueNode
-{
-public:
-  friend class ConcurrentQueue<T>;
-  T value;
-  std::atomic<ConcurrentQueueNode<T> *> next;
-
-  ConcurrentQueueNode(const T &val) : value(val), next(nullptr)
+private:
+  struct Node
   {
-  }
-  T &get()
-  {
-    return value;
-  }
-};
+    std::atomic<Node *> next;
 
-template <typename T, typename Allocator = memory::allocator::SystemAllocator<ConcurrentQueueNode<T>>> class ConcurrentQueueProducer
-{
-public:
-  std::atomic<ConcurrentQueueNode<T> *> head;
-  std::atomic<ConcurrentQueueNode<T> *> tail;
-  std::atomic<int> size;
+    T value;
 
-  // NOTE(marcos): maybe have a list of records and a ThreadLocalStorage to store thread records
-  // so we dont need to achire them often. At destruction we iterate over the record list and release them.
-
-  using HazardPointerManager = HazardPointer<2, ConcurrentQueueNode<T>, Allocator>;
-  using HazardPointerRecord = typename HazardPointerManager::Record;
-
-  HazardPointerManager hazardAllocator;
-
-  Allocator allocator;
-
-  ConcurrentQueueProducer(Allocator &allocator) : head(nullptr), tail(nullptr), allocator(allocator), size(0), hazardAllocator(this->allocator)
-  {
-    head = new ConcurrentQueueNode<T>(T());
-    tail = head.load();
-  }
-
-  ConcurrentQueueProducer() : head(nullptr), tail(nullptr), size(0), hazardAllocator()
-  {
-    head = new ConcurrentQueueNode<T>(T());
-    tail = head.load();
-  }
-
-  ~ConcurrentQueueProducer()
-  {
-    ConcurrentQueueNode<T> *curr = head.load();
-
-    while (curr)
+    template <typename U = T, std::enable_if_t<std::is_default_constructible_v<U>, int> = 0> Node() : next(nullptr)
     {
-      ConcurrentQueueNode<T> *next = curr->next.load();
-      delete curr;
-      curr = next;
+    }
+
+    Node(const T &v) : next(nullptr), value(v)
+    {
+    }
+  };
+
+  ConcurrentEpochGarbageCollector<Node, CacheSize> garbageCollector;
+
+  std::atomic<Node *> head;
+  std::atomic<Node *> tail;
+  std::atomic<uint32_t> size;
+
+public:
+  template <typename U = T, typename = std::enable_if_t<std::is_default_constructible_v<U>>> ConcurrentQueue() : size(0)
+  {
+    auto scope = garbageCollector.openEpochGuard();
+    Node *dummy = garbageCollector.allocateUnitialized(scope);
+    dummy->next.store(nullptr);
+    head.store(dummy, std::memory_order_relaxed);
+    tail.store(dummy, std::memory_order_relaxed);
+  }
+
+  template <typename Arg1, typename... Args, std::enable_if_t<std::is_constructible_v<T, Arg1, Args...>, int> = 0> explicit ConcurrentQueue(Arg1 &&arg1, Args &&...args) : size(0)
+  {
+    auto scope = garbageCollector.openEpochGuard();
+    Node *dummy = garbageCollector.allocate(scope, std::forward<Arg1>(arg1), std::forward<Args>(args)...);
+    dummy->next.store(nullptr);
+    head.store(dummy, std::memory_order_relaxed);
+    tail.store(dummy, std::memory_order_relaxed);
+  }
+
+  ~ConcurrentQueue()
+  {
+    clear();
+  }
+
+  void clear()
+  {
+    auto scope = garbageCollector.openEpochGuard();
+
+    while (head.load())
+    {
+      Node *first = head.load(std::memory_order_acquire);
+      Node *last = tail.load(std::memory_order_acquire);
+      Node *next = first->next.load(std::memory_order_acquire);
+
+      if (first == head.load(std::memory_order_acquire))
+      {
+        if (first == last)
+        {
+          if (next == nullptr)
+          {
+            scope.retire(first);
+            return;
+          }
+
+          tail.compare_exchange_weak(last, next, std::memory_order_release, std::memory_order_relaxed);
+        }
+        else
+        {
+          if (head.compare_exchange_weak(first, next, std::memory_order_release, std::memory_order_relaxed))
+          {
+            scope.retire(first);
+            size.fetch_sub(1);
+          }
+        }
+      }
     }
   }
 
   void enqueue(const T &value)
   {
-    ConcurrentQueueNode<T> *newNode = new ConcurrentQueueNode<T>(value);
-    ConcurrentQueueNode<T> *oldHead = nullptr;
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    ConcurrentQueueNode<T> *currentTail = nullptr;
+    auto scope = garbageCollector.openEpochGuard();
+    Node *newNode = garbageCollector.allocate(scope, value);
 
     while (true)
     {
-      ConcurrentQueueNode<T> *currentTail = tail.load();
+      Node *last = tail.load(std::memory_order_acquire);
+      Node *next = last->next.load(std::memory_order_acquire);
 
-      rec->assign(currentTail, 0);
-
-      if (tail.load() != currentTail)
+      if (last == tail.load(std::memory_order_acquire))
       {
-        continue;
-      }
-
-      ConcurrentQueueNode<T> *next = currentTail->next.load();
-
-      if (tail.load() != currentTail)
-      {
-        continue;
-      }
-
-      if (next != nullptr)
-      {
-        tail.compare_exchange_strong(currentTail, next);
-        continue;
-      }
-
-      ConcurrentQueueNode<T> *null = nullptr;
-
-      if (currentTail->next.compare_exchange_strong(null, newNode))
-      {
-        // if constexpr (is_shared_ptr<T>::value)
-        // {
-        //   os::print("enqueued %p in %p, %p\n", value.get(), newNode);
-        // }
-        break;
-      }
-    }
-
-    tail.compare_exchange_strong(currentTail, newNode);
-
-    size.fetch_add(1);
-
-    hazardAllocator.release(rec);
-  }
-
-  bool tryDequeue(T &value)
-  {
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    ConcurrentQueueNode<T> *h;
-
-    while (true)
-    {
-      h = head.load();
-
-      rec->assign(h, 0);
-
-      if (head.load() != h)
-      {
-        continue;
-      }
-
-      ConcurrentQueueNode<T> *t = tail.load();
-      ConcurrentQueueNode<T> *next = h->next.load();
-
-      rec->assign(next, 1);
-
-      if (head.load() != h)
-      {
-        continue;
-      }
-
-      if (next == nullptr)
-      {
-        hazardAllocator.release(rec);
-
-        return false;
-      }
-
-      if (h == t)
-      {
-        tail.compare_exchange_strong(t, next);
-        continue;
-      }
-
-      value = std::move(next->get());
-
-      // if constexpr (is_shared_ptr<T>::value)
-      // {
-      //   os::print("> got shared %p, from %p, %p -> %p\n", value.get(), this, h, next);
-      // }
-
-      if (head.compare_exchange_strong(h, next))
-      {
-        break;
-      }
-    }
-
-    rec->retire(h);
-    hazardAllocator.release(rec);
-    size.fetch_sub(1);
-    return true;
-  }
-
-  bool tryPop(T &value)
-  {
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    void *nil = nullptr;
-
-    while (true)
-    {
-      ConcurrentQueueNode<T> *oldHead = head.load();
-
-      if (!oldHead)
-      {
-        rec->assign(nil, 0);
-
-        hazardAllocator.release(rec);
-        return false;
-      }
-
-      rec->assign(oldHead, 0);
-
-      if (head.load() != oldHead)
-      {
-        continue;
-      }
-
-      ConcurrentQueueNode<T> *newHead = oldHead->next.load();
-
-      if (head.compare_exchange_strong(oldHead, newHead))
-      {
-        value = std::move(oldHead->value);
-
-        rec->retire(oldHead);
-        hazardAllocator.release(rec);
-        size.fetch_sub(1);
-        return true;
-      }
-    }
-
-    return false;
-  }
-};
-} // namespace detail
-
-template <typename T> class ConcurrentQueue
-{
-  size_t concurrencyLevel;
-  std::atomic<size_t> approximateQueueSize;
-
-public:
-  ConcurrentQueue() : time(random(os::Thread::getCurrentThreadId())), threadLists(), localLists(), approximateQueueSize(0)
-  {
-    concurrencyLevel = os::Thread::getHardwareConcurrency();
-  }
-
-  ~ConcurrentQueue()
-  {
-    ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *node = threadLists.head.load(std::memory_order_acquire);
-    while (node)
-    {
-      ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *next = node->next.load(std::memory_order_acquire);
-      delete node->get();
-      node = next;
-    }
-  }
-  size_t getApproximateSize()
-  {
-    return approximateQueueSize.load();
-  }
-  void enqueue(T value)
-  {
-    // if constexpr (is_shared_ptr<T>::value)
-    // {
-    //   os::print("queue enqueuing %p\n", value.get());
-    // }
-
-    ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
-
-    if (!localLists.get(local))
-    {
-      // NOTE: never delete local directly, it will be cleaned up on destruction.
-      detail::ConcurrentQueueProducer<T> *producer = new detail::ConcurrentQueueProducer<T>();
-      local = threadLists.insert(producer);
-      localLists.set(local);
-    }
-
-    assert(local != nullptr && local->get() != nullptr);
-
-    approximateQueueSize.fetch_add(1);
-    local->get()->enqueue(value);
-  }
-
-  bool tryDequeue(T &value)
-  {
-    ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *local = nullptr;
-
-    localLists.get(local);
-
-    if (local == nullptr)
-    {
-      local = threadLists.head.load(std::memory_order_acquire);
-    }
-
-    if (local == nullptr)
-    {
-      return false;
-    }
-
-    ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *start = local;
-
-    bool looping = false;
-
-    for (size_t iter = 0; iter < 2; iter++)
-    {
-      while (local)
-      {
-        assert(local->get());
-
-        if (looping && local == start)
+        if (next == nullptr)
         {
-          break;
-        }
-
-        auto size = local->get()->size.load();
-
-        if (size > 0)
-        {
-          if (local->get()->tryDequeue(value))
+          if (last->next.compare_exchange_weak(next, newNode, std::memory_order_release, std::memory_order_relaxed))
           {
-            approximateQueueSize.fetch_sub(1);
+            tail.compare_exchange_weak(last, newNode, std::memory_order_release, std::memory_order_relaxed);
+            size.fetch_add(1);
+            return;
+          }
+        }
+        else
+        {
+          tail.compare_exchange_weak(last, next, std::memory_order_release, std::memory_order_relaxed);
+        }
+      }
+    }
+  }
+
+  bool dequeue(T &out)
+  {
+    auto scope = garbageCollector.openEpochGuard();
+    while (true)
+    {
+      Node *first = head.load(std::memory_order_acquire);
+      Node *last = tail.load(std::memory_order_acquire);
+      Node *next = first->next.load(std::memory_order_acquire);
+
+      if (first == head.load(std::memory_order_acquire))
+      {
+        if (first == last)
+        {
+          if (next == nullptr)
+          {
+            return false;
+          }
+
+          tail.compare_exchange_weak(last, next, std::memory_order_release, std::memory_order_relaxed);
+        }
+        else
+        {
+          if (head.compare_exchange_weak(first, next, std::memory_order_release, std::memory_order_relaxed))
+          {
+            out = std::move(next->value);
+            scope.retire(first);
+            size.fetch_sub(1);
             return true;
           }
         }
-
-        local = local->next.load(std::memory_order_relaxed);
       }
+    }
+  }
 
-      if (local == nullptr)
-      {
-        looping = true;
-        local = threadLists.head.load(std::memory_order_relaxed);
-      }
-      // os::print("Thread %u wf=%p cf=%p, inside queue part 7\n", os::Thread::getCurrentThreadId(), async::AsyncManager::workerJob, async::fiber::Fiber::currentFiber);
+  bool empty() const
+  {
+    Node *first = head.load(std::memory_order_acquire);
+    Node *next = first->next.load(std::memory_order_acquire);
+    return next == nullptr;
+  }
+
+  uint32_t length()
+  {
+    return size.load();
+  }
+};
+
+template <typename T, uint64_t CacheSize = 128> class ConcurrentShardedQueue
+{
+public:
+  ConcurrentShardedQueue() : threadLists(), localLists()
+  {
+  }
+
+  ~ConcurrentShardedQueue()
+  {
+  }
+
+  void enqueue(T value)
+  {
+    ConcurrentQueue<T, CacheSize> *local = nullptr;
+
+    if (!localLists.get(local))
+    {
+      auto iter = threadLists.emplaceFront();
+      localLists.set(&(iter.value()));
+      local = &iter.value();
     }
 
-    // if (listsCount == 0)
-    // {
-    //   return false;
-    // }
+    assert(local != nullptr);
+    local->enqueue(value);
+  }
 
-    // time++;
+  bool dequeue(T &value)
+  {
+    ConcurrentQueue<T, CacheSize> *local = nullptr;
 
-    // for (size_t i = 0; i < listsCount; i++)
-    // {
-    //   if (lists[i]->tryDequeue(value))
-    //   {
-    //     // if constexpr (std::is_pointer<T>::value)
-    //     // {
-    //     //   os::print("got %p\n", value);
-    //     // }
-    //     // if constexpr (is_shared_ptr<T>::value)
-    //     // {
-    //     //   os::print("got shared %p\n", value.get());
-    //     // }
-    //     return true;
-    //   }
-    // }
+    localLists.get(local);
+
+    if (local != nullptr && local->dequeue(value))
+    {
+      return true;
+    }
+
+    for (auto &list : threadLists)
+    {
+      auto size = list.length();
+
+      if (size > 0)
+      {
+        if (list.dequeue(value))
+        {
+          return true;
+        }
+      }
+    }
 
     return false;
   }
 
 private:
-  ThreadLocalStorage<ConcurrentListNode<detail::ConcurrentQueueProducer<T> *> *> localLists;
-  ConcurrentLinkedList<detail::ConcurrentQueueProducer<T> *> threadLists;
-  size_t time;
+  ConcurrentLinkedList<ConcurrentQueue<T, CacheSize>> threadLists;
+  ThreadLocalStorage<ConcurrentQueue<T, CacheSize> *> localLists;
 };
 
 } // namespace lib

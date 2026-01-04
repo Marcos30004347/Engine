@@ -158,13 +158,15 @@ int main()
   // renderGraph->importBuffer(renderGraphB, "BufferA", "RenderPassB_Buffera");
   auto bufferAInfo = mockBufferInfo("BufferA");
   auto bufferBInfo = mockBufferInfo("BufferB");
+  auto bufferCInfo = mockBufferInfo("BufferC");
+
   auto textureAInfo = mockTextureInfo("TextureA");
   auto samplerAInfo = mockSamplerInfo("SamplerA");
-  auto bufferCInfo = mockBufferInfo("BufferC");
 
   auto buffer = renderGraph->createBuffer(bufferAInfo);
   auto bufferB = renderGraph->createBuffer(bufferBInfo);
   auto bufferC = renderGraph->createBuffer(bufferCInfo);
+
   auto textureA = renderGraph->createTexture(textureAInfo);
   auto samplerA = renderGraph->createSampler(samplerAInfo);
   auto layoutB = renderGraph->createBindingsLayout(layoutBInfo);
@@ -178,7 +180,7 @@ int main()
     .layout = layoutB,
     .groups =
         {
-          {
+          GroupInfo {
             .buffers =
                 {
                   {
@@ -194,7 +196,7 @@ int main()
                 },
             .samplers =
                 {
-                  {
+                  BindingSampler {
                     .binding = 1,
                     .sampler = samplerA,
                     .view =
@@ -313,64 +315,64 @@ int main()
   renderGraph->createBindingGroups(bindingGroupsEInfo);
   renderGraph->createBindingGroups(bindingGroupsFInfo);
 
-  renderGraph->addPass(
+  renderGraph->enqueuePass(
       "passB",
       RenderGraph::ExecuteAlways,
-      [](ResourceDatabase &resources, CommandRecorder &cmd)
+      [](RHIResources &resources, RHICommandBuffer &cmd)
       {
-        Texture textureA = resources.getTexture("TextureA");
-        Buffer buffer = resources.getBuffer("BufferA");
-        Sampler sampler = resources.getSampler("SamplerA");
-        BindingGroups bindings = resources.getBindingGroups("BindingsPassB");
+        auto textureA = resources.getTexture("TextureA");
+        auto buffer = resources.getBuffer("BufferA");
+        auto sampler = resources.getSampler("SamplerA");
+        auto bindings = resources.getBindingGroups("BindingsPassB");
 
         cmd.cmdBindBindingGroups(bindings, nullptr, 0);
         cmd.cmdDispatch(0, 0, 0);
       });
 
-  renderGraph->addPass(
+  renderGraph->enqueuePass(
       "passC",
       RenderGraph::ExecuteAlways,
-      [](ResourceDatabase &resources, CommandRecorder &cmd)
+      [](RHIResources &resources, RHICommandBuffer &cmd)
       {
-        Buffer buffer = resources.getBuffer("BufferA");
-        Buffer bufferC = resources.getBuffer("BufferC");
-        BindingGroups bindings = resources.getBindingGroups("BindingsPassC");
+        auto buffer = resources.getBuffer("BufferA");
+        auto bufferC = resources.getBuffer("BufferC");
+        auto bindings = resources.getBindingGroups("BindingsPassC");
 
         cmd.cmdBindBindingGroups(bindings, nullptr, 0);
         cmd.cmdDispatch(0, 0, 0);
       });
 
-  renderGraph->addPass(
+  renderGraph->enqueuePass(
       "passD",
       RenderGraph::ExecuteAlways,
-      [](ResourceDatabase &resources, CommandRecorder &cmd)
+      [](RHIResources &resources, RHICommandBuffer &cmd)
       {
-        BindingGroups bindings = resources.getBindingGroups("BindingsPassD");
-        Buffer buffer = resources.getBuffer("BufferA");
+        auto bindings = resources.getBindingGroups("BindingsPassD");
+        auto buffer = resources.getBuffer("BufferA");
 
         cmd.cmdBindBindingGroups(bindings, nullptr, 0);
         cmd.cmdDispatch(0, 0, 0);
       });
 
-  renderGraph->addPass(
+  renderGraph->enqueuePass(
       "passE",
       RenderGraph::ExecuteAlways,
-      [](ResourceDatabase &resources, CommandRecorder &cmd)
+      [](RHIResources &resources, RHICommandBuffer &cmd)
       {
-        Buffer buffer = resources.getBuffer("BufferA");
-        BindingGroups bindings = resources.getBindingGroups("BindingsPassE");
+        auto buffer = resources.getBuffer("BufferA");
+        auto bindings = resources.getBindingGroups("BindingsPassE");
 
         cmd.cmdBindBindingGroups(bindings, nullptr, 0);
         cmd.cmdDispatch(0, 0, 0);
       });
 
-  renderGraph->addPass(
+  renderGraph->enqueuePass(
       "passF",
       RenderGraph::ExecuteAlways,
-      [](ResourceDatabase &resources, CommandRecorder &cmd)
+      [](RHIResources &resources, RHICommandBuffer &cmd)
       {
-        Buffer buffer = resources.getBuffer("BufferA");
-        BindingGroups bindings = resources.getBindingGroups("BindingsPassF");
+        auto buffer = resources.getBuffer("BufferA");
+        auto bindings = resources.getBindingGroups("BindingsPassF");
         cmd.cmdBindBindingGroups(bindings, nullptr, 0);
         cmd.cmdDispatch(0, 0, 0);
       });

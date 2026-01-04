@@ -3,145 +3,223 @@
 #include <memory>
 #include <utility>
 
-#include "Fiberpool.hpp"
-// #include "datastructure/ConcurrentQueue.hpp"
+#include "datastructure/MarkedAtomicPointer.hpp"
 
+#include "Fiber.hpp"
 #include "time/TimeSpan.hpp"
+#include <assert.h>
 
-#include "Stack.hpp"
-#include "ThreadCache.hpp"
+#include "os/print.hpp"
+
 namespace async
 {
 
+namespace detail
+{
+class AsyncManager;
+}
+
 class Job;
+
+struct JobFreeNode
+{
+  JobFreeNode *next;
+  fiber::Fiber *fiber;
+};
+
 class JobAllocator
 {
 public:
-  JobAllocator(size_t maxPayloadSize, size_t capacity);
+  JobAllocator(size_t stackSize, size_t initialCapacity, size_t maxLocal);
   ~JobAllocator();
 
-  Job *allocate(fiber::Fiber::Handler handler, fiber::FiberPool *pool, uint32_t poolIndex);
+  Job *allocate(fiber::Fiber::Handler handler);
+  void deallocate(Job *job);
 
-  Job *currentThreadToJob();
-  uint64_t getPayloadSize();
-  void deallocate(Job *);
   void initializeThread();
   void deinitializeThread();
 
 private:
-  uint64_t payloadSize;
-  lib::memory::allocator::SystemAllocator<char> allocator;
-  uint64_t cacheSize;
-  ThreadCache<Stack<void *>> cache;
-  // lib::ConcurrentQueue<void *> freeList;
+  size_t stackSize;
+  size_t initialCapacity;
+  size_t maxLocal;
+
+  static thread_local Job *localHead;
+  static thread_local size_t localCount;
 };
 
-class Job
+struct JobDataBase
 {
-  friend class AsyncManager;
-  template <typename T> friend class Promise;
+  void (*invoke)(JobDataBase *);
+};
 
-  static std::atomic<uint32_t> allocations;
-  static std::atomic<uint32_t> deallocations;
+template <typename F, typename R> struct JobDataValue final : JobDataBase
+{
+  F fn;
+  R result;
 
-public:
-  // std::atomic<uint32_t> refsInQueues;
-  // std::atomic<uint32_t> refsInPromises;
-  // std::atomic<uint32_t> refsInRuntime;
-  // std::atomic<uint32_t> refsInJobs;
-
-  std::atomic<uint32_t> refs;
-
-  Job *waiter;
-  fiber::Fiber *fiber;
-
-  uint32_t fiberPoolIndex;
-
-  std::atomic<bool> finished;
-  std::atomic_flag spinLock = ATOMIC_FLAG_INIT;
-  JobAllocator *allocator;
-
-public:
-  Job(fiber::Fiber *fiber, uint32_t poolId, JobAllocator *allocator) : finished(false), fiber(fiber), waiter(nullptr), fiberPoolIndex(poolId), refs(0), allocator(allocator)
+  explicit JobDataValue(F &&f) : fn(std::forward<F>(f))
   {
-    // allocations.fetch_add(1);
-
-    assert(deallocations.load() <= allocations.load());
-    // os::print("allocations at %p = %u\n", this, allocations.load());
-  }
-  ~Job()
-  {
+    invoke = &invokeImpl;
   }
 
-  void ref()
+  static void invokeImpl(JobDataBase *base)
   {
-    refs.fetch_add(1);
+    auto *self = static_cast<JobDataValue *>(base);
+    self->result = self->fn();
+  }
+};
+
+template <typename F> struct JobDataVoid final : JobDataBase
+{
+  F fn;
+
+  explicit JobDataVoid(F &&f) : fn(std::forward<F>(f))
+  {
+    invoke = &invokeImpl;
   }
 
-  void deref(const char *place)
+  static void invokeImpl(JobDataBase *base)
   {
-    // os::print("derefing job %p (%u) - %s\n", this, refs.load(), place != nullptr ? place : "");
-    if (refs.fetch_sub(1) == 1)
+    auto *self = static_cast<JobDataVoid *>(base);
+    self->fn();
+  }
+};
+
+struct Job
+{
+  static thread_local Job *currentJob;
+
+  std::atomic<uint64_t> refs;
+  lib::MarkedAtomicPointer<Job> waiter;
+
+  Job *nextFree;
+
+  fiber::Fiber fiber;
+
+  JobAllocator *allocator = nullptr;
+  JobDataBase *jobData = nullptr;
+
+  Job *waiting;
+  Job *manager;
+
+  bool yielding;
+
+  alignas(std::max_align_t) uint8_t payload[256];
+
+  Job(JobAllocator *a, fiber::Fiber::Handler handler, uint64_t stackSize) : allocator(a), nextFree(nullptr), refs(0), fiber(handler, this, stackSize, false)
+  {
+  }
+
+  void reset(fiber::Fiber::Handler handler)
+  {
+    // finished.store(false, std::memory_order_relaxed);
+    waiter.store(nullptr);
+    jobData = nullptr;
+    nextFree = nullptr;
+
+    waiting = nullptr;
+    manager = nullptr;
+    yielding = false;
+
+    fiber.reset(handler, this);
+  }
+
+  static Job *currentThreadToJob();
+
+  // void lock()
+  // {
+  //   while (spinLock.test_and_set(std::memory_order_acquire))
+  //   {
+  //   }
+  // }
+  // void unlock()
+  // {
+  //   spinLock.clear(std::memory_order_release);
+  // }
+  void ref(uint32_t c = 1, const char *debug = nullptr)
+  {
+    // os::print("refing %p %u - %s\n", this, refs.load() + c, debug);
+    refs.fetch_add(c, std::memory_order_relaxed);
+  }
+  
+  void deref(uint32_t c = 1, const char *debug = nullptr)
+  {
+    auto old = refs.fetch_sub(c, std::memory_order_acq_rel);
+    assert(old != 0);
+    if (old == 1)
     {
-      // deallocations.fetch_add(1);
-
-      // uint32_t deallocs = deallocations.load();
-      // uint32_t allocs = allocations.load();
-
-      // if (deallocs > allocs)
-      // {
-      // os::print("deallocations at %p = %u, allocs = %u\n", this, deallocs, allocs);
-      //   assert(deallocs <= allocs);
-      // }
-      // os::print("%p deallocated by %i - %u %u %u %u = %u\n", this, src, refsInQueues.load(), refsInPromises.load(), refsInRuntime.load(), refsInJobs.load(), refs.load());
-
-      allocator->deallocate(this);
+      if (allocator == nullptr)
+      {
+        delete this;
+      }
+      else
+      {
+        allocator->deallocate(this);
+      }
     }
-  }
-
-  void resume()
-  {
-    assert(fiber != nullptr);
-    fiber::Fiber::switchTo(fiber);
-  }
-
-  bool resolve()
-  {
-    bool expected = false;
-    bool old = finished.compare_exchange_strong(expected, true, std::memory_order_acquire);
-    // w = waiter;
-    // waiter = nullptr;
-
-    // uint32_t oldRefs = refInWaiters.fetch_add(1);
-    // assert(oldRefs == 0);
-
-    return old;
-  }
-
-  void lock()
-  {
-    while (spinLock.test_and_set(std::memory_order_acquire))
-    {
-    }
-    // os::print("Thread %u locking %p %p\n", os::Thread::getCurrentThreadId(), this, fiber);
-  }
-
-  void unlock()
-  {
-    // os::print("Thread %u unlocking %p %p\n", os::Thread::getCurrentThreadId(), this, fiber);
-
-    spinLock.clear(std::memory_order_release);
   }
 
   fiber::Fiber *getFiber()
   {
-    return fiber;
+    return &fiber;
   }
 
-  void setWaiter(Job *job)
+  bool setWaiter(Job *job)
   {
-    waiter = job;
-    // os::print("thread %u waiting refs = %u - fiber = %p\n", os::Thread::getCurrentThreadId(), job->refs.load(), fiber);
+    bool isMarked = false;
+
+    Job *curr = nullptr;
+    do
+    {
+      curr = waiter.read(isMarked);
+
+      assert(curr == nullptr && "Can't have multiple waiters");
+
+      if (isMarked)
+      {
+        return false;
+      }
+
+    } while (!waiter.compare_exchange_strong(curr, job, std::memory_order_acquire, std::memory_order_release));
+
+    return true;
+  }
+
+  void resume()
+  {
+    assert(fiber::Fiber::current() == &Job::currentJob->fiber);
+
+    Job *old = Job::currentJob;
+    Job::currentJob = this;
+    fiber::Fiber::switchTo(&fiber);
+    Job::currentJob = old;
+
+    assert(fiber::Fiber::current() == &Job::currentJob->fiber);
+  }
+
+  bool resolve()
+  {
+    while (true)
+    {
+      bool isMarked = false;
+      auto w = waiter.read(isMarked);
+
+      assert(!isMarked && "Should not be marked");
+
+      if (waiter.attemptMark(w, true))
+      {
+        return true;
+      }
+    }
+    return true;
+  }
+
+  bool isFinished()
+  {
+    bool isMarked = false;
+    waiter.read(isMarked);
+    return isMarked;
   }
 };
 
@@ -154,8 +232,9 @@ template <typename T> size_t calculateOffset()
 
 template <typename T> class Promise
 {
-  friend class AsyncManager;
-
+  friend class detail::AsyncManager;
+  friend void wait(Promise<T> &);
+  friend void wait(Promise<T> &&);
   // private:
 
 public:
@@ -164,7 +243,6 @@ public:
 
   Promise(Job *job, T *data) : job(job), data(data)
   {
-    // os::print("promise constructor %p assigning job %p (%u)\n", this, job, job->refs.load());
   }
 
 public:
@@ -176,9 +254,9 @@ public:
   {
     if (job)
     {
-      assert(job->refs.load() >= 1);
-      // os::print("promise %p derefing job %p (%u)\n", this, job, job->refs.load());
-      job->deref("promise destructor");
+      // assert(job->refs.load() >= 1);
+      //  os::print("promise %p derefing job %p (%u)\n", this, job, job->refs.load());
+      job->deref(1, "promise");
     }
   }
 
@@ -187,8 +265,6 @@ public:
 
   Promise(Promise &&other) noexcept : job(std::move(other.job)), data(std::move(other.data))
   {
-    // os::print("promise %p copy assigning job %p (%u)\n", this, job, job->refs.load());
-
     other.job = nullptr;
     other.data = nullptr;
   }
@@ -204,8 +280,6 @@ public:
 
       other.job = nullptr;
       other.data = nullptr;
-
-      // os::print("promise %p move assigning job %p (%u)\n", this, job, job->refs.load());
     }
 
     assert(job->refs.load() >= 1);
@@ -215,10 +289,13 @@ public:
 
 template <> class Promise<void>
 {
-  friend class AsyncManager;
+  friend class detail::AsyncManager;
+  friend void wait(Promise<void> &);
+  friend void wait(Promise<void> &&);
 
 private:
   Job *job;
+
   /*
     bool resolve()
     {
@@ -239,8 +316,8 @@ public:
   {
     if (job)
     {
-      assert(job->refs.load() >= 1);
-      job->deref("promise destructor 2"); // refInPromises.fetch_sub(1);
+      // assert(job->refs.load() >= 1);
+      job->deref(1, "promise"); // refInPromises.fetch_sub(1);
       // assert(job->refsInPromises.load() == 0);
     }
   }
@@ -256,7 +333,6 @@ public:
 
   Promise &operator=(Promise &&other) noexcept
   {
-    // os::print("assigning void promise rf = %u\n", other.job->refInPromises.load());
     if (this != &other)
     {
       this->~Promise();

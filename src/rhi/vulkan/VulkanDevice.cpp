@@ -295,8 +295,8 @@ void VulkanDevice::init()
   initializePhysicalDevice();
   createLogicalDevice();
 
-  fences = new lib::ConcurrentQueue<VkFence>();
-  semaphores = new lib::ConcurrentQueue<VkSemaphore>();
+  fences = new lib::ConcurrentShardedQueue<VkFence>();
+  semaphores = new lib::ConcurrentShardedQueue<VkSemaphore>();
   // for (int i = 0; i < 256; i++)
   // {
   //   fences->enqueue(createFence(logicalDevice.device, false));
@@ -844,7 +844,7 @@ VulkanDevice::~VulkanDevice()
   }
 
   VkFence fence = VK_NULL_HANDLE;
-  while (fences->tryDequeue(fence))
+  while (fences->dequeue(fence))
   {
     vkDestroyFence(getDevice(), fence, NULL);
   }
@@ -2196,7 +2196,7 @@ VkFence VulkanDevice::getFence()
 {
   VkFence data;
 
-  if (fences->tryDequeue(data))
+  if (fences->dequeue(data))
   {
     vkResetFences(logicalDevice.device, 1, &data);
   }
@@ -2211,7 +2211,7 @@ VkFence VulkanDevice::getFence()
 VkSemaphore VulkanDevice::getSemaphore()
 {
   VkSemaphore data;
-  if (semaphores->tryDequeue(data))
+  if (semaphores->dequeue(data))
   {
   }
   else
@@ -2252,18 +2252,10 @@ FenceStatus VulkanAsyncHandler::getStatus(VulkanAsyncHandler &future)
 
 void VulkanDevice::cleanupSubmitCallback(VulkanAsyncHandler &future)
 {
-  if (future.device->fences->getApproximateSize() > 1024)
-  {
-    vkDestroyFence(future.device->getDevice(), future.fence, NULL);
-    vkDestroySemaphore(future.device->getDevice(), future.semaphore, NULL);
-  }
-  else
-  {
-    future.device->fences->enqueue(future.fence);
-    future.device->semaphores->enqueue(future.semaphore);
+  future.device->fences->enqueue(future.fence);
+  future.device->semaphores->enqueue(future.semaphore);
 
-    future.fence = VK_NULL_HANDLE;
-  }
+  future.fence = VK_NULL_HANDLE;
 
   for (auto fb : future.framebuffers)
   {
@@ -2438,7 +2430,7 @@ void VulkanDevice::wait(GPUFuture &future)
   }
 
   VulkanFuture *vkFuture = reinterpret_cast<VulkanFuture *>(future.get());
-  vkFuture->handler.wait(eventLoop);
+  // vkFuture->handler.wait(eventLoop);
 }
 
 void VulkanDevice::cmdBeginRenderPass(CommandBuffer cmdHandle, const rhi::RenderPassInfo &rpInfo)

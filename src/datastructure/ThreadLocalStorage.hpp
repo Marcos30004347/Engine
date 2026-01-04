@@ -2,7 +2,10 @@
 
 #include <assert.h>
 #include <atomic>
+#include <cstdint>
+#include <new>
 #include <thread>
+#include <utility>
 
 #include "algorithm/random.hpp"
 #include "os/Thread.hpp"
@@ -10,81 +13,40 @@
 
 namespace lib
 {
-
 namespace detail
 {
-template <typename V> struct Entry
+
+// Align to cache line to prevent false sharing between metadata and data
+template <typename V> struct alignas(256) HashTableBucket
 {
-  std::atomic<size_t> key;
-  V value;
-  using Destructor = void (*)(V &);
-  Destructor destructor;
+  static constexpr size_t INVALID_KEY = SIZE_MAX;
 
-  Entry() : key(0), destructor(nullptr)
-  {
-  }
+  const size_t capacity;
+  const size_t mask;
 
-  Entry(Entry &&other) noexcept : key(other.key.load(std::memory_order_relaxed)), value(std::move(other.value)), destructor(other.destructor)
-  {
-  }
+  // SoA (Structure of Arrays): Keys are separated from values.
+  // This dramatically improves cache hits during probing.
+  std::atomic<size_t> *keys;
+  V *values;
 
-  Entry &operator=(Entry &&other) noexcept
-  {
-    if (this != &other)
-    {
-      key.store(other.key.load(std::memory_order_relaxed), std::memory_order_relaxed);
-      value = std::move(other.value);
-      destructor = other.destructor;
-    }
-    return *this;
-  }
-
-  Entry(const Entry &other) : key(other.key.load(std::memory_order_relaxed)), value(other.value), destructor(other.destructor)
-  {
-  }
-
-  Entry &operator=(const Entry &other)
-  {
-    if (this != &other)
-    {
-      key.store(other.key.load(std::memory_order_relaxed), std::memory_order_relaxed);
-      value = other.value;
-      destructor = other.destructor;
-    }
-    return *this;
-  }
-};
-
-template <typename V> struct HashTableBucket
-{
-  const static size_t INVALID_KEY = SIZE_MAX;
-
-  size_t capacity;
-  Entry<V> *entries;
   HashTableBucket<V> *prev;
 
-  HashTableBucket(size_t capacity, Entry<V> *initial) : capacity(capacity), entries(initial), prev(nullptr)
+  HashTableBucket(size_t cap)
+      : capacity(cap), mask(cap - 1), keys(new std::atomic<size_t>[cap]), values(new V[cap]) // Default construct values
+        ,
+        prev(nullptr)
   {
-    for (size_t i = 0; i != capacity; ++i)
+    // Initialize keys to INVALID
+    for (size_t i = 0; i < capacity; ++i)
     {
-      entries[i].key.store(INVALID_KEY, std::memory_order_relaxed);
-    }
-  }
-
-  HashTableBucket(size_t capacity) : capacity(capacity), entries(new Entry<V>[capacity]), prev(nullptr)
-  {
-    for (size_t i = 0; i != capacity; ++i)
-    {
-      entries[i].key.store(INVALID_KEY, std::memory_order_relaxed);
+      keys[i].store(INVALID_KEY, std::memory_order_relaxed);
     }
   }
 
   ~HashTableBucket()
   {
-    if (entries != nullptr)
-    {
-      delete[] entries;
-    }
+    delete[] keys;
+    delete[] values;
   }
 };
 
@@ -92,77 +54,53 @@ template <typename Value> class ConcurrentLookupTable
 {
 private:
   std::atomic<detail::HashTableBucket<Value> *> rootTable;
-  std::atomic_flag rootTableResizeInProgress;
+  std::atomic_flag rootTableResizeInProgress = ATOMIC_FLAG_INIT;
   std::atomic<size_t> count;
-  detail::HashTableBucket<Value> root;
 
-  struct ThreadCache
+  // We hold the initial root instance to avoid heap allocation for the first table
+  // but we manage it via pointers.
+  detail::HashTableBucket<Value> *initialRoot;
+
+  // Helper to hash integer keys
+  static inline size_t hashInteger(size_t k)
   {
-     size_t threadId;
-    detail::HashTableBucket<Value> *lastTable;
-    size_t lastIndex;
-    char padding[64 - sizeof(size_t) * 2 - sizeof(void *)];
-  };
+    // MurmurHash3 fmix64 finalizer (very fast, high entropy)
+    k ^= k >> 33;
+    k *= 0xff51afd7ed558ccd;
+    k ^= k >> 33;
+    k *= 0xc4ceb9fe1a85ec53;
+    k ^= k >> 33;
+    return k;
+  }
 
-  static thread_local ThreadCache cache;
-
-  bool insertInTable(detail::HashTableBucket<Value> *hash, size_t key, Value value, void (*destructor)(Value &) = nullptr)
+  bool insertInTable(detail::HashTableBucket<Value> *hash, size_t key, const Value &value)
   {
-    size_t hashedId = hashInteger(key);
-    size_t index = hashedId & (hash->capacity - 1u);
-
-    size_t probeLimit = hash->capacity;
+    size_t index = hashInteger(key) & hash->mask;
+    const size_t probeLimit = hash->capacity;
 
     for (size_t i = 0; i < probeLimit; ++i)
     {
       size_t expected = detail::HashTableBucket<Value>::INVALID_KEY;
 
-      if (hash->entries[index].key.compare_exchange_strong(expected, key, std::memory_order_release, std::memory_order_relaxed))
+      // Optimistic check using relaxed ordering before attempting atomic CAS
+      if (hash->keys[index].load(std::memory_order_relaxed) == expected)
       {
-        hash->entries[index].destructor = destructor;
-        hash->entries[index].value = value;
-        return true;
-      }
-
-      index = (index + 1) & (hash->capacity - 1u);
-    }
-
-    return false;
-  }
-
-  bool insertOrUpdateInTable(detail::HashTableBucket<Value> *hash, size_t key, Value value)
-  {
-    size_t hashedId = hashInteger(key);
-    size_t index = hashedId & (hash->capacity - 1u);
-
-    size_t probeLimit = hash->capacity;
-
-    for (size_t i = 0; i < probeLimit; ++i)
-    {
-      size_t probedKey = hash->entries[index].key.load(std::memory_order_acquire);
-
-      if (probedKey == key)
-      {
-        hash->entries[index].value = value;
-        return true;
-      }
-
-      if (probedKey == detail::HashTableBucket<Value>::INVALID_KEY)
-      {
-        size_t expected = detail::HashTableBucket<Value>::INVALID_KEY;
-        if (hash->entries[index].key.compare_exchange_strong(expected, key, std::memory_order_release, std::memory_order_relaxed))
+        if (hash->keys[index].compare_exchange_strong(expected, key, std::memory_order_acq_rel, std::memory_order_relaxed))
         {
-          hash->entries[index].value = value;
+          hash->values[index] = value;
           return true;
         }
-
-        --i;
-        continue;
       }
 
-      index = (index + 1) & (hash->capacity - 1u);
-    }
+      // Check if key already exists (update)
+      if (hash->keys[index].load(std::memory_order_acquire) == key)
+      {
+        hash->values[index] = value;
+        return true;
+      }
 
+      index = (index + 1) & hash->mask;
+    }
     return false;
   }
 
@@ -170,53 +108,53 @@ private:
   {
     detail::HashTableBucket<Value> *currentTable = rootTable.load(std::memory_order_acquire);
 
-    if (newCount >= ((currentTable->capacity * 3) >> 2) && !rootTableResizeInProgress.test_and_set(std::memory_order_acquire))
+    // Load factor > 0.75
+    if (newCount >= ((currentTable->capacity * 3) >> 2))
     {
-      currentTable = rootTable.load(std::memory_order_acquire);
-
-      if (newCount >= ((currentTable->capacity * 3) >> 2))
+      // Try to acquire resize lock
+      if (!rootTableResizeInProgress.test_and_set(std::memory_order_acquire))
       {
-        size_t newCapacity = currentTable->capacity << 1;
-
-        while (newCount >= ((newCapacity * 3) >> 2))
+        // Double check after lock
+        currentTable = rootTable.load(std::memory_order_relaxed);
+        if (newCount >= ((currentTable->capacity * 3) >> 2))
         {
-          newCapacity <<= 1;
+          size_t newCapacity = currentTable->capacity << 1;
+
+          // Allocate new table
+          auto *newTable = new detail::HashTableBucket<Value>(newCapacity);
+          newTable->prev = currentTable;
+
+          rootTable.store(newTable, std::memory_order_release);
         }
-
-        detail::HashTableBucket<Value> *newTable = new detail::HashTableBucket<Value>(newCapacity);
-        newTable->prev = currentTable;
-        rootTable.store(newTable, std::memory_order_release);
+        rootTableResizeInProgress.clear(std::memory_order_release);
       }
-
-      rootTableResizeInProgress.clear(std::memory_order_release);
     }
   }
 
 public:
-  ConcurrentLookupTable(size_t initialCapacity = 64) : root(initialCapacity)
+  ConcurrentLookupTable(size_t initialCapacity = 64)
   {
-    assert((initialCapacity & (initialCapacity - 1)) == 0);
+    assert((initialCapacity & (initialCapacity - 1)) == 0 && "Capacity must be power of 2");
+    initialRoot = new detail::HashTableBucket<Value>(initialCapacity);
 
-    rootTableResizeInProgress.clear(std::memory_order_release);
     count.store(0, std::memory_order_relaxed);
-    rootTable.store(&root, std::memory_order_relaxed);
+    rootTable.store(initialRoot, std::memory_order_release);
   }
 
-  ConcurrentLookupTable(ConcurrentLookupTable &&other) noexcept : root(std::move(other.root))
+  // Disable copy
+  ConcurrentLookupTable(const ConcurrentLookupTable &) = delete;
+  ConcurrentLookupTable &operator=(const ConcurrentLookupTable &) = delete;
+
+  // Move Constructor
+  ConcurrentLookupTable(ConcurrentLookupTable &&other) noexcept : initialRoot(nullptr)
   {
-    root = std::move(other.root);
+    rootTable.store(other.rootTable.load(), std::memory_order_relaxed);
+    count.store(other.count.load(), std::memory_order_relaxed);
+    initialRoot = other.initialRoot;
 
-    other.root.entries = nullptr;
-    other.root.prev = nullptr;
-    other.root.capacity = 0;
-
-    rootTableResizeInProgress.clear(std::memory_order_relaxed);
-    count.store(other.count.load(std::memory_order_relaxed), std::memory_order_relaxed);
-
-    rootTable.store(&root, std::memory_order_relaxed);
-
-    other.rootTable.store(nullptr, std::memory_order_relaxed);
-    other.count.store(0, std::memory_order_relaxed);
+    other.rootTable.store(nullptr);
+    other.initialRoot = nullptr;
+    other.count.store(0);
   }
 
   ConcurrentLookupTable &operator=(ConcurrentLookupTable &&other) noexcept
@@ -231,123 +169,87 @@ public:
 
   ~ConcurrentLookupTable()
   {
-    detail::HashTableBucket<Value> *hash = rootTable.load(std::memory_order_relaxed);
-
-    if (hash == nullptr)
-    {
-      return;
-    }
-
-    for (size_t i = 0; i < hash->capacity; i++)
-    {
-      if (hash->entries[i].key.load(std::memory_order_relaxed) != detail::HashTableBucket<Value>::INVALID_KEY && hash->entries[i].destructor != nullptr)
-      {
-        hash->entries[i].destructor(hash->entries[i].value);
-        hash->entries[i].key.store(detail::HashTableBucket<Value>::INVALID_KEY, std::memory_order_relaxed);
-      }
-    }
+    detail::HashTableBucket<Value> *hash = rootTable.load(std::memory_order_acquire);
 
     while (hash != nullptr)
     {
       detail::HashTableBucket<Value> *prev = hash->prev;
-
-      if (hash != &root)
-      {
-        delete hash;
-      }
-
+      delete hash;
       hash = prev;
     }
-
-    rootTable.store(nullptr, std::memory_order_relaxed);
   }
 
+  // Optimized GET path
   bool get(size_t id, Value &v)
   {
     size_t hashedId = hashInteger(id);
-    auto currentTable = rootTable.load(std::memory_order_acquire);
 
+    // Use acquire to ensure we see the initialized table and its data
+    auto currentTable = rootTable.load(std::memory_order_acquire);
     assert(currentTable != nullptr);
 
-    if (cache.threadId == id && cache.lastTable == currentTable)
-    {
-      size_t cachedKey = currentTable->entries[cache.lastIndex].key.load(std::memory_order_acquire);
-      if (cachedKey == id)
-      {
-        v = currentTable->entries[cache.lastIndex].value;
-        return true;
-      }
-    }
-
-    // Search through tables
+    // Walk the table history (usually just 1 iteration)
     for (auto hash = currentTable; hash != nullptr; hash = hash->prev)
     {
-      size_t index = hashedId & (hash->capacity - 1);
+      size_t index = hashedId & hash->mask;
       size_t probeLimit = hash->capacity;
 
       for (size_t i = 0; i < probeLimit; ++i)
       {
-        size_t probedKey = hash->entries[index].key.load(std::memory_order_acquire);
-
-        if (probedKey == detail::HashTableBucket<Value>::INVALID_KEY)
-        {
-          break;
-        }
+        // Load key with acquire to synchronize with the value write
+        size_t probedKey = hash->keys[index].load(std::memory_order_acquire);
 
         if (probedKey == id)
         {
-          v = hash->entries[index].value;
+          v = hash->values[index];
 
-          // Migrate to current table if in old table
+          // Migration logic: If we found it in an old table, move it to the new one
+          // to speed up future lookups.
           if (hash != currentTable)
           {
-            bool inserted = insertInTable(currentTable, id, v);
-            if (inserted)
-            {
-              hash->entries[index].key.store(detail::HashTableBucket<Value>::INVALID_KEY, std::memory_order_release);
-            }
+            // Try to insert into current. If successful, mark old as deleted (optional optimization)
+            // Note: We duplicate the value to the head table.
+            // The old value stays in history but won't be found first.
+            insertInTable(currentTable, id, v);
           }
-
-          // Update cache
-          cache.threadId = id;
-          cache.lastTable = currentTable;
-          cache.lastIndex = (hash == currentTable) ? index : (hashedId & (currentTable->capacity - 1));
-
           return true;
         }
 
-        index = (index + 1) & (hash->capacity - 1);
+        if (probedKey == detail::HashTableBucket<Value>::INVALID_KEY)
+        {
+          // If we hit an empty slot in the CURRENT table, it doesn't exist.
+          // If we are in an older table, we must continue searching previous tables.
+          if (hash == currentTable)
+            return false;
+          break; // Break inner loop, go to hash->prev
+        }
+
+        index = (index + 1) & hash->mask;
       }
     }
 
     return false;
   }
 
-  bool insert(size_t id, Value val, void (*destructor)(Value &) = nullptr)
+  bool insert(size_t id, const Value &val)
   {
+    // Pre-increment count to trigger resize early
     size_t newCount = 1 + count.fetch_add(1, std::memory_order_relaxed);
 
+    // This loop handles the rare case where a resize happens *during* our insertion attempt
     while (true)
     {
       resizeTableIfNeeded(newCount);
 
       auto currentTable = rootTable.load(std::memory_order_acquire);
 
-      // Use 75% load factor for insertion threshold
-      if (newCount < ((currentTable->capacity * 3) >> 2))
+      if (insertInTable(currentTable, id, val))
       {
-        if (insertInTable(currentTable, id, val, destructor))
-        {
-          return true;
-        }
+        return true;
       }
     }
-
-    return true;
   }
 };
-
-template <typename Value> thread_local typename ConcurrentLookupTable<Value>::ThreadCache ConcurrentLookupTable<Value>::cache = {0, nullptr, 0};
 
 } // namespace detail
 
@@ -359,7 +261,6 @@ template <typename T> class ThreadLocalStorage
   {
     if (n == 0)
       return 1;
-
     n--;
     n |= n >> 1;
     n |= n >> 2;
@@ -370,7 +271,7 @@ template <typename T> class ThreadLocalStorage
   }
 
 public:
-  ThreadLocalStorage() : lookupTable(nextPowerOfTwo(2 * os::Thread::getHardwareConcurrency()))
+  ThreadLocalStorage() : lookupTable(nextPowerOfTwo(std::max(64u, 2 * os::Thread::getHardwareConcurrency())))
   {
   }
 
@@ -378,34 +279,20 @@ public:
   {
   }
 
-  ThreadLocalStorage(const ThreadLocalStorage &other) : lookupTable(other.lookupTable)
-  {
-  }
-
-  ThreadLocalStorage &operator=(const ThreadLocalStorage &other)
+  ThreadLocalStorage &operator=(ThreadLocalStorage &&other) noexcept
   {
     if (this != &other)
-    {
-      lookupTable = other.lookupTable;
-    }
-    return *this;
-  }
-
-  ThreadLocalStorage &operator=(ThreadLocalStorage &&other)
-  {
-    if (this != &other)
-    {
       lookupTable = std::move(other.lookupTable);
-      other.lookupTable = detail::ConcurrentLookupTable<T>();
-    }
-
     return *this;
   }
+
+  // Deleted copy to match move semantics logic clearly
+  ThreadLocalStorage(const ThreadLocalStorage &) = delete;
+  ThreadLocalStorage &operator=(const ThreadLocalStorage &) = delete;
 
   void set(T val)
   {
-    bool inserted = lookupTable.insert(os::Thread::getCurrentThreadId(), val);
-    assert(inserted);
+    lookupTable.insert(os::Thread::getCurrentThreadId(), val);
   }
 
   bool get(T &val)

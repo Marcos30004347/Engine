@@ -14,6 +14,15 @@ inline void hash_combine(std::size_t &seed, std::size_t value)
   seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
 }
 
+enum class SwapChain : uint32_t
+{
+};
+
+enum class CommandBuffer : uint32_t
+{
+};
+
+
 enum Queue
 {
   None,
@@ -22,6 +31,86 @@ enum Queue
   Transfer,
   Present,
 };
+
+enum class PipelineStage
+{
+  // Pseudo-stage representing the beginning of the pipeline
+  // Used for barriers where no actual work has started yet
+  // Common for initial resource transitions from UNDEFINED layout
+  TOP_OF_PIPE,
+
+  // Stage where vertex and index data is consumed from buffers
+  // Includes vertex attribute fetching and index buffer reads
+  // Used when transitioning buffers for vertex/index usage
+  VERTEX_INPUT,
+
+  // Vertex shader execution stage
+  // Where per-vertex computations happen (transformations, lighting setup)
+  // Resources accessed: vertex buffers, uniform buffers, textures
+  VERTEX_SHADER,
+
+  // // Tessellation control shader stage (optional)
+  // // Determines tessellation levels and per-patch data
+  // // Part of tessellation pipeline for subdividing primitives
+  // TESSELLATION_CONTROL_SHADER,
+
+  // // Tessellation evaluation shader stage (optional)
+  // // Generates actual vertex positions from tessellated coordinates
+  // // Outputs final tessellated vertices to next stage
+  // TESSELLATION_EVALUATION_SHADER,
+
+  // // Geometry shader stage (optional)
+  // // Can generate, modify, or discard entire primitives
+  // // Can output multiple primitives from single input primitive
+  // GEOMETRY_SHADER,
+
+  // Fragment shader execution stage
+  // Per-pixel/sample shading computations
+  // Most common stage for texture sampling and lighting calculations
+  FRAGMENT_SHADER,
+
+  // // Early depth and stencil testing stage
+  // // Happens before fragment shader to potentially discard fragments early
+  // // Includes depth bounds testing and stencil testing
+  // EARLY_FRAGMENT_TESTS,
+
+  // // Late depth and stencil testing stage
+  // // Final depth/stencil operations after fragment shader
+  // // Used when fragment shader modifies depth or uses discard
+  // LATE_FRAGMENT_TESTS,
+
+  // // Color attachment output stage
+  // // Where final color values are written to render targets
+  // // Includes blending operations with existing framebuffer contents
+  // COLOR_ATTACHMENT_OUTPUT,
+
+  // Compute shader execution stage
+  // General purpose GPU computing outside of graphics pipeline
+  // Can read/write arbitrary buffers and images
+  COMPUTE_SHADER,
+
+  // Transfer operations stage
+  // Copy operations between resources (buffer-to-buffer, buffer-to-image, etc.)
+  // Includes clear operations and blit operations
+  TRANSFER,
+
+  // Pseudo-stage representing the end of the pipeline
+  // Used for barriers where all previous work must complete
+  // Common for final resource transitions or synchronization
+  BOTTOM_OF_PIPE,
+
+  // Covers all graphics pipeline stages (but not compute)
+  // Equivalent to: VERTEX_INPUT | VERTEX_SHADER | ... | COLOR_ATTACHMENT_OUTPUT
+  // Useful for broad synchronization in graphics-only contexts
+  ALL_GRAPHICS,
+
+  HOST,
+  // Covers all possible pipeline stages
+  // Most conservative option - ensures all work completes
+  // Can hurt performance if overused, but guarantees correctness
+  ALL_COMMANDS
+};
+
 enum DeviceFeatures
 {
   DeviceFeatures_None = 0,
@@ -533,6 +622,8 @@ struct BindingsLayout
   }
 };
 
+
+
 struct GraphicsPipeline
 {
   std::string name;
@@ -571,6 +662,8 @@ struct BindingGroups
     return !(*this == other);
   }
 };
+
+
 struct BufferView
 {
   Buffer buffer;
@@ -591,13 +684,19 @@ struct BufferView
 struct TextureView
 {
   Texture texture;
+  SwapChain swapChain;
+  uint32_t index;
+
   ImageAspectFlags flags = ImageAspectFlags::Color;
+
   uint32_t baseMipLevel = 0;
   uint32_t levelCount = 1;
   uint32_t baseArrayLayer = 0;
   uint32_t layerCount = 1;
+
   AccessPattern access;
   ResourceLayout layout;
+
 
   bool operator==(const TextureView &other) const noexcept
   {
@@ -608,6 +707,33 @@ struct TextureView
   {
     return !(*this == other);
   }
+};
+
+
+
+struct ColorAttachmentInfo
+{
+  std::string name;
+  TextureView view;
+  Color clearValue = {0.0f, 0.0f, 0.0f, 1.0f};
+};
+
+struct DepthStencilAttachmentInfo
+{
+  std::string name;
+  TextureView view;
+  float clearDepth = 1.0f;
+  uint32_t clearStencil = 0;
+};
+
+struct RenderPassInfo
+{
+  std::string name;
+  Viewport viewport;
+  Rect2D scissor;
+
+  std::vector<ColorAttachmentInfo> colorAttachments;
+  DepthStencilAttachmentInfo depthStencilAttachment;
 };
 
 } // namespace rendering
@@ -674,21 +800,21 @@ template <> struct std::hash<rendering::Sampler>
   }
 };
 
-template <> struct std::hash<rendering::TextureView>
-{
-  std::size_t operator()(const rendering::TextureView &tv) const noexcept
-  {
-    std::size_t h = std::hash<rendering::Texture>{}(tv.texture);
-    rendering::hash_combine(h, std::hash<uint32_t>{}(static_cast<uint32_t>(tv.flags)));
-    rendering::hash_combine(h, std::hash<uint32_t>{}(tv.baseMipLevel));
-    rendering::hash_combine(h, std::hash<uint32_t>{}(tv.levelCount));
-    rendering::hash_combine(h, std::hash<uint32_t>{}(tv.baseArrayLayer));
-    rendering::hash_combine(h, std::hash<uint32_t>{}(tv.layerCount));
-    rendering::hash_combine(h, std::hash<int>{}(static_cast<int>(tv.access)));
-    rendering::hash_combine(h, std::hash<int>{}(static_cast<int>(tv.layout)));
-    return h;
-  }
-};
+// template <> struct std::hash<rendering::TextureView>
+// {
+//   std::size_t operator()(const rendering::TextureView &tv) const noexcept
+//   {
+//     std::size_t h = std::hash<rendering::Texture>{}(tv.texture);
+//     rendering::hash_combine(h, std::hash<uint32_t>{}(static_cast<uint32_t>(tv.flags)));
+//     rendering::hash_combine(h, std::hash<uint32_t>{}(tv.baseMipLevel));
+//     rendering::hash_combine(h, std::hash<uint32_t>{}(tv.levelCount));
+//     rendering::hash_combine(h, std::hash<uint32_t>{}(tv.baseArrayLayer));
+//     rendering::hash_combine(h, std::hash<uint32_t>{}(tv.layerCount));
+//     rendering::hash_combine(h, std::hash<int>{}(static_cast<int>(tv.access)));
+//     rendering::hash_combine(h, std::hash<int>{}(static_cast<int>(tv.layout)));
+//     return h;
+//   }
+// };
 template <> struct std::hash<rendering::BufferView>
 {
   std::size_t operator()(const rendering::BufferView &bv) const noexcept

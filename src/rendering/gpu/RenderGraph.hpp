@@ -9,10 +9,9 @@
 #include "Types.hpp"
 #include <stack>
 
-#include "datastructure/ThreadLocalStorage.hpp"
 #include "datastructure/ConcurrentHashMap.hpp"
-#include "datastructure/ConcurrentLinkedList.hpp"
-#include "datastructure/ConcurrentUnorderedSkipListMap.hpp"
+#include "datastructure/ConcurrentQueue.hpp"
+#include "datastructure/ThreadLocalStorage.hpp"
 
 namespace rendering
 {
@@ -136,20 +135,7 @@ struct BindingsLayoutInfo
   std::vector<BindingGroupLayout> groups;
 };
 
-struct ColorAttachmentInfo
-{
-  std::string name;
-  TextureView view;
-  Color clearValue = {0.0f, 0.0f, 0.0f, 1.0f};
-};
 
-struct DepthStencilAttachmentInfo
-{
-  std::string name;
-  TextureView view;
-  float clearDepth = 1.0f;
-  uint32_t clearStencil = 0U;
-};
 struct VertexLayoutElement
 {
   std::string name;
@@ -207,16 +193,6 @@ struct ComputePipelineInfo
   BindingsLayout layout;
 };
 
-struct RenderPassInfo
-{
-  std::string name;
-  Viewport viewport;
-  Rect2D scissor;
-
-  std::vector<ColorAttachmentInfo> colorAttachments;
-  std::vector<DepthStencilAttachmentInfo> depthStencilAttachment;
-};
-
 enum CommandType
 {
   BeginRenderPass,
@@ -237,7 +213,7 @@ enum CommandType
 
 struct BufferBarrier
 {
-  uint64_t resourceId;
+  std::string resourceId;
   uint64_t offset;
   uint64_t size;
   AccessPattern fromAccess;
@@ -248,7 +224,7 @@ struct BufferBarrier
 
 struct TextureBarrier
 {
-  uint64_t resourceId;
+  std::string resourceId;
   uint64_t toLevel;
   uint64_t baseMip;
   uint64_t mipCount;
@@ -366,7 +342,7 @@ struct RenderGraphEdge
   EdgeType type;
 
   ResourceType resourceType;
-  uint64_t resourceId;
+  std::string resourceId;
 };
 
 // struct Surface
@@ -472,7 +448,6 @@ struct SamplerResourceUsage
 
 struct ScratchBufferResourceMetadata
 {
-  uint64_t id;
   BufferInfo bufferInfo;
   uint64_t firstUsedAt;
   uint64_t lastUsedAt;
@@ -481,49 +456,42 @@ struct ScratchBufferResourceMetadata
 
 struct BufferResourceMetadata
 {
-  uint64_t id;
   BufferInfo bufferInfo;
   std::vector<BufferResourceUsage> bufferUsages;
 };
 
 struct TextureResourceMetadata
 {
-  uint64_t id;
   TextureInfo textureInfo;
   std::vector<TextureResourceUsage> textureUsages;
 };
 
 struct SamplerResourceMetadata
 {
-  uint64_t id;
   SamplerInfo samplerInfo;
   std::vector<SamplerResourceUsage> samplerUsages;
 };
 
 struct BindingsLayoutResourceMetadata
 {
-  uint64_t id;
   BindingsLayoutInfo layoutsInfo;
   std::vector<BindingsLayoutResourceUsage> layoutUsages;
 };
 
 struct BindingGroupsResourceMetadata
 {
-  uint64_t id;
   BindingGroupsInfo groupsInfo;
   std::vector<BindingGroupsResourceUsage> layoutUsages;
 };
 
 struct GraphicsPipelineResourceMetadata
 {
-  uint64_t id;
   GraphicsPipelineInfo pipelineInfo;
   std::vector<GraphicsPipelineResourceUsage> layoutUsages;
 };
 
 struct ComputePipelineResourceMetadata
 {
-  uint64_t id;
   ComputePipelineInfo pipelineInfo;
   std::vector<ComputePipelineResourceUsage> layoutUsages;
 };
@@ -594,12 +562,12 @@ struct BufferAllocation
   uint64_t size;
 };
 
-class CommandRecorder
+class RHICommandBuffer
 {
 public:
   // const std::string swapChainImageName = "SwapChainImage.textureView";
 
-  CommandRecorder();
+  RHICommandBuffer();
 
   struct OutputResource
   {
@@ -642,47 +610,45 @@ public:
 
 class RenderGraph;
 
-class ResourceDatabase
+class RHIResources
 {
   friend class RenderGraph;
 
 private:
   RenderGraph *renderGraph;
 
-  std::atomic<uint64_t> scratchBuffersAllocated;
-  std::atomic<uint64_t> buffersAllocated;
-  std::atomic<uint64_t> texturesAllocated;
-  std::atomic<uint64_t> samplersAllocated;
-  std::atomic<uint64_t> bindingLayoutsAllocated;
-  std::atomic<uint64_t> bindingGroupsAllocated;
-  std::atomic<uint64_t> graphicsPipelinesAllocated;
-  std::atomic<uint64_t> computePipelinesAllocated;
+  // std::atomic<uint64_t> scratchBuffersAllocated;
+  // std::atomic<uint64_t> buffersAllocated;
+  // std::atomic<uint64_t> texturesAllocated;
+  // std::atomic<uint64_t> samplersAllocated;
+  // std::atomic<uint64_t> bindingLayoutsAllocated;
+  // std::atomic<uint64_t> bindingGroupsAllocated;
+  // std::atomic<uint64_t> graphicsPipelinesAllocated;
+  // std::atomic<uint64_t> computePipelinesAllocated;
 
-  lib::ConcurrentHashMap<std::string, uint64_t> scratchBufferSymbols;
-  lib::ConcurrentHashMap<std::string, uint64_t> bufferSymbols;
-  lib::ConcurrentHashMap<std::string, uint64_t> textureSymbols;
-  lib::ConcurrentHashMap<std::string, uint64_t> samplerSymbols;
-  lib::ConcurrentHashMap<std::string, uint64_t> bindingLayoutSymbols;
-  lib::ConcurrentHashMap<std::string, uint64_t> bindingGroupsSymbols;
-  lib::ConcurrentHashMap<std::string, uint64_t> graphicsPipelineSymbols;
-  lib::ConcurrentHashMap<std::string, uint64_t> computePipelineSymbols;
+  // lib::ConcurrentHashMap<std::string, uint64_t> scratchBufferSymbols;
+  // lib::ConcurrentHashMap<std::string, uint64_t> bufferSymbols;
+  // lib::ConcurrentHashMap<std::string, uint64_t> textureSymbols;
+  // lib::ConcurrentHashMap<std::string, uint64_t> samplerSymbols;
+  // lib::ConcurrentHashMap<std::string, uint64_t> bindingLayoutSymbols;
+  // lib::ConcurrentHashMap<std::string, uint64_t> bindingGroupsSymbols;
+  // lib::ConcurrentHashMap<std::string, uint64_t> graphicsPipelineSymbols;
+  // lib::ConcurrentHashMap<std::string, uint64_t> computePipelineSymbols;
 
-  // Request id -> (usage, offset, size)
-  std::vector<BufferAllocation> scratchMap;
-  // Usage -> metadata
+  lib::ConcurrentHashMap<std::string, BufferAllocation> scratchMap;
   lib::ConcurrentHashMap<BufferUsage, BufferResourceMetadata> scratchBuffers;
 
-  std::vector<ScratchBufferResourceMetadata> scratchBuffersRequestsMetadatas;
-  std::vector<BufferResourceMetadata> bufferMetadatas;
-  std::vector<TextureResourceMetadata> textureMetadatas;
-  std::vector<SamplerResourceMetadata> samplerMetadatas;
-  std::vector<BindingsLayoutResourceMetadata> bindingsLayoutMetadata;
-  std::vector<BindingGroupsResourceMetadata> bindingGroupsMetadata;
-  std::vector<GraphicsPipelineResourceMetadata> graphicsPipelineMetadata;
-  std::vector<ComputePipelineResourceMetadata> computePipelineMetadata;
+  lib::ConcurrentHashMap<std::string, ScratchBufferResourceMetadata> scratchBuffersRequestsMetadatas;
+  lib::ConcurrentHashMap<std::string, BufferResourceMetadata> bufferMetadatas;
+  lib::ConcurrentHashMap<std::string, TextureResourceMetadata> textureMetadatas;
+  lib::ConcurrentHashMap<std::string, SamplerResourceMetadata> samplerMetadatas;
+  lib::ConcurrentHashMap<std::string, BindingsLayoutResourceMetadata> bindingsLayoutMetadata;
+  lib::ConcurrentHashMap<std::string, BindingGroupsResourceMetadata> bindingGroupsMetadata;
+  lib::ConcurrentHashMap<std::string, GraphicsPipelineResourceMetadata> graphicsPipelineMetadata;
+  lib::ConcurrentHashMap<std::string, ComputePipelineResourceMetadata> computePipelineMetadata;
 
 public:
-  ResourceDatabase(RenderGraph *renderGraph);
+  RHIResources(RenderGraph *renderGraph);
 
   const Buffer getScratchBuffer(BufferInfo &info);
   const BindingGroups getBindingGroups(const std::string &name);
@@ -718,7 +684,7 @@ private:
   {
     std::string name;
     std::function<bool(const RenderGraph &)> shouldExecute;
-    std::function<void(ResourceDatabase &, CommandRecorder &)> record;
+    std::function<void(RHIResources &, RHICommandBuffer &)> record;
   };
 
   friend class Task;
@@ -726,13 +692,13 @@ private:
   uint64_t executions;
   RHI *renderingHardwareInterface;
 
-  lib::ConcurrentHashMap<std::string, RenderGraphPass> passes;
+  lib::ConcurrentQueue<RenderGraphPass> passes;
 
   std::vector<RenderGraphNode> nodes;
   std::vector<std::vector<RenderGraphEdge>> edges;
 
   // Runtime Info
-  ResourceDatabase resources;
+  RHIResources resources;
   std::vector<Semaphore> semaphores;
 
   // TODO: remove from here
@@ -744,8 +710,6 @@ private:
   // std::vector<SamplerAllocation> samplerAllocations;
   // std::vector<BindingsLayoutAllocation> bindingsLayoutsAllocations;
 
-  lib::ThreadLocalStorage<CommandRecorder **> currentRecorder;
-
   void registerConsumer(const std::string &name, const InputResource &res, uint32_t taskId);
 
   uint32_t levelDFS(uint32_t id, std::vector<bool> &visited, uint32_t level);
@@ -756,7 +720,7 @@ private:
   void analyseTaskLevels();
 
   void analyseDependencyGraph();
-  void analyseCommands(CommandRecorder &recorder);
+  void analyseCommands(RHICommandBuffer &recorder);
 
   void analysePasses();
   void analyseAllocations();
@@ -780,7 +744,7 @@ public:
 
   RenderGraph(RHI *rhi);
 
-  void addPass(std::string name, std::function<bool(const RenderGraph &)> shouldExecute, std::function<void(ResourceDatabase &, CommandRecorder &)> handler);
+  void enqueuePass(std::string name, std::function<bool(const RenderGraph &)> shouldExecute, std::function<void(RHIResources &, RHICommandBuffer &)> handler);
   void compile();
 
   const Buffer createScratchBuffer(const BufferInfo &info);
@@ -792,6 +756,14 @@ public:
   const BindingGroups createBindingGroups(const BindingGroupsInfo &info);
   const GraphicsPipeline createGraphicsPipeline(const GraphicsPipelineInfo &info);
   const ComputePipeline createComputePipeline(const ComputePipelineInfo &info);
+
+  void deleteBuffer(const std::string &name);
+  void deleteTexture(const std::string &name);
+  void deleteSampler(const std::string &name);
+  void deleteBindingsLayout(const std::string &name);
+  void deleteBindingGroups(const std::string &name);
+  void deleteGraphicsPipeline(const std::string &name);
+  void deleteComputePipeline(const std::string &name);
 };
 
 }; // namespace rendering

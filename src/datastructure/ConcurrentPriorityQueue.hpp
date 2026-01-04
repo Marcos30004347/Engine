@@ -580,9 +580,9 @@ public:
     // previousDummy.set(nullptr);
     auto scope = garbageCollector.openEpochGuard();
 
-    Node *headNode = garbageCollector.template allocate<T,P>(scope, 0, 0);
-    Node *rootNode = garbageCollector.template allocate<T,P>(scope, 0, 1);
-    Node *dummyNode = garbageCollector.template allocate<T,P>(scope, 0, 0);
+    Node *headNode = garbageCollector.template allocate<T, P>(scope, 0, 0);
+    Node *rootNode = garbageCollector.template allocate<T, P>(scope, 0, 1);
+    Node *dummyNode = garbageCollector.template allocate<T, P>(scope, 0, 0);
 
     // 2) set up dummyNode exactly as in C
     dummyNode->priority = 0;
@@ -734,7 +734,6 @@ public:
     {
       if (hNode == nullptr)
       {
-        garbageCollector.closeThreadContext();
         return false;
       }
 
@@ -752,10 +751,10 @@ public:
 
         xorNode->priority = 0;
 
-        if (randomGen(100) < 50)
-        {
-          return true;
-        }
+        // if (randomGen(100) < 50)
+        // {
+        //   return true;
+        // }
 
         if (head.load()->next.compare_exchange_strong(hNode, xorNode))
         {
@@ -766,10 +765,7 @@ public:
           {
             Node *curr = nextLeaf;
             nextLeaf = address(nextLeaf->next.load());
-
-            Node **buff = new Node *[1];
-            buff[0] = curr;
-            garbageCollector.free(buff, 1);
+            scope.retire(curr);
           }
         }
 
@@ -780,125 +776,124 @@ public:
     }
   }
 
-  bool tryDequeue(T &outValue, P &priority)
-  {
-    auto scope = garbageCollector.openEpochGuard();
+  // bool tryDequeue(T &outValue, P &priority)
+  // {
+  //   auto scope = garbageCollector.openEpochGuard();
 
-    // outValue = -1;
-    Node *h; // = head.load(std::memory_order_acquire);
-    LOAD(h, head.load());
+  //   // outValue = -1;
+  //   Node *h; // = head.load(std::memory_order_acquire);
+  //   LOAD(h, head.load());
 
-    Node *leafNode, *leafAddr; // = h->next.load(); // address(h->next.load(std::memory_order_acquire));
-    LOAD_ADDR(leafAddr, h->next.load(), leafNode);
+  //   Node *leafNode, *leafAddr; // = h->next.load(); // address(h->next.load(std::memory_order_acquire));
+  //   LOAD_ADDR(leafAddr, h->next.load(), leafNode);
 
-    Node *headItemNode;
-    LOAD(headItemNode, leafNode);
-    Node *ph = nullptr;
+  //   Node *headItemNode;
+  //   LOAD(headItemNode, leafNode);
+  //   Node *ph = nullptr;
 
-    Node *r = root.load();
+  //   Node *r = root.load();
 
-    // previousHead.get(ph);
+  //   // previousHead.get(ph);
 
-    // if (ph == leafNode)
-    // {
-    //   previousDummy.get(leafNode);
-    // }
-    // else
-    // {
-    //   previousHead.set(headItemNode);
-    // }
+  //   // if (ph == leafNode)
+  //   // {
+  //   //   previousDummy.get(leafNode);
+  //   // }
+  //   // else
+  //   // {
+  //   //   previousHead.set(headItemNode);
+  //   // }
 
-    while (true)
-    {
+  //   while (true)
+  //   {
 
-      Node *currentNext, *nextLeaf;
-      LOAD_ADDR(nextLeaf, leafNode->next.load(std::memory_order_acquire), currentNext);
+  //     Node *currentNext, *nextLeaf;
+  //     LOAD_ADDR(nextLeaf, leafNode->next.load(std::memory_order_acquire), currentNext);
 
-      if (!nextLeaf)
-      {
-        // previousDummy.set(leafNode);
-        return false;
-      }
+  //     if (!nextLeaf)
+  //     {
+  //       // previousDummy.set(leafNode);
+  //       return false;
+  //     }
 
-      if (getMark(currentNext))
-      {
-        leafNode = nextLeaf;
-        continue;
-      }
+  //     if (getMark(currentNext))
+  //     {
+  //       leafNode = nextLeaf;
+  //       continue;
+  //     }
 
-      if (currentNext->priority == P(0))
-      {
-        leafNode = nextLeaf;
-        continue;
-      }
+  //     if (currentNext->priority == P(0))
+  //     {
+  //       leafNode = nextLeaf;
+  //       continue;
+  //     }
 
-      // std::atomic<uintptr_t> *p = (std::atomic<uintptr_t> *)(&leafNode->next);
-      // Node* leafNext, *leadNextAddr;
-      // LOAD_ADDR(leadNextAddr, leafNode->next.load(std::memory_order_acquire), leafNext, record, 3);
+  //     // std::atomic<uintptr_t> *p = (std::atomic<uintptr_t> *)(&leafNode->next);
+  //     // Node* leafNext, *leadNextAddr;
+  //     // LOAD_ADDR(leadNextAddr, leafNode->next.load(std::memory_order_acquire), leafNext, record, 3);
 
-      Node *curr = address(leafNode->next.load());
-      std::atomic<uintptr_t> &raw = reinterpret_cast<std::atomic<uintptr_t> &>(leafNode->next);
-      Node *xorNode = (Node *)raw.fetch_or(1LL, std::memory_order_acquire);
+  //     Node *curr = address(leafNode->next.load());
+  //     std::atomic<uintptr_t> &raw = reinterpret_cast<std::atomic<uintptr_t> &>(leafNode->next);
+  //     Node *xorNode = (Node *)raw.fetch_or(1LL, std::memory_order_acquire);
 
-      if (!getMark(xorNode))
-      {
-        // os::print("Thread %u moving %u\n", i, xorNode->value);
-        outValue = std::move(xorNode->value);
-        priority = std::move(xorNode->priority);
+  //     if (!getMark(xorNode))
+  //     {
+  //       // os::print("Thread %u moving %u\n", i, xorNode->value);
+  //       outValue = std::move(xorNode->value);
+  //       priority = std::move(xorNode->priority);
 
-        // os::print("Thread %u moved %u, %u\n", i, xorNode->value, outValue);
+  //       // os::print("Thread %u moved %u, %u\n", i, xorNode->value, outValue);
 
-        // previousDummy.set(xorNode);
+  //       // previousDummy.set(xorNode);
 
-        // const static size_t physicalDeleteRate = 5;
+  //       // const static size_t physicalDeleteRate = 5;
 
-        // if (false && randomGen() >= physicalDeleteRate)
-        // {
-        //   hazardAllocator.release(record);
-        //   garbageCollector.closeThreadContext();
+  //       // if (randomGen() >= 50)
+  //       // {
+  //       //   // {
+  //       //   //   hazardAllocator.release(record);
+  //       //   //   garbageCollector.closeThreadContext();
 
-        //   return true;
-        // }
+  //       //   return true;
+  //       // }
 
-        if (head.load()->next.compare_exchange_strong(headItemNode, xorNode))
-        {
-          // previousHead.set(xorNode);
+  //       if (head.load()->next.compare_exchange_strong(headItemNode, xorNode, std::memory_order_release, std::memory_order_acquire))
+  //       {
+  //         // previousHead.set(xorNode);
 
-          if (xorNode->priority != P(0))
-          {
-            xorNode->priority = P(0);
-          }
+  //         if (xorNode->priority != P(0))
+  //         {
+  //           xorNode->priority = P(0);
+  //         }
 
-          physicalDelete(xorNode, r);
+  //         physicalDelete(xorNode, r);
 
-          nextLeaf = headItemNode;
+  //         nextLeaf = headItemNode;
+  //         size_t at = 0;
 
-          nextLeaf = headItemNode;
-          size_t at = 0;
+  //         while (nextLeaf != xorNode)
+  //         {
+  //           // if (getMark(nextLeaf) == DELETE_MARK)
+  //           // {
+  //           // buff[at++] = nextLeaf;
+  //           scope.retire(nextLeaf);
 
-          while (nextLeaf != xorNode)
-          {
-            // if (getMark(nextLeaf) == DELETE_MARK)
-            // {
-            // buff[at++] = nextLeaf;
-            scope.retire(nextLeaf);
+  //           // }
 
-            // }
+  //           nextLeaf = address(nextLeaf->next.load(std::memory_order_acquire));
+  //         }
+  //       }
 
-            nextLeaf = address(nextLeaf->next.load(std::memory_order_acquire));
-          }
-        }
+  //       return true;
+  //     }
 
-        return true;
-      }
+  //     // Node *tmp;
+  //     // LOAD_ADDR(leafNode, xorNode, tmp);
+  //     leafNode = address(xorNode);
+  //   }
+  // }
 
-      // Node *tmp;
-      // LOAD_ADDR(leafNode, xorNode, tmp);
-      leafNode = address(xorNode);
-    }
-  }
-
-  bool tryPeek(P &outPriority) const
+  bool peek(P &outPriority) const
   {
     garbageCollector.openThreadContext();
 
@@ -922,25 +917,23 @@ public:
       }
 
       outPriority = nextLeaf->priority;
-
-      garbageCollector.closeThreadContext();
       return true;
     }
   }
 
-  void printTree(int thread = os::Thread::getCurrentThreadId())
-  {
-    // garbageCollector.openThreadContext();
+  // void printTree(int thread = os::Thread::getCurrentThreadId())
+  // {
+  //   // garbageCollector.openThreadContext();
 
-    std::string out = "";
-    Node *r = root.load(std::memory_order_acquire);
-    out += "Thread " + std::to_string(thread) + " Tree from root:\n";
-    std::unordered_set<Node *> visited;
+  //   std::string out = "";
+  //   Node *r = root.load(std::memory_order_acquire);
+  //   out += "Thread " + std::to_string(thread) + " Tree from root:\n";
+  //   std::unordered_set<Node *> visited;
 
-    printSubtree(r, out);
+  //   printSubtree(r, out);
 
-    os::print("%s\n", out.c_str());
-  }
+  //   os::print("%s\n", out.c_str());
+  // }
 };
 
 template <typename T, typename P> thread_local uint32_t ConcurrentPriorityQueue<T, P>::seed = 0;

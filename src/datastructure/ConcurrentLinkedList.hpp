@@ -1,28 +1,38 @@
 #pragma once
 
+#include "ConcurrentEpochGarbageCollector.hpp"
+#include "MarkedAtomicPointer.hpp"
 #include "algorithm/random.hpp"
 #include "datastructure/HazardPointer.hpp"
 #include "memory/allocator/SystemAllocator.hpp"
+
 #include "os/Thread.hpp"
 #include <atomic>
 #include <cstddef>
 
 namespace lib
 {
-
+#define CONCURRENT_LINKED_LIST_CACHE_SIZE 8
 template <typename K> class ConcurrentShardedList;
-template <typename T, typename Allocator> class ConcurrentLinkedList;
+template <typename T> class ConcurrentLinkedList;
 
 template <typename T> struct ConcurrentListNode
 {
 public:
   friend class ConcurrentShardedList<T>;
   T value;
-  std::atomic<ConcurrentListNode<T> *> next;
+  MarkedAtomicPointer<ConcurrentListNode<T>> next;
 
-  ConcurrentListNode(const T &val) : value(val), next(nullptr)
+  ConcurrentListNode(T &val) : value(val), next()
   {
+    next.store(nullptr);
   }
+
+  template <typename U = T, std::enable_if_t<std::is_default_constructible_v<U>, int> = 0> ConcurrentListNode() : next()
+  {
+    next.store(nullptr);
+  }
+
   ~ConcurrentListNode()
   {
   }
@@ -33,36 +43,63 @@ public:
   }
 };
 
-template <typename T, typename Allocator> class ConcurrentLinkedListIterator
+template <typename T> class ConcurrentLinkedListIterator
 {
-  friend class ConcurrentLinkedList<T, Allocator>;
+  friend class ConcurrentLinkedList<T>;
 
 public:
   using Node = ConcurrentListNode<T>;
-  using HazardPointerManager = HazardPointer<2, Node, Allocator>;
-  using HazardPointerRecord = typename HazardPointerManager::Record;
+  using Guard = typename ConcurrentEpochGarbageCollector<Node, CONCURRENT_LINKED_LIST_CACHE_SIZE>::EpochGuard;
 
-  ConcurrentLinkedListIterator(Node *node, HazardPointerRecord *rec, HazardPointerManager &hazardAllocator, Allocator &allocator)
-      : curr(node), rec(rec), hazardAllocator(&hazardAllocator), allocator(&allocator)
+  ConcurrentLinkedListIterator(Node *node, Guard &guard) : curr(node), guard(guard)
   {
+  }
 
-    assert(!rec || rec->get(0) == curr);
+  ConcurrentLinkedListIterator(const ConcurrentLinkedListIterator &other) : curr(other.curr), guard(other.guard)
+  {
+  }
+
+  // Copy assignment operator
+  ConcurrentLinkedListIterator &operator=(const ConcurrentLinkedListIterator &other)
+  {
+    if (this != &other)
+    {
+      curr = other.curr;
+      guard = other.guard;
+    }
+    return *this;
+  }
+
+  // Move constructor
+  ConcurrentLinkedListIterator(ConcurrentLinkedListIterator &&other) noexcept : curr(other.curr), guard(other.guard)
+  {
+    other.curr = nullptr;
+    other.guard.clear();
+  }
+
+  ConcurrentLinkedListIterator &operator=(ConcurrentLinkedListIterator &&other) noexcept
+  {
+    if (this != &other)
+    {
+      curr = other.curr;
+      guard = other.guard;
+
+      other.guard.clear();
+      other.curr = nullptr;
+    }
+    return *this;
+  }
+
+  ConcurrentLinkedListIterator &operator=(const T &val)
+  {
+    curr->value = val;
+    return *this;
   }
 
   ~ConcurrentLinkedListIterator()
   {
-    if (rec)
-    {
-      hazardAllocator->release(rec);
-      rec = nullptr;
-    }
+    guard.clear();
   }
-
-  ConcurrentLinkedListIterator(const ConcurrentLinkedListIterator &other) = delete;
-  ConcurrentLinkedListIterator(ConcurrentLinkedListIterator &&other) = delete;
-
-  ConcurrentLinkedListIterator &operator=(const ConcurrentLinkedListIterator &other) = delete;
-  ConcurrentLinkedListIterator &operator=(const ConcurrentLinkedListIterator &&other) = delete;
 
   T &operator*() const
   {
@@ -80,13 +117,12 @@ public:
     {
       return *this;
     }
-    
+
     Node *next;
-    
+
     while (true)
     {
       next = curr->next.load(std::memory_order_acquire);
-      rec->assign(next, 1);
 
       if (curr->next.load(std::memory_order_acquire) != next)
       {
@@ -94,7 +130,6 @@ public:
       }
 
       curr = next;
-      rec->assign(curr, 0);
       return *this;
     }
   }
@@ -116,203 +151,245 @@ public:
     return !(*this == other);
   }
 
+  T &value()
+  {
+    return curr->value;
+  }
+
+  const T &value() const
+  {
+    return curr->value;
+  }
+
+  T *operator->()
+  {
+    return &curr->value;
+  }
+
 private:
   Node *curr;
-  HazardPointerRecord *rec;
-  HazardPointerManager *hazardAllocator;
-  Allocator *allocator;
+  Guard guard;
 };
 
 // ConcurrentLinkedList
-template <typename T, typename Allocator = memory::allocator::SystemAllocator<ConcurrentListNode<T>>> class ConcurrentLinkedList
+template <typename T> class ConcurrentLinkedList
 {
 public:
-  using iterator = ConcurrentLinkedListIterator<T, Allocator>;
-  using const_iterator = ConcurrentLinkedListIterator<T, Allocator>;
+  using iterator = ConcurrentLinkedListIterator<T>;
+  using const_iterator = ConcurrentLinkedListIterator<T>;
+  using Node = ConcurrentListNode<T>;
+  using Guard = typename ConcurrentEpochGarbageCollector<Node, CONCURRENT_LINKED_LIST_CACHE_SIZE>::EpochGuard;
 
-  std::atomic<ConcurrentListNode<T> *> head;
+  ConcurrentListNode<T> *root;
   std::atomic<int> size;
-  using HazardPointerManager = HazardPointer<2, ConcurrentListNode<T>, Allocator>;
-  using HazardPointerRecord = typename HazardPointerManager::Record;
-  HazardPointerManager hazardAllocator;
-  Allocator allocator;
 
-  ConcurrentLinkedList(Allocator &allocator) : head(nullptr), allocator(allocator), size(0)
+  ConcurrentEpochGarbageCollector<Node> garbageCollector;
+
+  template <typename U = T, std::enable_if_t<std::is_default_constructible_v<U>, int> = 0> ConcurrentLinkedList() : root(nullptr), size(0)
   {
+    auto scope = garbageCollector.openEpochGuard();
+    root = garbageCollector.allocateUnitialized(scope);
+    root->next.store(nullptr);
   }
-  ConcurrentLinkedList() : head(nullptr), allocator(), size(0)
+
+  template <typename... Args, std::enable_if_t<std::is_constructible_v<T, Args...>, int> = 0> explicit ConcurrentLinkedList(Args &&...args) : root(nullptr), size(0)
   {
+    auto scope = garbageCollector.openEpochGuard();
+    root = garbageCollector.allocate(scope, std::forward<Args>(args)...);
+    root->next.store(nullptr);
   }
 
   ~ConcurrentLinkedList()
   {
-    ConcurrentListNode<T> *curr = head.load();
-    while (curr)
-    {
-      ConcurrentListNode<T> *next = curr->next.load();
-      delete curr;
-      curr = next;
-    }
+    auto scope = garbageCollector.openEpochGuard();
+    clear();
+    scope.retire(root);
   }
 
-  ConcurrentListNode<T> *insert(const T &value)
+  iterator pushFront(T &value)
   {
-    ConcurrentListNode<T> *newNode = new ConcurrentListNode<T>(value);
+    auto scope = garbageCollector.openEpochGuard();
+
+    ConcurrentListNode<T> *newNode = garbageCollector.allocate(scope, value);
     ConcurrentListNode<T> *oldHead = nullptr;
+
+    bool isMarked = false;
+
     do
     {
-      oldHead = head.load();
+      oldHead = root->next.read(isMarked);
+      assert(!isMarked);
       newNode->next.store(oldHead);
-    } while (!head.compare_exchange_weak(oldHead, newNode));
+    } while (!root->next.compare_exchange_strong(oldHead, newNode, std::memory_order_release, std::memory_order_acquire));
+
     size.fetch_add(1);
-    return newNode;
+
+    return iterator(newNode, scope);
   }
 
-  iterator insertAndGetIterator(const T &value)
+  template <typename... Args, std::enable_if_t<std::is_constructible_v<T, Args...>, int> = 0> iterator emplaceFront(Args &&...args)
   {
-    ConcurrentListNode<T> *newNode = new ConcurrentListNode<T>(value);
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
+    auto scope = garbageCollector.openEpochGuard();
+
+    ConcurrentListNode<T> *newNode = garbageCollector.allocate(scope, std::forward<Args>(args)...);
 
     ConcurrentListNode<T> *oldHead = nullptr;
+    bool isMarked = false;
+
     do
     {
-      oldHead = head.load();
+      oldHead = root->next.read(isMarked);
+      assert(!isMarked);
       newNode->next.store(oldHead);
-    } while (!head.compare_exchange_weak(oldHead, newNode));
+    } while (!root->next.compare_exchange_strong(oldHead, newNode, std::memory_order_release, std::memory_order_acquire));
 
-    rec->assign(newNode, 0);
-    size.fetch_add(1);
+    size.fetch_add(1, std::memory_order_relaxed);
 
-    iterator it(newNode, rec, hazardAllocator, allocator);
-    it.prev = nullptr; // New head has no predecessor
-    return it;
+    return iterator(newNode, scope);
   }
 
   void clear()
   {
-    using Node = ConcurrentListNode<T>;
+    auto scope = garbageCollector.openEpochGuard();
+    bool isMarked = false;
 
-    Node *oldHead = head.exchange(nullptr, std::memory_order_acq_rel);
-    size.store(0, std::memory_order_release);
-
-    if (!oldHead)
-      return;
-
-    Node *curr = oldHead;
-    while (curr)
+    while (size.load() > 0)
     {
-      Node *next = curr->next.load(std::memory_order_relaxed);
+      ConcurrentListNode<T> *oldHead = root->next.read(isMarked);
 
-      HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-      rec->retire(curr);
-      hazardAllocator.release(rec);
+      assert(!isMarked);
 
-      curr = next;
+      if (!oldHead)
+      {
+        return;
+      }
+
+      ConcurrentListNode<T> *newHead = oldHead->next.load();
+
+      if (root->next.compare_exchange_strong(oldHead, newHead, std::memory_order_release, std::memory_order_acquire))
+      {
+        if (oldHead->next.attemptMark(newHead, true))
+        {
+          scope.retire(oldHead);
+          size.fetch_sub(1);
+        }
+      }
     }
   }
 
   bool tryRemove(const T &value)
   {
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    while (true)
+    auto scope = garbageCollector.openEpochGuard();
+
+  retry:
+    ConcurrentListNode<T> *prev = root;
+    bool isMarked = false;
+    ConcurrentListNode<T> *curr = prev->next.read(isMarked);
+
+    while (curr)
     {
-      ConcurrentListNode<T> *prev = nullptr;
+      ConcurrentListNode<T> *next = curr->next.read(isMarked);
 
-      ConcurrentListNode<T> *curr = head.load();
-      rec->assign(curr, 0);
-      if (head.load() != curr)
-        continue;
-
-      while (curr)
+      if (isMarked)
       {
-        if (head.load() != curr && !prev)
+        ConcurrentListNode<T> *expected = curr;
+
+        if (!prev->next.compare_exchange_strong(expected, next, std::memory_order_release, std::memory_order_acquire))
         {
-          break;
+          goto retry;
         }
 
-        ConcurrentListNode<T> *next = curr->next.load();
-        rec->assign(next, 1);
-
-        if (next != curr->next.load())
-        {
-          break;
-        }
-
-        if (curr->value == value)
-        {
-          if (prev)
-          {
-            if (!prev->next.compare_exchange_strong(curr, next))
-              break;
-          }
-          else
-          {
-            if (!head.compare_exchange_strong(curr, next))
-              break;
-          }
-          rec->retire(curr);
-          hazardAllocator.release(rec);
-          size.fetch_sub(1);
-          return true;
-        }
-
-        prev = curr;
+        scope.retire(curr);
 
         curr = next;
-        rec->assign(curr, 0);
-      }
 
-      hazardAllocator.release(rec);
-      return false;
-    }
-  }
+        if (curr)
+        {
+          next = curr->next.read(isMarked);
+        }
 
-  bool tryPop(T &value)
-  {
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    while (true)
-    {
-      ConcurrentListNode<T> *oldHead = head.load();
-      if (!oldHead)
-      {
-        hazardAllocator.release(rec);
-        return false;
-      }
-      rec->assign(oldHead, 0);
-      if (head.load() != oldHead)
         continue;
-      ConcurrentListNode<T> *newHead = oldHead->next.load();
-      if (head.compare_exchange_strong(oldHead, newHead))
+      }
+
+      if (curr->value == value)
       {
-        value = oldHead->value;
-        rec->retire(oldHead);
-        hazardAllocator.release(rec);
+        if (!curr->next.attemptMark(next, true))
+        {
+          goto retry;
+        }
+
+        ConcurrentListNode<T> *expected = curr;
+
+        if (prev->next.compare_exchange_strong(expected, next, std::memory_order_release, std::memory_order_acquire))
+        {
+          scope.retire(curr);
+        }
+
         size.fetch_sub(1);
         return true;
       }
+
+      prev = curr;
+      curr = next;
     }
+
+    return false;
+  }
+
+  bool popFront(T &value)
+  {
+    auto scope = garbageCollector.openEpochGuard();
+
+    while (true)
+    {
+      bool isMarked = false;
+      ConcurrentListNode<T> *oldHead = root->next.read(isMarked);
+
+      assert(!isMarked);
+
+      if (!oldHead)
+      {
+        return false;
+      }
+
+      ConcurrentListNode<T> *newHead = oldHead->next.read(isMarked);
+
+      while (isMarked && newHead)
+      {
+        newHead = newHead->next.read(isMarked);
+      }
+
+      if (root->next.compare_exchange_strong(oldHead, newHead, std::memory_order_release, std::memory_order_acquire))
+      {
+        if (oldHead->next.attemptMark(newHead, true))
+        {
+          scope.retire(oldHead);
+          value = std::move(oldHead->value);
+          size.fetch_sub(1);
+
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   iterator begin()
   {
-    HazardPointerRecord *rec = hazardAllocator.acquire(allocator);
-    using Node = ConcurrentListNode<T>;
+    auto scope = garbageCollector.openEpochGuard();
+    bool isMarked = false;
+
     while (true)
     {
-      Node *curr = head.load(std::memory_order_acquire);
+      Node *curr = root->next.read(isMarked);
 
       if (!curr)
       {
-        hazardAllocator.release(rec);
         return end();
       }
 
-      rec->assign(curr, 0);
-
-      if (head.load(std::memory_order_acquire) == curr)
-      {
-        return iterator(curr, rec, hazardAllocator, allocator);
-      }
+      return iterator(curr, scope);
     }
   }
 
@@ -323,18 +400,9 @@ public:
 
   iterator end()
   {
-    return iterator(nullptr, nullptr, hazardAllocator, allocator);
+    auto scope = garbageCollector.openEpochGuard();
+    return iterator(nullptr, scope);
   }
-
-  // const_iterator begin() const
-  // {
-  //   return const_cast<ConcurrentLinkedList *>(this)->begin();
-  // }
-
-  // const_iterator end() const
-  // {
-  //   return const_cast<ConcurrentLinkedList *>(this)->end();
-  // }
 };
 
 template <typename T> class ConcurrentShardedList
@@ -349,101 +417,38 @@ public:
 
   ~ConcurrentShardedList()
   {
-    ConcurrentListNode<ConcurrentLinkedList<T> *> *node = threadLists.head.load(std::memory_order_acquire);
-    while (node)
-    {
-      ConcurrentListNode<ConcurrentLinkedList<T> *> *next = node->next.load(std::memory_order_acquire);
-      delete node->get();
-      node = next;
-    }
   }
 
-  void insert(T value)
+  void pushFront(T value)
   {
-    ConcurrentListNode<ConcurrentLinkedList<T> *> *local = nullptr;
+    ConcurrentLinkedList<T> *local = nullptr;
 
     if (!localLists.get(local))
     {
       ConcurrentLinkedList<T> *producer = new ConcurrentLinkedList<T>();
-      local = threadLists.insert(producer);
+
+      local = threadLists.pushFront(producer).value();
       localLists.set(local);
     }
 
     assert(local != nullptr);
-    local->get()->insert(value);
+    local->pushFront(value);
   }
 
-  bool tryPop(T &value)
+  bool popFront(T &value)
   {
-    ConcurrentListNode<ConcurrentLinkedList<T> *> *local = nullptr;
+    ConcurrentLinkedList<T> *local = nullptr;
+
     localLists.get(local);
 
-    if (local == nullptr)
+    if (local != nullptr && local->popFront(value))
     {
-      local = threadLists.head.load(std::memory_order_acquire);
+      return true;
     }
 
-    if (local == nullptr)
+    for (auto &l : threadLists)
     {
-      return false;
-    }
-
-    ConcurrentListNode<ConcurrentLinkedList<T> *> *node = local;
-    ConcurrentListNode<ConcurrentLinkedList<T> *> *start = local;
-
-    for (size_t i = 0; i < (time % concurrencyLevel); i++)
-    {
-      node = node->next.load(std::memory_order_relaxed);
-      if (node == nullptr)
-      {
-        node = threadLists.head.load(std::memory_order_acquire);
-      }
-    }
-
-    start = node;
-
-    const size_t candidatesMax = 3;
-    size_t listsCount = 0;
-    ConcurrentLinkedList<T> *lists[candidatesMax];
-
-    bool looping = false;
-
-    for (size_t iter = 0; iter < 2 && listsCount < candidatesMax; iter++)
-    {
-      while (node && listsCount < candidatesMax)
-      {
-        if (looping && node == start)
-        {
-          break;
-        }
-
-        auto size = node->get()->size.load();
-
-        if (size > 0)
-        {
-          lists[listsCount++] = node->get();
-        }
-
-        node = node->next.load(std::memory_order_relaxed);
-      }
-
-      if (node == nullptr)
-      {
-        looping = true;
-        node = threadLists.head.load(std::memory_order_relaxed);
-      }
-    }
-
-    if (listsCount == 0)
-    {
-      return false;
-    }
-
-    time++;
-
-    for (size_t i = 0; i < listsCount; i++)
-    {
-      if (lists[i]->tryPop(value))
+      if (l->popFront(value))
       {
         return true;
       }
@@ -469,7 +474,7 @@ public:
   }
 
 private:
-  ThreadLocalStorage<ConcurrentListNode<ConcurrentLinkedList<T> *> *> localLists;
+  ThreadLocalStorage<ConcurrentLinkedList<T> *> localLists;
   ConcurrentLinkedList<ConcurrentLinkedList<T> *> threadLists;
   size_t time;
 };

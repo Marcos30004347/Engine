@@ -44,7 +44,7 @@ void Logger::shutdown()
       s_worker.join();
     // Flush remaining messages
     LogItem item;
-    while (s_queue.tryDequeue(item))
+    while (s_queue.dequeue(item))
     {
       writeItem(item);
     }
@@ -204,7 +204,7 @@ void Logger::workerLoop()
     size_t popped = 0;
     for (; popped < kBatch; ++popped)
     {
-      if (!s_queue.tryDequeue(items[popped]))
+      if (!s_queue.dequeue(items[popped]))
         break;
     }
 

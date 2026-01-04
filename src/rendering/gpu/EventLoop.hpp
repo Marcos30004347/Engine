@@ -1,10 +1,11 @@
 #pragma once
 
 #include "datastructure/ConcurrentQueue.hpp"
+#include <algorithm>
 #include <atomic>
-#include <chrono>
 #include <functional>
 #include <memory>
+#include <vector>
 
 namespace rendering
 {
@@ -24,9 +25,10 @@ enum class ExecutionState : uint32_t
 };
 
 template <typename Fence> class EventLoop;
+
 template <typename Fence> class AsyncEvent
 {
-private:
+public:
   struct ExecutionEntry
   {
     using CompletionCallback = std::function<void(Fence &)>;
@@ -36,45 +38,37 @@ private:
     std::atomic<ExecutionState> state{ExecutionState::PENDING};
     std::atomic<FenceStatus> finalStatus{FenceStatus::PENDING};
 
-    ExecutionEntry(Fence fence, CompletionCallback callback) : fence(std::move(fence)), callback(std::move(callback))
+    ExecutionEntry(Fence f, CompletionCallback cb) : fence(std::move(f)), callback(std::move(cb))
     {
     }
 
+    // Non-copyable/movable to ensure pointer stability
     ExecutionEntry(const ExecutionEntry &) = delete;
     ExecutionEntry &operator=(const ExecutionEntry &) = delete;
   };
 
+  bool isDone() const
+  {
+    if (!entry_)
+      return true; 
+
+    ExecutionState state = entry_->state.load(std::memory_order_acquire);
+    return state != ExecutionState::PENDING;
+  }
+
+private:
   std::shared_ptr<ExecutionEntry> entry_;
   friend class EventLoop<Fence>;
 
+public:
   explicit AsyncEvent(std::shared_ptr<ExecutionEntry> entry) : entry_(std::move(entry))
   {
   }
-
-public:
   AsyncEvent() = default;
-  AsyncEvent(const AsyncEvent &) = default;
-  AsyncEvent(AsyncEvent &&) = default;
-  AsyncEvent &operator=(const AsyncEvent &) = default;
-  AsyncEvent &operator=(AsyncEvent &&) = default;
 
   bool isValid() const
   {
     return entry_ != nullptr;
-  }
-
-  ExecutionState getState() const
-  {
-    if (!entry_)
-      return ExecutionState::CANCELLED;
-    return entry_->state.load(std::memory_order_acquire);
-  }
-
-  FenceStatus getFinalStatus() const
-  {
-    if (!entry_)
-      return FenceStatus::ERROR;
-    return entry_->finalStatus.load(std::memory_order_acquire);
   }
 
   FenceStatus checkStatus() const
@@ -82,48 +76,18 @@ public:
     if (!entry_)
       return FenceStatus::ERROR;
 
+    // Fast path: check atomic state first
     ExecutionState state = entry_->state.load(std::memory_order_acquire);
     if (state == ExecutionState::COMPLETED)
     {
       return entry_->finalStatus.load(std::memory_order_acquire);
     }
-    else if (state == ExecutionState::PENDING)
-    {
-      return FenceStatus::PENDING;
-    }
-    else // CANCELLED
-    {
-      return FenceStatus::ERROR;
-    }
-  }
-
-  void cancel()
-  {
-    if (!entry_)
-      return;
-
-    ExecutionState expected = ExecutionState::PENDING;
-    entry_->state.compare_exchange_strong(expected, ExecutionState::CANCELLED, std::memory_order_acq_rel);
-  }
-
-  template <typename EventLoopPtr> FenceStatus wait(EventLoopPtr &eventLoop) const
-  {
-    if (!entry_)
-      return FenceStatus::ERROR;
-
-    while (entry_->state.load(std::memory_order_acquire) == ExecutionState::PENDING)
-    {
-      eventLoop.tick();
-    }
-
-    return checkStatus();
+    return (state == ExecutionState::CANCELLED) ? FenceStatus::ERROR : FenceStatus::PENDING;
   }
 
   const Fence *getFence() const
   {
-    if (!entry_)
-      return nullptr;
-    return &entry_->fence;
+    return entry_ ? &entry_->fence : nullptr;
   }
 };
 
@@ -131,43 +95,54 @@ template <typename Fence> class EventLoop
 {
 public:
   using CompletionCallback = std::function<void(Fence &)>;
+  using EntryType = typename AsyncEvent<Fence>::ExecutionEntry;
 
 private:
-  using ExecutionEntry = typename AsyncEvent<Fence>::ExecutionEntry;
-
   std::function<FenceStatus(Fence &)> getStatusFunc_;
-  lib::ConcurrentQueue<std::shared_ptr<ExecutionEntry>> pendingQueue_;
-  lib::ConcurrentQueue<std::shared_ptr<ExecutionEntry>> processingQueue_;
+
+  lib::ConcurrentQueue<std::shared_ptr<EntryType>> pendingQueue_;
+
+  std::vector<std::shared_ptr<EntryType>> activeTasks_;
 
 public:
   explicit EventLoop(std::function<FenceStatus(Fence &)> getStatusFunc) : getStatusFunc_(std::move(getStatusFunc))
   {
-  }
-
-  ~EventLoop()
-  {
+    activeTasks_.reserve(64); // Pre-allocate to avoid immediate resize
   }
 
   AsyncEvent<Fence> submit(Fence fence, CompletionCallback callback = nullptr)
   {
-    auto entry = std::make_shared<ExecutionEntry>(std::move(fence), std::move(callback));
+    auto entry = std::make_shared<EntryType>(std::move(fence), std::move(callback));
 
     pendingQueue_.enqueue(entry);
+
     return AsyncEvent<Fence>(entry);
   }
 
   void tick()
   {
-    std::shared_ptr<ExecutionEntry> entry;
-    while (processingQueue_.tryDequeue(entry))
+    std::shared_ptr<EntryType> newEntry;
+    while (pendingQueue_.dequeue(newEntry))
     {
-      if (!entry)
-        continue;
+      if (newEntry)
+      {
+        activeTasks_.push_back(std::move(newEntry));
+      }
+    }
 
+    if (activeTasks_.empty())
+      return;
+
+    auto it = activeTasks_.begin();
+    while (it != activeTasks_.end())
+    {
+      auto &entry = *it;
       ExecutionState currentState = entry->state.load(std::memory_order_acquire);
 
       if (currentState != ExecutionState::PENDING)
       {
+        *it = std::move(activeTasks_.back());
+        activeTasks_.pop_back();
         continue;
       }
 
@@ -179,50 +154,32 @@ public:
         if (entry->state.compare_exchange_strong(expected, ExecutionState::COMPLETED, std::memory_order_acq_rel))
         {
           entry->finalStatus.store(status, std::memory_order_release);
-
           if (entry->callback)
           {
             entry->callback(entry->fence);
           }
         }
+
+        *it = std::move(activeTasks_.back());
+        activeTasks_.pop_back();
       }
       else
       {
-        processingQueue_.enqueue(entry);
+        ++it;
       }
     }
+  }
 
-    while (pendingQueue_.tryDequeue(entry))
+  void blockUntil(AsyncEvent<Fence> *event)
+  {
+    if (!event->isValid())
+      return;
+
+    while (event->checkStatus() == FenceStatus::PENDING)
     {
-      if (!entry)
-        continue;
-
-      ExecutionState currentState = entry->state.load(std::memory_order_acquire);
-
-      if (currentState == ExecutionState::PENDING)
-      {
-        FenceStatus status = getStatusFunc_(entry->fence);
-
-        if (status != FenceStatus::PENDING)
-        {
-          ExecutionState expected = ExecutionState::PENDING;
-          if (entry->state.compare_exchange_strong(expected, ExecutionState::COMPLETED, std::memory_order_acq_rel))
-          {
-            entry->finalStatus.store(status, std::memory_order_release);
-
-            if (entry->callback)
-            {
-              entry->callback(entry->fence);
-            }
-          }
-        }
-        else
-        {
-          processingQueue_.enqueue(entry);
-        }
-      }
+      tick();
     }
   }
 };
 
-} // namespace rhi
+} // namespace rendering

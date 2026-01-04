@@ -48,7 +48,7 @@ void multiThreadTests()
           {
             int x;
             then = lib::time::TimeSpan::now();
-            assert(stack.tryPop(x));
+            assert(stack.pop(x));
             total_get_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
@@ -111,7 +111,7 @@ void multiThreadProducerTests()
           {
             int x;
             then = lib::time::TimeSpan::now();
-            assert(stack.tryPop(x));
+            assert(stack.pop(x));
             total_get_ns += (lib::time::TimeSpan::now() - then).nanoseconds();
           }
 
