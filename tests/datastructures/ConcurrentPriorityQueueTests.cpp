@@ -32,7 +32,7 @@ void multiThreadTests()
           double total_insert_ns = 0;
           double total_get_ns = 0;
 
-          for (size_t j = 0; j < 100; j++)
+          for (size_t j = 0; j < 1000; j++)
           {
             // os::print("Thread %i enqueuing %i\n", i, (i + 1) * 1000 + j);
             then = lib::time::TimeSpan::now();
@@ -57,7 +57,7 @@ void multiThreadTests()
           size_t p;
           int prev = -1;
 
-          for (size_t j = 0; j < 100; j++)
+          for (size_t j = 0; j < 1000; j++)
           {
             then = lib::time::TimeSpan::now();
             while (!pq->dequeue(x))
@@ -75,8 +75,8 @@ void multiThreadTests()
             prev = x;
           }
 
-          os::print("Thread %u average insertion time is %lluns\n", i, (size_t)total_insert_ns / 100);
-          os::print("Thread %u average get time is %lluns\n", i, (size_t)total_get_ns / 100);
+          os::print("Thread %u average insertion time is %lluns\n", i, (size_t)total_insert_ns / 1000);
+          os::print("Thread %u average get time is %lluns\n", i, (size_t)total_get_ns / 1000);
           lib::memory::SystemMemoryManager::finializeThread();
         });
   }
@@ -92,7 +92,7 @@ int main()
 {
   lib::memory::SystemMemoryManager::init();
 
-  for (size_t i = 0; i < 100; i++)
+  for (size_t i = 0; i < 10; i++)
   {
     multiThreadTests();
   }
