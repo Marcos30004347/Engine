@@ -5,7 +5,7 @@
 #include <thread>
 #include <vector>
 
-static const size_t JOB_COUNT = 32;
+static const size_t JOB_COUNT = 128;
 static const size_t ITERATIONS = 1000;
 
 int add1(int i)
@@ -22,13 +22,13 @@ void entry()
 
   for (size_t iter = 0; iter < ITERATIONS; iter++)
   {
-    //os::print("iteration=%u\n", iter);
+    // os::print("iteration=%u\n", iter);
 
     async::Promise<int> promises[JOB_COUNT];
 
     for (int i = 0; i < JOB_COUNT; i++)
     {
-      //os::print("%u enqueuing %u\n", os::Thread::getCurrentThreadId(), i);
+      // os::print("%u enqueuing %u\n", os::Thread::getCurrentThreadId(), i);
       promises[i] = async::enqueue(add1, i);
     }
 
@@ -99,14 +99,14 @@ void entry()
 
 int main()
 {
-  for (uint32_t i = 0; i < 1000; i++)
+  for (uint32_t i = 0; i < 10000; i++)
   {
     async::SystemSettings settings;
 
     // Capacity must accommodate the concurrent burst (JOB_COUNT)
     settings.jobsCapacity = JOB_COUNT * 2;
     settings.stackSize = 1024 * 1024; // async::getMinStackSize();
-    settings.threadsCount = 2;        // os::Thread::getHardwareConcurrency();
+    settings.threadsCount = os::Thread::getHardwareConcurrency();
 
     os::print("Initializing AsyncManager...\n");
     lib::time::TimeSpan initStart = lib::time::TimeSpan::now();

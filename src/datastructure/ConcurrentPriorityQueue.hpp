@@ -518,73 +518,15 @@ template <typename T, typename P = size_t> class ConcurrentPriorityQueue
     }
   }
 
-  void printSubtree(Node *root, std::string &out)
-  {
-    if (!root)
-      return;
-
-    std::unordered_set<Node *> visited;
-
-    struct StackItem
-    {
-      Node *node;
-      int depth;
-      std::string prefix;
-    };
-
-    std::stack<StackItem> stack;
-    stack.push({root, 0, ""});
-
-    while (!stack.empty())
-    {
-      auto [node, depth, prefix] = stack.top();
-      stack.pop();
-
-      if (!node || visited.count(node) > 0)
-        continue;
-      visited.insert(node);
-
-      // Print current node
-      for (int i = 0; i < depth; ++i)
-        out += "  ";
-      const void *addressPtr = static_cast<const void *>(node);
-      std::stringstream ss;
-      ss << addressPtr;
-      std::string name = ss.str();
-      out += prefix + "Node(" + name + ", priority=" + std::to_string(node->priority) + ", value = " + std::to_string(node->value) +
-             ", freed at = " + std::to_string(node->freedGarbageTimestamp);
-
-      if (node->inserting.load())
-        out += ", inserting";
-
-      out += ")\n";
-
-      // Push children in reverse order to maintain L -> R -> N order
-      Node *leftChild = address(node->left.load(std::memory_order_acquire));
-      Node *rightChild = address(node->right.load(std::memory_order_acquire));
-      Node *nextChild = address(node->next.load(std::memory_order_acquire));
-
-      if (nextChild)
-        stack.push({nextChild, depth + 1, "N"});
-      if (rightChild)
-        stack.push({rightChild, depth + 1, "R"});
-      if (leftChild)
-        stack.push({leftChild, depth + 1, "L"});
-    }
-  }
-
 public:
   ConcurrentPriorityQueue() : garbageCollector()
   {
-    // previousHead.set(nullptr);
-    // previousDummy.set(nullptr);
     auto scope = garbageCollector.openEpochGuard();
 
     Node *headNode = garbageCollector.template allocate<T, P>(scope, 0, 0);
     Node *rootNode = garbageCollector.template allocate<T, P>(scope, 0, 1);
     Node *dummyNode = garbageCollector.template allocate<T, P>(scope, 0, 0);
 
-    // 2) set up dummyNode exactly as in C
     dummyNode->priority = 0;
     dummyNode->value = T(0);
     dummyNode->left.store(headNode, std::memory_order_relaxed);
@@ -592,19 +534,16 @@ public:
     dummyNode->parent.store(rootNode, std::memory_order_relaxed);
     dummyNode->next.store(nullptr, std::memory_order_relaxed);
 
-    // 3) initialize headNode
     headNode->left.store(nullptr, std::memory_order_relaxed);
     headNode->right.store(nullptr, std::memory_order_relaxed);
     headNode->next.store(dummyNode, std::memory_order_relaxed);
     headNode->priority = 0;
 
-    // 4) initialize rootNode
     rootNode->left.store(dummyNode, std::memory_order_relaxed);
     rootNode->right.store(nullptr, std::memory_order_relaxed);
     rootNode->parent.store(nullptr, std::memory_order_relaxed);
     rootNode->priority = 1;
 
-    // 5) publish into our atomics
     head.store(headNode, std::memory_order_relaxed);
     root.store(rootNode, std::memory_order_relaxed);
   }

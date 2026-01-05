@@ -1,4 +1,5 @@
 #include "AsyncManager.hpp"
+#include "os/hqos.hpp"
 
 using namespace async;
 using namespace async::fiber;
@@ -21,24 +22,38 @@ void AsyncManager::init(void (*entry)(), SystemSettings settings)
   jobAllocator->initializeThread();
 
   isRunning = true;
+  std::atomic<uint64_t> initializing(0);
+
+  auto threadInitialization = [&settings, &initializing]()
+  {
+    jobAllocator->initializeThread();
+
+    // Add elements to queue cache cache
+    Job *n;
+    for (uint32_t i = 0; i < settings.jobsCapacity; i++)
+    {
+      jobQueue.enqueue(nullptr);
+    }
+    for (uint32_t i = 0; i < settings.jobsCapacity; i++)
+    {
+      while (!jobQueue.dequeue(n))
+      {
+      }
+      assert(n == nullptr);
+    }
+    initializing.fetch_add(1);
+    while (initializing.load() != settings.threadsCount)
+    {
+    }
+  };
 
   for (size_t i = 0; i < settings.threadsCount - 1; ++i)
   {
     workerThreads.emplace_back(
-        [settings]()
+        [&threadInitialization]()
         {
-          jobAllocator->initializeThread();
-
-          // Add elements to queue cache cache
-          Job *n;
-          for (uint32_t i = 0; i < settings.jobsCapacity; i++)
-          {
-            jobQueue.enqueue(nullptr);
-          }
-          for (uint32_t i = 0; i < settings.jobsCapacity; i++)
-          {
-            jobQueue.dequeue(n);
-          }
+          os::hqos::setHighQos();
+          threadInitialization();
 
           auto workerJob = Job::currentThreadToJob();
           workerJob->ref();
@@ -58,16 +73,8 @@ void AsyncManager::init(void (*entry)(), SystemSettings settings)
 
     workerThreads.back().setAffinity(i % os::Thread::getHardwareConcurrency());
   }
-  // Add elements to queue cache cache
-  Job *n;
-  for (uint32_t i = 0; i < settings.jobsCapacity; i++)
-  {
-    jobQueue.enqueue(nullptr);
-  }
-  for (uint32_t i = 0; i < settings.jobsCapacity; i++)
-  {
-    jobQueue.dequeue(n);
-  }
+  os::hqos::setHighQos();
+  threadInitialization();
 
   enqueue(entry);
 
@@ -93,7 +100,7 @@ void AsyncManager::init(void (*entry)(), SystemSettings settings)
   j->deref();
   workerJob->deref();
   jobAllocator->deinitializeThread();
-  
+
   delete jobAllocator;
 }
 
@@ -154,45 +161,30 @@ void AsyncManager::workerLoop()
     async::profiling::ScopedTimer timer(async::profiling::gStats.workerLoop);
 #endif
     Job *job = nullptr;
-    // os::print("#### %u %p %p\n", os::Thread::getCurrentThreadId(), &job, job);
 
     if (jobQueue.dequeue(job))
     {
+      assert(job != nullptr);
+
       assert(Fiber::current() == &workerJob->fiber);
-      // os::print("%u resuming %p %p\n", os::Thread::getCurrentThreadId(), job, &job->fiber);
-      Job *dequeuedJob = job;
 
       job->manager = workerJob;
 
-      assert(job == dequeuedJob);
-
       job->resume();
-
-      // os::print(">>>> %u resuming %p %p %p\n", os::Thread::getCurrentThreadId(), &job, job, dequeuedJob);
-
-      assert(job == dequeuedJob);
-
-      assert(job->manager == workerJob);
 
       job->manager = nullptr;
 
-      // os::print("%u back at worker loop %p %p --- %p %p\n", os::Thread::getCurrentThreadId(), workerJob, &workerJob->fiber, currentJob, &currentJob->fiber);
-
-      assert(job == dequeuedJob);
-
       assert(Fiber::current() == &workerJob->fiber);
 
-      assert(dequeuedJob->refs.load() >= 1);
-
-      if (dequeuedJob->waiting != nullptr)
+      if (job->waiting != nullptr)
       {
-        Job *waiting = dequeuedJob->waiting;
-        dequeuedJob->waiting = nullptr;
+        Job *waiting = job->waiting;
+        job->waiting = nullptr;
 
-        if (!waiting->setWaiter(dequeuedJob))
+        if (!waiting->setWaiter(job))
         {
-          // os::print("%u enqueueing waiter, failed case %p %p\n", os::Thread::getCurrentThreadId(), waiting, &waiting->fiber);
-          jobQueue.enqueue(dequeuedJob);
+          assert(job != nullptr);
+          jobQueue.enqueue(job);
         }
       }
       else if (job->yielding)
@@ -200,7 +192,7 @@ void AsyncManager::workerLoop()
         job->yielding = false;
 
         assert(job != workerJob);
-
+        assert(job != nullptr);
         jobQueue.enqueue(job);
       }
       else
@@ -215,6 +207,7 @@ void AsyncManager::workerLoop()
 
           if (waiter)
           {
+            assert(waiter != nullptr);
             // os::print("%u enqueueing waiter %p %p\n", os::Thread::getCurrentThreadId(), waiter, &waiter->fiber);
             jobQueue.enqueue(waiter);
           }
