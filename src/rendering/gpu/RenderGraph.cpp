@@ -10,6 +10,13 @@
 #include "datastructure/TaggedInternvalTree.hpp"
 #include "time/TimeSpan.hpp"
 
+#define RENDER_GRAPH_FATAL(...)                                                                                                                                                    \
+  do                                                                                                                                                                               \
+  {                                                                                                                                                                                \
+    os::Logger::errorf(__VA_ARGS__);                                                                                                                                               \
+    exit(1);                                                                                                                                                                       \
+  } while (0)
+
 namespace rendering
 {
 
@@ -266,6 +273,8 @@ std::string toString(Queue queue)
     return "Transfer";
   case Present:
     return "Present";
+  default:
+    return "EOF";
   }
 
   return "EOF";
@@ -347,8 +356,9 @@ struct BufferSlice
   size_t size;
 };
 
-void RenderGraph::registerConsumer(const std::string &name, const InputResource &res, uint32_t taskId)
+void RenderGraph::registerConsumer(const std::string &name, const InputResource &res, uint32_t taskId, Queue queue)
 {
+
   switch (res.type)
   {
   case ResourceType::ResourceType_BufferView:
@@ -360,10 +370,11 @@ void RenderGraph::registerConsumer(const std::string &name, const InputResource 
       throw std::runtime_error("Buffer not found");
     }
 
-    id->bufferUsages.push_back(
+    id->usages.push_back(
         BufferResourceUsage{
           .view = res.bufferView,
           .consumer = taskId,
+          .queue = queue,
         });
   }
   break;
@@ -373,13 +384,15 @@ void RenderGraph::registerConsumer(const std::string &name, const InputResource 
 
     if (id == resources.textureMetadatas.end())
     {
+      os::print("Texture %s\n", name.c_str());
       throw std::runtime_error("Texture not found");
     }
 
-    id->textureUsages.push_back(
+    id->usages.push_back(
         TextureResourceUsage{
           .view = res.textureView,
           .consumer = taskId,
+          .queue = queue,
         });
   }
   break;
@@ -392,46 +405,76 @@ void RenderGraph::registerConsumer(const std::string &name, const InputResource 
       throw std::runtime_error("Sampler not found");
     }
 
-    id->samplerUsages.push_back(
+    id->usages.push_back(
         SamplerResourceUsage{
           .sampler = res.sampler,
           .consumer = taskId,
+          .queue = queue,
         });
   }
   break;
   case ResourceType::ResourceType_BindingsLayout:
   {
     auto id = resources.bindingsLayoutMetadata.find(name);
-
     if (id == resources.bindingsLayoutMetadata.end())
     {
       throw std::runtime_error("BindingsLayout not found");
     }
 
-    id->layoutUsages.push_back(
+    id->usages.push_back(
         BindingsLayoutResourceUsage{
           .consumer = taskId,
+          .queue = queue,
         });
   }
   break;
   case ResourceType::ResourceType_BindingGroups:
   {
     auto id = resources.bindingGroupsMetadata.find(name);
-
     if (id == resources.bindingGroupsMetadata.end())
     {
       throw std::runtime_error("BindingGroups not found");
     }
 
-    id->layoutUsages.push_back(
+    id->usages.push_back(
         BindingGroupsResourceUsage{
           .consumer = taskId,
+          .queue = queue,
+        });
+  }
+  break;
+  case ResourceType::ResourceType_ComputePipeline:
+  {
+    auto id = resources.computePipelineMetadata.find(name);
+    if (id == resources.computePipelineMetadata.end())
+    {
+      throw std::runtime_error("ComputePipeline not found");
+    }
+
+    id->usages.push_back(
+        ComputePipelineResourceUsage{
+          .consumer = taskId,
+          .queue = queue,
+        });
+  }
+  break;
+  case ResourceType::ResourceType_GraphicsPipeline:
+  {
+    auto id = resources.graphicsPipelineMetadata.find(name);
+    if (id == resources.graphicsPipelineMetadata.end())
+    {
+      throw std::runtime_error("GraphicsPipeline not found");
+    }
+
+    id->usages.push_back(
+        GraphicsPipelineResourceUsage{
+          .consumer = taskId,
+          .queue = queue,
         });
   }
   break;
   default:
-    os::Logger::errorf("Unknown resource type %u", res.type);
-    exit(1);
+    RENDER_GRAPH_FATAL("Unknown resource type %u", res.type);
     break;
   }
 }
@@ -440,16 +483,9 @@ RHIResources::RHIResources(RenderGraph *renderGraph) : renderGraph(renderGraph)
 {
 }
 
-RenderGraph::RenderGraph(RHI *renderingHardwareInterface) : renderingHardwareInterface(renderingHardwareInterface), resources(this)
+RenderGraph::RenderGraph(RHI *renderingHardwareInterface) : rhi(renderingHardwareInterface), resources(this)
 {
   compiled = false;
-
-  enqueuePass(
-      "Initialization",
-      RenderGraph::ExecuteOnFirstRun,
-      [](const RHIResources &rg, RHICommandBuffer &recorder)
-      {
-      });
 }
 
 void RenderGraph::analyseCommands(RHICommandBuffer &recorder)
@@ -460,6 +496,7 @@ void RenderGraph::analyseCommands(RHICommandBuffer &recorder)
 
     for (auto &cmd : commands.commands)
     {
+
       dispatchCount[cmd.type] += 1;
 
       switch (cmd.type)
@@ -469,8 +506,7 @@ void RenderGraph::analyseCommands(RHICommandBuffer &recorder)
       default:
         if (dispatchCount[cmd.type] > 1)
         {
-          os::Logger::error("Command being called multiple times before dispatch");
-          exit(1);
+          RENDER_GRAPH_FATAL("Command being called multiple times before dispatch");
         }
         break;
       }
@@ -489,30 +525,186 @@ Queue inferQueue(const std::vector<Command> &commands)
   {
     return Queue::None;
   }
-
   switch (commands.back().type)
   {
-  case CopyBuffer:
-    return Queue::Transfer;
+  case BeginRenderPass:
+  case EndRenderPass:
+  case BindGraphicsPipeline:
+  case BindVertexBuffer:
+  case BindIndexBuffer:
   case Draw:
   case DrawIndexed:
   case DrawIndexedIndirect:
     return Queue::Graphics;
   case Dispatch:
+  case BindComputePipeline:
     return Queue::Compute;
+  case CopyBuffer:
+    return Queue::Transfer;
+  case BindBindingGroups:
+    return Queue::None; // sticky state
+
   default:
-    return Queue::None;
+    RENDER_GRAPH_FATAL("[RenderGraph] Invalid command type %u", commands.back().type);
   }
 
   return Queue::None;
 }
 
-void RenderGraph::enqueuePass(std::string name, std::function<bool(const RenderGraph &)> shouldExecute, std::function<void(RHIResources &, RHICommandBuffer &)> record)
+static bool isTransferOnlyCommand(CommandType type)
+{
+  return type == CopyBuffer;
+}
+
+static bool isDrawCommand(CommandType type)
+{
+  return type == Draw || type == DrawIndexed || type == DrawIndexedIndirect;
+}
+
+std::vector<RHICommandBuffer::CommandSequence> splitCommands(RHICommandBuffer::CommandSequence &cmds)
+{
+  std::vector<RHICommandBuffer::CommandSequence> result;
+  Queue lastQueue = Queue::None;
+
+  for (auto &command : cmds.commands)
+  {
+    Queue currentQueue = Queue::None;
+
+    switch (command.type)
+    {
+    case BeginRenderPass:
+    case EndRenderPass:
+    case BindGraphicsPipeline:
+    case BindVertexBuffer:
+    case BindIndexBuffer:
+    case Draw:
+    case DrawIndexed:
+    case DrawIndexedIndirect:
+      currentQueue = Queue::Graphics;
+      break;
+    case Dispatch:
+    case BindComputePipeline:
+      currentQueue = Queue::Compute;
+      break;
+
+    case CopyBuffer:
+      currentQueue = Queue::Transfer;
+      break;
+
+    case BindBindingGroups:
+      currentQueue = Queue::None; // sticky state
+      break;
+
+    default:
+      RENDER_GRAPH_FATAL("[RenderGraph] Invalid command type %u", command.type);
+    }
+
+    if (currentQueue != lastQueue && currentQueue != Queue::None)
+    {
+      result.emplace_back();
+      lastQueue = currentQueue;
+    }
+
+    if (result.empty())
+    {
+      result.emplace_back();
+      lastQueue = currentQueue;
+    }
+
+    result.back().commands.push_back(command);
+  }
+
+  for (size_t seqIndex = 0; seqIndex < result.size(); ++seqIndex)
+  {
+    auto &sequence = result[seqIndex];
+
+    bool hasGraphicsPipeline = false;
+    bool hasComputePipeline = false;
+    bool hasBindings = false;
+    bool hasDraw = false;
+    bool hasDispatch = false;
+    bool hasOnlyTransfer = true;
+
+    for (auto &cmd : sequence.commands)
+    {
+      switch (cmd.type)
+      {
+      case BindGraphicsPipeline:
+        hasGraphicsPipeline = true;
+        hasOnlyTransfer = false;
+        break;
+
+      case BindComputePipeline:
+        hasComputePipeline = true;
+        hasOnlyTransfer = false;
+        break;
+
+      case BindBindingGroups:
+        hasBindings = true;
+        break;
+
+      case Draw:
+      case DrawIndexed:
+      case DrawIndexedIndirect:
+        hasDraw = true;
+        hasOnlyTransfer = false;
+        break;
+
+      case Dispatch:
+        hasDispatch = true;
+        hasOnlyTransfer = false;
+        break;
+
+      case CopyBuffer:
+        // transfer-only allowed
+        break;
+
+      default:
+        hasOnlyTransfer = false;
+        break;
+      }
+    }
+
+    if (hasOnlyTransfer)
+      continue;
+
+    if (hasDraw)
+    {
+      if (!hasGraphicsPipeline)
+      {
+        RENDER_GRAPH_FATAL(
+            "[RenderGraph] Invalid graphics submission in CommandSequence %zu\n"
+            "  hasPipeline=%d hasBindings=%d hasDraw=%d",
+            seqIndex,
+            hasGraphicsPipeline,
+            hasBindings,
+            hasDraw);
+      }
+    }
+
+    if (hasDispatch)
+    {
+      if (!hasComputePipeline)
+      {
+        RENDER_GRAPH_FATAL(
+            "[RenderGraph] Invalid compute submission in CommandSequence %zu\n"
+            "  hasPipeline=%d hasBindings=%d hasDispatch=%d",
+            seqIndex,
+            hasComputePipeline,
+            hasBindings,
+            hasDispatch);
+      }
+    }
+  }
+
+  return result;
+}
+
+void RenderGraph::enqueuePass(std::string name, RHICommandBuffer &cmd)
 {
   auto pass = RenderGraphPass{
     .name = name,
-    .record = record,
-    .shouldExecute = shouldExecute,
+    .cmd = cmd,
   };
 
   passes.enqueue(pass);
@@ -520,252 +712,335 @@ void RenderGraph::enqueuePass(std::string name, std::function<bool(const RenderG
 
 void RenderGraph::analysePasses()
 {
-  RHICommandBuffer **ref;
   RenderGraphPass pass;
 
   while (passes.dequeue(pass))
   {
-    RHICommandBuffer recorder;
-
-    pass.record(resources, recorder);
-
+    RHICommandBuffer recorder = pass.cmd;
     analyseCommands(recorder);
 
     uint32_t index = 0;
 
-    for (auto &commands : recorder.recorded)
+    for (auto &recordedCommands : pass.cmd.recorded)
     {
-      uint32_t id = nodes.size();
-
-      if (commands.commands.size() == 0 && id != 0)
+      auto split = splitCommands(recordedCommands);
+      for (auto commands : split)
       {
-        continue;
-      }
-      auto node = RenderGraphNode();
+        uint32_t id = nodes.size();
 
-      node.name = pass.name + "[" + std::to_string(index++) + "]";
-
-      node.id = id;
-      node.level = 0;
-      node.priority = id;
-      node.commands = std::move(commands.commands);
-      node.queue = inferQueue(commands.commands);
-
-      nodes.emplace_back(node);
-
-      auto symbol = resources.bindingGroupsMetadata.end();
-
-      for (const auto &cmd : node.commands)
-      {
-        switch (cmd.type)
+        if (commands.commands.size() == 0)
         {
-        case BeginRenderPass:
-          for (auto &attatchment : cmd.args.renderPassInfo->colorAttachments)
-          {
-            registerConsumer(
-                attatchment.view.texture.name,
-                InputResource{
-                  .type = ResourceType::ResourceType_TextureView,
-                  .textureView = attatchment.view,
-                  .layout = attatchment.view.layout,
-                  .access = attatchment.view.access,
-                },
-                id);
-          }
-          if (cmd.args.renderPassInfo->depthStencilAttachment.clearDepth)
-          {
-            auto &attatchment = cmd.args.renderPassInfo->depthStencilAttachment;
-            registerConsumer(
-                attatchment.view.texture.name,
-                InputResource{
-                  .type = ResourceType::ResourceType_TextureView,
-                  .textureView = attatchment.view,
-                  .layout = attatchment.view.layout,
-                  .access = attatchment.view.access,
-                },
-                id);
-          }
-          break;
-        case EndRenderPass:
-          break;
-        case CopyBuffer:
-          registerConsumer(
-              cmd.args.copyBuffer->src.buffer.name,
-              InputResource{
-                .type = ResourceType::ResourceType_BufferView,
-                .bufferView = cmd.args.copyBuffer->src,
-                .layout = ResourceLayout::UNDEFINED,
-                .access = cmd.args.copyBuffer->src.access,
-              },
-              id);
-          registerConsumer(
-              cmd.args.copyBuffer->dst.buffer.name,
-              InputResource{
-                .type = ResourceType::ResourceType_BufferView,
-                .bufferView = cmd.args.copyBuffer->dst,
-                .layout = ResourceLayout::UNDEFINED,
-                .access = cmd.args.copyBuffer->dst.access,
-              },
-              id);
-
-          break;
-        case BindBindingGroups:
-          symbol = resources.bindingGroupsMetadata.find(cmd.args.bindGroups->groups.name);
-          if (symbol == resources.bindingGroupsMetadata.end())
-          {
-            throw std::runtime_error("Bunding Groups not found");
-          }
-          registerConsumer(
-              symbol->groupsInfo.layout.name,
-              InputResource{
-                .type = ResourceType::ResourceType_BindingsLayout,
-                .layout = ResourceLayout::UNDEFINED,
-                .access = AccessPattern::NONE,
-              },
-              id);
-          registerConsumer(
-              cmd.args.bindGroups->groups.name,
-              InputResource{
-                .type = ResourceType::ResourceType_BindingGroups,
-                .bindingGroups = cmd.args.bindGroups->groups,
-                .layout = ResourceLayout::UNDEFINED,
-                .access = AccessPattern::NONE,
-              },
-              id);
-
-          for (auto &group : symbol->groupsInfo.groups)
-          {
-            for (auto &buffer : group.buffers)
-            {
-              registerConsumer(
-                  buffer.bufferView.buffer.name,
-                  InputResource{
-                    .type = ResourceType::ResourceType_BufferView,
-                    .bufferView = buffer.bufferView,
-                    .layout = ResourceLayout::UNDEFINED,
-                    .access = buffer.bufferView.access,
-                  },
-                  id);
-            }
-
-            for (auto &texture : group.textures)
-            {
-              registerConsumer(
-                  texture.textureView.texture.name,
-                  InputResource{
-                    .type = ResourceType::ResourceType_TextureView,
-                    .textureView = texture.textureView,
-                    .layout = texture.textureView.layout,
-                    .access = texture.textureView.access,
-                  },
-                  id);
-            }
-
-            for (auto &texture : group.storageTextures)
-            {
-              registerConsumer(
-                  texture.textureView.texture.name,
-                  InputResource{
-                    .type = ResourceType::ResourceType_TextureView,
-                    .textureView = texture.textureView,
-                    .layout = texture.textureView.layout,
-                    .access = texture.textureView.access,
-                  },
-                  id);
-            }
-
-            for (auto &texture : group.samplers)
-            {
-              registerConsumer(
-                  texture.view.texture.name,
-                  InputResource{
-                    .type = ResourceType::ResourceType_TextureView,
-                    .textureView = texture.view,
-                    .layout = texture.view.layout,
-                    .access = texture.view.access,
-                  },
-                  id);
-              registerConsumer(
-                  texture.sampler.name,
-                  InputResource{
-                    .type = ResourceType::ResourceType_Sampler,
-                    .sampler = texture.sampler,
-                    .layout = ResourceLayout::UNDEFINED,
-                    .access = AccessPattern::NONE,
-                  },
-                  id);
-            }
-          }
-          break;
-        case BindVertexBuffer:
-          registerConsumer(
-              cmd.args.bindVertexBuffer->buffer.buffer.name,
-              InputResource{
-                .type = ResourceType::ResourceType_BufferView,
-                .bufferView = cmd.args.bindVertexBuffer->buffer,
-                .layout = ResourceLayout::UNDEFINED,
-                .access = cmd.args.bindVertexBuffer->buffer.access,
-              },
-              id);
-          break;
-        case BindIndexBuffer:
-          registerConsumer(
-              cmd.args.bindIndexBuffer->buffer.buffer.name,
-              InputResource{
-                .type = ResourceType::ResourceType_BufferView,
-                .bufferView = cmd.args.bindIndexBuffer->buffer,
-                .layout = ResourceLayout::UNDEFINED,
-                .access = cmd.args.bindIndexBuffer->buffer.access,
-              },
-              id);
-          break;
-        case BindComputePipeline:
-          registerConsumer(
-              cmd.args.computePipeline->name,
-              InputResource{
-                .type = ResourceType::ResourceType_ComputePipeline,
-                .computePipeline = *cmd.args.computePipeline,
-                .layout = ResourceLayout::UNDEFINED,
-                .access = AccessPattern::NONE,
-              },
-              id);
-          break;
-        case BindGraphicsPipeline:
-          registerConsumer(
-              cmd.args.graphicsPipeline->name,
-              InputResource{
-                .type = ResourceType::ResourceType_GraphicsPipeline,
-                .graphicsPipeline = *cmd.args.graphicsPipeline,
-                .layout = ResourceLayout::UNDEFINED,
-                .access = AccessPattern::NONE,
-              },
-              id);
-          break;
-        case DrawIndexedIndirect:
-          registerConsumer(
-              cmd.args.drawIndexedIndirect->buffer.buffer.name,
-              InputResource{
-                .type = ResourceType::ResourceType_BufferView,
-                .bufferView = cmd.args.drawIndexedIndirect->buffer,
-                .layout = ResourceLayout::UNDEFINED,
-                .access = cmd.args.drawIndexedIndirect->buffer.access,
-              },
-              id);
-          break;
-        case Draw:
-        case DrawIndexed:
-        case Dispatch:
-          break;
-        default:
-          os::Logger::error("Unsuported command");
-          exit(1);
-          break;
+          continue;
         }
+
+        auto node = RenderGraphNode();
+
+        node.name = pass.name + "[" + std::to_string(index++) + "]";
+
+        node.id = id;
+        node.level = 0;
+        node.priority = id;
+        node.commands = std::move(commands.commands);
+        node.queue = inferQueue(node.commands);
+
+        if (node.queue == Queue::None)
+        {
+          RENDER_GRAPH_FATAL("[RenderGraph] %s is not submitted to any queue", pass.name.c_str());
+        }
+
+        nodes.emplace_back(node);
+
+        auto symbol = resources.bindingGroupsMetadata.end();
+
+        for (const auto &cmd : node.commands)
+        {
+          switch (cmd.type)
+          {
+          case BeginRenderPass:
+            for (auto &attatchment : cmd.args.renderPassInfo->colorAttachments)
+            {
+              registerConsumer(
+                  attatchment.view.texture.name,
+                  InputResource{
+                    .type = ResourceType::ResourceType_TextureView,
+                    .textureView = attatchment.view,
+                    .layout = attatchment.view.layout,
+                    .access = attatchment.view.access,
+                  },
+
+                  id,
+                  node.queue);
+            }
+            if (cmd.args.renderPassInfo->depthStencilAttachment)
+            {
+              auto &attatchment = *cmd.args.renderPassInfo->depthStencilAttachment;
+              registerConsumer(
+                  attatchment.view.texture.name,
+                  InputResource{
+                    .type = ResourceType::ResourceType_TextureView,
+                    .textureView = attatchment.view,
+                    .layout = attatchment.view.layout,
+                    .access = attatchment.view.access,
+                  },
+                  id,
+                  node.queue);
+            }
+            break;
+          case EndRenderPass:
+            break;
+          case CopyBuffer:
+          {
+            auto src = cmd.args.copyBuffer->src;
+            auto dst = cmd.args.copyBuffer->dst;
+            auto srcMeta = resources.bufferMetadatas.find(cmd.args.copyBuffer->src.buffer.name);
+            auto dstMeta = resources.bufferMetadatas.find(cmd.args.copyBuffer->dst.buffer.name);
+
+            if (srcMeta == resources.bufferMetadatas.end())
+            {
+              RENDER_GRAPH_FATAL("[RHI][CopyBuffer] Source buffer '%s' not found in metadata", src.buffer.name.c_str());
+            }
+
+            if (dstMeta == resources.bufferMetadatas.end())
+            {
+              RENDER_GRAPH_FATAL("[RHI][CopyBuffer] Destination buffer '%s' not found in metadata", dst.buffer.name.c_str());
+            }
+
+            const BufferInfo &srcInfo = srcMeta->bufferInfo;
+            const BufferInfo &dstInfo = dstMeta->bufferInfo;
+
+            /* ================= BASIC VALIDATION ================= */
+
+            if (src.size == 0)
+            {
+              RENDER_GRAPH_FATAL("[RHI][CopyBuffer] Copy size is zero (src='%s')", src.buffer.name.c_str());
+            }
+
+            if (src.buffer == dst.buffer)
+            {
+              RENDER_GRAPH_FATAL("[RHI][CopyBuffer] Source and destination buffers are the same ('%s')", src.buffer.name.c_str());
+            }
+
+            if (src.offset + src.size > srcInfo.size)
+            {
+              RENDER_GRAPH_FATAL(
+                  "[RHI][CopyBuffer] Source buffer '%s' overflow (offset=%llu size=%llu bufferSize=%llu)", src.buffer.name.c_str(), src.offset, src.size, srcInfo.size);
+            }
+
+            if (dst.offset + dst.size > dstInfo.size)
+            {
+              RENDER_GRAPH_FATAL(
+                  "[RHI][CopyBuffer] Destination buffer '%s' overflow (offset=%llu size=%llu bufferSize=%llu)", dst.buffer.name.c_str(), dst.offset, dst.size, dstInfo.size);
+            }
+
+            if (src.size != dst.size)
+            {
+              RENDER_GRAPH_FATAL("[RHI][CopyBuffer] Source and destination copy sizes differ (src=%llu dst=%llu)", src.size, dst.size);
+            }
+
+            /* ================= USAGE VALIDATION (WebGPU-style) ================= */
+
+            if (!(srcInfo.usage & BufferUsage_CopySrc))
+            {
+              RENDER_GRAPH_FATAL("[RHI][CopyBuffer] Source buffer '%s' missing BufferUsage_CopySrc", src.buffer.name.c_str());
+            }
+
+            if (!(dstInfo.usage & BufferUsage_CopyDst))
+            {
+              RENDER_GRAPH_FATAL("[RHI][CopyBuffer] Destination buffer '%s' missing BufferUsage_CopyDst", dst.buffer.name.c_str());
+            }
+
+            /* ================= RECORD COMMAND ================= */
+
+            registerConsumer(
+                cmd.args.copyBuffer->src.buffer.name,
+                InputResource{
+                  .type = ResourceType::ResourceType_BufferView,
+                  .bufferView = cmd.args.copyBuffer->src,
+                  .layout = ResourceLayout::UNDEFINED,
+                  .access = cmd.args.copyBuffer->src.access,
+                },
+                id,
+                node.queue);
+            registerConsumer(
+                cmd.args.copyBuffer->dst.buffer.name,
+                InputResource{
+                  .type = ResourceType::ResourceType_BufferView,
+                  .bufferView = cmd.args.copyBuffer->dst,
+                  .layout = ResourceLayout::UNDEFINED,
+                  .access = cmd.args.copyBuffer->dst.access,
+                },
+                id,
+                node.queue);
+          }
+          break;
+          case BindBindingGroups:
+            symbol = resources.bindingGroupsMetadata.find(cmd.args.bindGroups->groups.name);
+            if (symbol == resources.bindingGroupsMetadata.end())
+            {
+              throw std::runtime_error("Bunding Groups not found");
+            }
+            registerConsumer(
+                symbol->groupsInfo.layout.name,
+                InputResource{
+                  .type = ResourceType::ResourceType_BindingsLayout,
+                  .layout = ResourceLayout::UNDEFINED,
+                  .access = AccessPattern::NONE,
+                },
+                id,
+                node.queue);
+            registerConsumer(
+                cmd.args.bindGroups->groups.name,
+                InputResource{
+                  .type = ResourceType::ResourceType_BindingGroups,
+                  .bindingGroups = cmd.args.bindGroups->groups,
+                  .layout = ResourceLayout::UNDEFINED,
+                  .access = AccessPattern::NONE,
+                },
+                id,
+                node.queue);
+
+            for (auto &group : symbol->groupsInfo.groups)
+            {
+              for (auto &buffer : group.buffers)
+              {
+                registerConsumer(
+                    buffer.bufferView.buffer.name,
+                    InputResource{
+                      .type = ResourceType::ResourceType_BufferView,
+                      .bufferView = buffer.bufferView,
+                      .layout = ResourceLayout::UNDEFINED,
+                      .access = buffer.bufferView.access,
+                    },
+                    id,
+                    node.queue);
+              }
+
+              for (auto &texture : group.textures)
+              {
+                registerConsumer(
+                    texture.textureView.texture.name,
+                    InputResource{
+                      .type = ResourceType::ResourceType_TextureView,
+                      .textureView = texture.textureView,
+                      .layout = texture.textureView.layout,
+                      .access = texture.textureView.access,
+                    },
+                    id,
+                    node.queue);
+              }
+
+              for (auto &texture : group.storageTextures)
+              {
+                registerConsumer(
+                    texture.textureView.texture.name,
+                    InputResource{
+                      .type = ResourceType::ResourceType_TextureView,
+                      .textureView = texture.textureView,
+                      .layout = texture.textureView.layout,
+                      .access = texture.textureView.access,
+                    },
+                    id,
+                    node.queue);
+              }
+
+              for (auto &texture : group.samplers)
+              {
+                registerConsumer(
+                    texture.view.texture.name,
+                    InputResource{
+                      .type = ResourceType::ResourceType_TextureView,
+                      .textureView = texture.view,
+                      .layout = texture.view.layout,
+                      .access = texture.view.access,
+                    },
+                    id,
+                    node.queue);
+                registerConsumer(
+                    texture.sampler.name,
+                    InputResource{
+                      .type = ResourceType::ResourceType_Sampler,
+                      .sampler = texture.sampler,
+                      .layout = ResourceLayout::UNDEFINED,
+                      .access = AccessPattern::NONE,
+                    },
+                    id,
+                    node.queue);
+              }
+            }
+            break;
+          case BindVertexBuffer:
+            registerConsumer(
+                cmd.args.bindVertexBuffer->buffer.buffer.name,
+                InputResource{
+                  .type = ResourceType::ResourceType_BufferView,
+                  .bufferView = cmd.args.bindVertexBuffer->buffer,
+                  .layout = ResourceLayout::UNDEFINED,
+                  .access = cmd.args.bindVertexBuffer->buffer.access,
+                },
+                id,
+                node.queue);
+            break;
+          case BindIndexBuffer:
+            registerConsumer(
+                cmd.args.bindIndexBuffer->buffer.buffer.name,
+                InputResource{
+                  .type = ResourceType::ResourceType_BufferView,
+                  .bufferView = cmd.args.bindIndexBuffer->buffer,
+                  .layout = ResourceLayout::UNDEFINED,
+                  .access = cmd.args.bindIndexBuffer->buffer.access,
+                },
+                id,
+                node.queue);
+            break;
+          case BindComputePipeline:
+            registerConsumer(
+                cmd.args.computePipeline->name,
+                InputResource{
+                  .type = ResourceType::ResourceType_ComputePipeline,
+                  .computePipeline = *cmd.args.computePipeline,
+                  .layout = ResourceLayout::UNDEFINED,
+                  .access = AccessPattern::NONE,
+                },
+                id,
+                node.queue);
+            break;
+          case BindGraphicsPipeline:
+            registerConsumer(
+                cmd.args.graphicsPipeline->name,
+                InputResource{
+                  .type = ResourceType::ResourceType_GraphicsPipeline,
+                  .graphicsPipeline = *cmd.args.graphicsPipeline,
+                  .layout = ResourceLayout::UNDEFINED,
+                  .access = AccessPattern::NONE,
+                },
+                id,
+                node.queue);
+            break;
+          case DrawIndexedIndirect:
+            registerConsumer(
+                cmd.args.drawIndexedIndirect->buffer.buffer.name,
+                InputResource{
+                  .type = ResourceType::ResourceType_BufferView,
+                  .bufferView = cmd.args.drawIndexedIndirect->buffer,
+                  .layout = ResourceLayout::UNDEFINED,
+                  .access = cmd.args.drawIndexedIndirect->buffer.access,
+                },
+                id,
+                node.queue);
+            break;
+          case Draw:
+          case DrawIndexed:
+          case Dispatch:
+            break;
+          default:
+            RENDER_GRAPH_FATAL("Unsuported command");
+            break;
+          }
+        }
+        // taskData[id].registry.sortResources();
       }
-      // taskData[id].registry.sortResources();
     }
   }
-  *ref = nullptr;
 }
 
 uint32_t RenderGraph::levelDFS(uint32_t id, std::vector<bool> &visited, uint32_t level)
@@ -793,8 +1068,7 @@ void RenderGraph::topologicalSortDFS(uint32_t id, std::vector<bool> &visited, st
 {
   if (isParent[id])
   {
-    os::Logger::errorf("Cyclical dependency in Task Graph");
-    exit(1);
+    RENDER_GRAPH_FATAL("Cyclical dependency in Task Graph");
   }
 
   if (visited[id])
@@ -838,28 +1112,10 @@ void RenderGraph::tasksTopologicalSort(std::vector<uint32_t> &order)
   }
 }
 
-// void RenderGraph::analyseTaskLevels()
-// {
-//   std::vector<uint32_t> topologicalOrder;
-
-//   tasksTopologicalSort(topologicalOrder);
-
-//   std::vector<bool> visited(taskData.size(), false);
-
-//   for (uint32_t id = 0; id < taskData.size(); id++)
-//   {
-//     taskData[id].level = 0;
-//   }
-
-//   for (uint32_t id : topologicalOrder)
-//   {
-//     levelDFS(id, visited, 1);
-//   }
-// }
-
 void RenderGraph::analyseTaskLevels()
 {
   std::vector<uint32_t> topologicalOrder;
+
   tasksTopologicalSort(topologicalOrder);
 
   for (auto &task : nodes)
@@ -884,11 +1140,10 @@ void RenderGraph::analyseTaskLevels()
       {
       case CopyBuffer:
       {
-        auto srcMeta = resources.scratchBuffersRequestsMetadatas.find(cmd.args.copyBuffer->src.buffer.name);
+        auto srcMeta = resources.bufferMetadatas.find(cmd.args.copyBuffer->src.buffer.name);
         srcMeta->firstUsedAt = std::min(srcMeta->firstUsedAt, node.level);
         srcMeta->lastUsedAt = std::max(srcMeta->lastUsedAt, node.level);
-
-        auto dstMeta = resources.scratchBuffersRequestsMetadatas.find(cmd.args.copyBuffer->dst.buffer.name);
+        auto dstMeta = resources.bufferMetadatas.find(cmd.args.copyBuffer->dst.buffer.name);
         dstMeta->firstUsedAt = std::min(dstMeta->firstUsedAt, node.level);
         dstMeta->lastUsedAt = std::max(dstMeta->lastUsedAt, node.level);
         break;
@@ -902,7 +1157,7 @@ void RenderGraph::analyseTaskLevels()
         {
           for (const auto &buffer : group.buffers)
           {
-            auto meta = resources.scratchBuffersRequestsMetadatas.find(buffer.bufferView.buffer.name);
+            auto meta = resources.bufferMetadatas.find(buffer.bufferView.buffer.name);
             meta->firstUsedAt = std::min(meta->firstUsedAt, node.level);
             meta->lastUsedAt = std::max(meta->lastUsedAt, node.level);
           }
@@ -912,7 +1167,7 @@ void RenderGraph::analyseTaskLevels()
 
       case BindVertexBuffer:
       {
-        auto meta = resources.scratchBuffersRequestsMetadatas.find(cmd.args.bindVertexBuffer->buffer.buffer.name);
+        auto meta = resources.bufferMetadatas.find(cmd.args.bindVertexBuffer->buffer.buffer.name);
         meta->firstUsedAt = std::min(meta->firstUsedAt, node.level);
         meta->lastUsedAt = std::max(meta->lastUsedAt, node.level);
         break;
@@ -920,7 +1175,7 @@ void RenderGraph::analyseTaskLevels()
 
       case BindIndexBuffer:
       {
-        auto meta = resources.scratchBuffersRequestsMetadatas.find(cmd.args.bindIndexBuffer->buffer.buffer.name);
+        auto meta = resources.bufferMetadatas.find(cmd.args.bindIndexBuffer->buffer.buffer.name);
         meta->firstUsedAt = std::min(meta->firstUsedAt, node.level);
         meta->lastUsedAt = std::max(meta->lastUsedAt, node.level);
         break;
@@ -928,7 +1183,7 @@ void RenderGraph::analyseTaskLevels()
 
       case DrawIndexedIndirect:
       {
-        auto meta = resources.scratchBuffersRequestsMetadatas.find(cmd.args.drawIndexedIndirect->buffer.buffer.name);
+        auto meta = resources.bufferMetadatas.find(cmd.args.drawIndexedIndirect->buffer.buffer.name);
         meta->firstUsedAt = std::min(meta->firstUsedAt, node.level);
         meta->lastUsedAt = std::max(meta->lastUsedAt, node.level);
         break;
@@ -944,8 +1199,7 @@ void RenderGraph::analyseTaskLevels()
         break;
 
       default:
-        os::Logger::error("Unsupported command");
-        exit(1);
+        RENDER_GRAPH_FATAL("Unsupported command");
       }
     }
   }
@@ -961,13 +1215,14 @@ struct AccessConsumerPair
 {
   AccessPattern access;
   uint64_t consumer;
+  Queue queue;
   bool operator==(const AccessConsumerPair &o) const
   {
-    return access == o.access && consumer == o.consumer;
+    return access == o.access && consumer == o.consumer && o.queue == queue;
   }
   bool operator!=(const AccessConsumerPair &o) const
   {
-    return access != o.access || consumer != o.consumer;
+    return access != o.access || consumer != o.consumer || o.queue != queue;
   }
 };
 
@@ -976,15 +1231,34 @@ struct AccessLayoutConsumerTriple
   AccessPattern access;
   ResourceLayout layout;
   uint64_t consumer;
+  Queue queue;
 
   bool operator==(const AccessLayoutConsumerTriple &o) const
   {
-    return access == o.access && layout == o.layout && consumer == o.consumer;
+    return access == o.access && layout == o.layout && queue == o.queue;
   }
 
   bool operator!=(const AccessLayoutConsumerTriple &o) const
   {
-    return access != o.access || layout != o.layout || consumer != o.consumer;
+    return access != o.access || layout != o.layout || queue != o.queue;
+  }
+};
+
+struct AccessConsumerTupple
+{
+  AccessPattern access;
+  uint64_t consumer;
+
+  Queue queue;
+
+  bool operator==(const AccessConsumerTupple &o) const
+  {
+    return access == o.access && queue == o.queue;
+  }
+
+  bool operator!=(const AccessConsumerTupple &o) const
+  {
+    return access != o.access || queue != o.queue;
   }
 };
 
@@ -993,27 +1267,27 @@ void RenderGraph::analyseDependencyGraph()
   edges.clear();
   edges.resize(nodes.size());
 
-  for (auto &node : nodes)
-  {
-    if (node.id == 0)
-    {
-      continue;
-    }
-    // Bootstrap to all other edges
-    edges[0].push_back(
-        RenderGraphEdge{
-          .taskId = node.id,
-          .resourceId = "",
-          .resourceType = ResourceType::ResourceType_Initialization,
-          .type = EdgeType::Initialization,
-        });
-  }
+  // for (auto &node : nodes)
+  // {
+  //   // if (node.id == 0)
+  //   // {
+  //   //   continue;
+  //   // }
+  //   // Bootstrap to all other edges
+  //   // edges[0].push_back(
+  //   //     RenderGraphEdge{
+  //   //       .taskId = node.id,
+  //   //       .resourceId = "",
+  //   //       .resourceType = ResourceType::ResourceType_Initialization,
+  //   //       .type = EdgeType::Initialization,
+  //   //     });
+  // }
 
   for (auto [name, meta] : resources.bufferMetadatas)
   {
     std::sort(
-        meta.bufferUsages.begin(),
-        meta.bufferUsages.end(),
+        meta.usages.begin(),
+        meta.usages.end(),
         [this](BufferResourceUsage taskA, BufferResourceUsage taskB)
         {
           return nodes[taskA.consumer].priority < nodes[taskB.consumer].priority;
@@ -1021,13 +1295,20 @@ void RenderGraph::analyseDependencyGraph()
 
     std::vector<lib::BoundedTaggedIntervalTree<AccessConsumerPair, uint64_t>::Interval> intervals;
 
-    intervals.reserve(4 * meta.bufferUsages.size());
+    intervals.reserve(4 * meta.usages.size());
 
-    lib::BoundedTaggedIntervalTree<AccessConsumerPair, uint64_t> bufferIntevals(meta.bufferUsages.size() * 4);
+    lib::BoundedTaggedIntervalTree<AccessConsumerPair, uint64_t> bufferIntevals(meta.usages.size() * 4);
 
-    bufferIntevals.insert(0, meta.bufferInfo.size - 1, AccessConsumerPair{.access = AccessPattern::NONE, .consumer = (uint64_t)-1});
+    bufferIntevals.insert(
+        0,
+        meta.bufferInfo.size - 1,
+        AccessConsumerPair{
+          .access = AccessPattern::NONE,
+          .consumer = (uint64_t)-1,
+          .queue = Queue::None,
+        });
 
-    for (const auto &usage : meta.bufferUsages)
+    for (const auto &usage : meta.usages)
     {
       intervals.clear();
 
@@ -1035,6 +1316,19 @@ void RenderGraph::analyseDependencyGraph()
 
       for (const auto &interval : intervals)
       {
+        nodes[usage.consumer].bufferTransitions.emplace_back(
+            BufferBarrier{
+              .resourceId = meta.bufferInfo.name,
+              .fromAccess = interval.tag.access,
+              .toAccess = usage.view.access,
+              .offset = interval.start,
+              .size = interval.end - interval.start + 1,
+              .toLevel = nodes[usage.consumer].level,
+              .fromQueue = interval.tag.queue,
+              .toQueue = nodes[usage.consumer].queue,
+              .fromNode = interval.tag.consumer,
+            });
+
         if (interval.tag.consumer == usage.consumer)
         {
           continue;
@@ -1052,7 +1346,14 @@ void RenderGraph::analyseDependencyGraph()
         }
 
         bufferIntevals.remove(interval.start, interval.end, interval.tag);
-        bufferIntevals.insert(interval.start, interval.end, AccessConsumerPair{.access = usage.view.access, .consumer = usage.consumer});
+        bufferIntevals.insert(
+            interval.start,
+            interval.end,
+            AccessConsumerPair{
+              .access = usage.view.access,
+              .consumer = usage.consumer,
+              .queue = usage.queue,
+            });
       }
     }
   }
@@ -1060,8 +1361,8 @@ void RenderGraph::analyseDependencyGraph()
   for (auto [name, meta] : resources.textureMetadatas)
   {
     std::sort(
-        meta.textureUsages.begin(),
-        meta.textureUsages.end(),
+        meta.usages.begin(),
+        meta.usages.end(),
         [this](TextureResourceUsage taskA, TextureResourceUsage taskB)
         {
           return nodes[taskA.consumer].priority < nodes[taskB.consumer].priority;
@@ -1069,7 +1370,7 @@ void RenderGraph::analyseDependencyGraph()
 
     std::vector<lib::BoundedTaggedRectTreap<AccessLayoutConsumerTriple, uint64_t>::Rect> intervals;
     intervals.reserve(resources.textureMetadatas.size() * 4);
-    lib::BoundedTaggedRectTreap<AccessLayoutConsumerTriple, uint64_t> textureState(meta.textureUsages.size() * 4);
+    lib::BoundedTaggedRectTreap<AccessLayoutConsumerTriple, uint64_t> textureState(meta.usages.size() * 4);
     textureState.insert(
         0,
         0,
@@ -1079,9 +1380,10 @@ void RenderGraph::analyseDependencyGraph()
           .access = AccessPattern::NONE,
           .layout = ResourceLayout::UNDEFINED,
           .consumer = (uint64_t)-1,
+          .queue = Queue::None,
         });
 
-    for (const auto &usage : meta.textureUsages)
+    for (const auto &usage : meta.usages)
     {
       intervals.clear();
 
@@ -1092,10 +1394,32 @@ void RenderGraph::analyseDependencyGraph()
           usage.view.baseArrayLayer + usage.view.layerCount - 1,
           intervals);
 
-      auto currentTag = AccessLayoutConsumerTriple{.access = usage.view.access, .layout = usage.view.layout, .consumer = usage.consumer};
+      auto currentTag = AccessLayoutConsumerTriple{
+        .access = usage.view.access,
+        .layout = usage.view.layout,
+        .consumer = usage.consumer,
+        .queue = nodes[usage.consumer].queue,
+      };
 
       for (const auto &interval : intervals)
       {
+        nodes[usage.consumer].textureTransitions.emplace_back(
+            TextureBarrier{
+              .resourceId = meta.textureInfo.name,
+              .fromAccess = interval.tag.access,
+              .toAccess = usage.view.access,
+              .fromLayout = interval.tag.layout,
+              .toLayout = usage.view.layout,
+              .baseMip = interval.x1,
+              .mipCount = interval.x2 - interval.x1 + 1,
+              .baseLayer = interval.y1,
+              .layerCount = interval.y2 - interval.y1 + 1,
+              .toLevel = nodes[usage.consumer].level,
+              .fromQueue = interval.tag.queue,
+              .toQueue = nodes[usage.consumer].queue,
+              .fromNode = interval.tag.consumer,
+            });
+
         if (interval.tag.consumer == usage.consumer)
         {
           continue;
@@ -1202,17 +1526,20 @@ void RenderGraph::analyseAllocations()
 
   std::unordered_map<BufferUsage, std::vector<Request>> memoryRequests;
 
-  for (auto [name, meta] : resources.scratchBuffersRequestsMetadatas)
+  for (auto [name, meta] : resources.bufferMetadatas)
   {
-    const BufferInfo &info = meta.bufferInfo;
+    if (meta.bufferInfo.scratch && meta.usages.size())
+    {
+      const BufferInfo &info = meta.bufferInfo;
 
-    memoryRequests[info.usage].push_back(
-        Request{
-          .id = meta.bufferInfo.name,
-          .start = meta.firstUsedAt,
-          .end = meta.lastUsedAt,
-          .size = info.size,
-        });
+      memoryRequests[info.usage].push_back(
+          Request{
+            .id = meta.bufferInfo.name,
+            .start = meta.firstUsedAt,
+            .end = meta.lastUsedAt,
+            .size = info.size,
+          });
+    }
   }
 
   resources.scratchMap.clear();
@@ -1275,58 +1602,83 @@ enum class RemainderMode
 
 void RenderGraph::analyseBufferStateTransition()
 {
-  std::vector<lib::BoundedTaggedIntervalTree<AccessPattern, uint64_t>::Interval> intervals;
+  std::vector<lib::BoundedTaggedIntervalTree<AccessConsumerTupple, uint64_t>::Interval> intervals;
 
   uint64_t size = 0;
 
   for (auto [name, meta] : resources.bufferMetadatas)
   {
-    size += meta.bufferUsages.size();
+    size += meta.usages.size();
   }
 
   intervals.reserve(4 * size);
-
+  os::print(">>>> Usage %u\n", resources.bufferMetadatas.size());
   for (auto [name, meta] : resources.bufferMetadatas)
   {
+    os::print(">>>> Usage\n");
 
-    lib::BoundedTaggedIntervalTree<AccessPattern, uint64_t> bufferIntevals(meta.bufferUsages.size() * 4);
+    lib::BoundedTaggedIntervalTree<AccessConsumerTupple, uint64_t> bufferIntevals(meta.usages.size() * 4);
     if (meta.bufferInfo.size == 0)
     {
       continue;
     }
-    bufferIntevals.insert(0, meta.bufferInfo.size - 1, AccessPattern::NONE);
+
+    bufferIntevals.insert(
+        0,
+        meta.bufferInfo.size - 1,
+        AccessConsumerTupple{
+          .access = AccessPattern::NONE,
+          .consumer = (uint64_t)-1,
+          .queue = Queue::None,
+        });
 
     std::sort(
-        meta.bufferUsages.begin(),
-        meta.bufferUsages.end(),
+        meta.usages.begin(),
+        meta.usages.end(),
         [this](const BufferResourceUsage &usageA, const BufferResourceUsage &usageB)
         {
           return nodes[usageA.consumer].level < nodes[usageB.consumer].level;
         });
 
-    for (const auto &usage : meta.bufferUsages)
+    for (const auto &usage : meta.usages)
     {
       intervals.clear();
-      // bufferIntevals.print();
-      bufferIntevals.query(usage.view.offset, usage.view.offset + usage.view.size - 1, usage.view.access, intervals);
+
+      auto curr = AccessConsumerTupple{
+        .access = usage.view.access,
+        .consumer = usage.consumer,
+        .queue = nodes[usage.consumer].queue,
+      };
+
+      bufferIntevals.query(usage.view.offset, usage.view.offset + usage.view.size - 1, curr, intervals);
 
       for (const auto &interval : intervals)
       {
-        if (interval.tag != usage.view.access)
+        if (interval.tag.access != usage.view.access)
         {
           // printf("interval %u %u\n", interval.start, interval.end);
 
           bufferIntevals.remove(interval.start, interval.end, interval.tag);
-          bufferIntevals.insert(interval.start, interval.end, usage.view.access);
+          bufferIntevals.insert(
+              interval.start,
+              interval.end,
+              AccessConsumerTupple{
+                .access = usage.view.access,
+                .consumer = usage.consumer,
+                .queue = nodes[usage.consumer].queue,
+              });
 
-          bufferTransitions.emplace_back(
+          nodes[usage.consumer].bufferTransitions.emplace_back(
               BufferBarrier{
                 .resourceId = meta.bufferInfo.name,
-                .fromAccess = interval.tag,
+                .fromAccess = interval.tag.access,
                 .toAccess = usage.view.access,
                 .offset = interval.start,
                 .size = interval.end - interval.start + 1,
                 .toLevel = nodes[usage.consumer].level,
+                .fromQueue = interval.tag.queue,
+                .toQueue = nodes[usage.consumer].queue,
+                .fromNode = interval.tag.consumer,
               });
         }
       }
@@ -1357,14 +1709,14 @@ void RenderGraph::analyseTextureStateTransition()
 
   for (auto [name, meta] : resources.textureMetadatas)
   {
-    size += meta.textureUsages.size();
+    size += meta.usages.size();
   }
 
   intervals.reserve(4 * size);
 
   for (auto [name, meta] : resources.textureMetadatas)
   {
-    lib::BoundedTaggedRectTreap<AccessLayoutConsumerTriple, uint64_t> textureState(meta.textureUsages.size() * 4);
+    lib::BoundedTaggedRectTreap<AccessLayoutConsumerTriple, uint64_t> textureState(meta.usages.size() * 4);
 
     textureState.insert(
         0,
@@ -1374,19 +1726,20 @@ void RenderGraph::analyseTextureStateTransition()
         AccessLayoutConsumerTriple{
           .access = AccessPattern::NONE,
           .layout = ResourceLayout::UNDEFINED,
+          .queue = Queue::None,
         });
 
     // textureState.print();
 
     std::sort(
-        meta.textureUsages.begin(),
-        meta.textureUsages.end(),
+        meta.usages.begin(),
+        meta.usages.end(),
         [this](const TextureResourceUsage &usageA, const TextureResourceUsage &usageB)
         {
           return nodes[usageA.consumer].level < nodes[usageB.consumer].level;
         });
 
-    for (const auto &usage : meta.textureUsages)
+    for (const auto &usage : meta.usages)
     {
       intervals.clear();
 
@@ -1400,7 +1753,9 @@ void RenderGraph::analyseTextureStateTransition()
       auto currentTag = AccessLayoutConsumerTriple{
         .access = usage.view.access,
         .layout = usage.view.layout,
+        .queue = nodes[usage.consumer].queue,
       };
+
       for (const auto &interval : intervals)
       {
         if (interval.tag != currentTag)
@@ -1408,7 +1763,7 @@ void RenderGraph::analyseTextureStateTransition()
           textureState.remove(interval.x1, interval.y1, interval.x2, interval.y2, interval.tag);
           textureState.insert(interval.x1, interval.y1, interval.x2, interval.y2, currentTag);
 
-          textureTransitions.emplace_back(
+          nodes[usage.consumer].textureTransitions.emplace_back(
               TextureBarrier{
                 .resourceId = meta.textureInfo.name,
                 .fromAccess = interval.tag.access,
@@ -1416,10 +1771,13 @@ void RenderGraph::analyseTextureStateTransition()
                 .fromLayout = interval.tag.layout,
                 .toLayout = usage.view.layout,
                 .baseMip = interval.x1,
-                .mipCount = interval.x2 - interval.x1 + 1,
+                .mipCount = interval.x2 - interval.x1,
                 .baseLayer = interval.y1,
-                .layerCount = interval.y2 - interval.y1 + 1,
+                .layerCount = interval.y2 - interval.y1,
                 .toLevel = nodes[usage.consumer].level,
+                .fromQueue = interval.tag.queue,
+                .toQueue = nodes[usage.consumer].queue,
+                .fromNode = interval.tag.consumer,
               });
         }
       }
@@ -1519,6 +1877,40 @@ void RenderGraph::compile()
   nodes.clear();
   edges.clear();
 
+  for (const auto &[name, meta] : resources.bufferMetadatas)
+  {
+    meta.usages.clear();
+  }
+  for (const auto &[name, meta] : resources.textureMetadatas)
+  {
+    meta.usages.clear();
+  }
+  for (const auto &[name, meta] : resources.samplerMetadatas)
+  {
+    meta.usages.clear();
+  }
+  for (const auto &[name, meta] : resources.bindingsLayoutMetadata)
+  {
+    meta.usages.clear();
+  }
+  for (const auto &[name, meta] : resources.bindingGroupsMetadata)
+  {
+    meta.usages.clear();
+  }
+  for (const auto &[name, meta] : resources.graphicsPipelineMetadata)
+  {
+    meta.usages.clear();
+  }
+  for (const auto &[name, meta] : resources.computePipelineMetadata)
+  {
+    meta.usages.clear();
+  }
+  
+  for (const auto &[name, meta] : resources.scratchBuffers)
+  {
+    meta.usages.clear();
+  }
+
   lib::time::TimeSpan analysePassesStart = lib::time::TimeSpan::now();
   analysePasses();
   lib::time::TimeSpan analysePassesEnd = lib::time::TimeSpan::now();
@@ -1544,12 +1936,691 @@ void RenderGraph::compile()
   // lib::time::TimeSpan outputCommandsEnd = lib::time::TimeSpan::now();
   os::Logger::logf("[RenderGraph] analysePasses time = %fms", (analysePassesEnd - analysePassesStart).milliseconds());
   os::Logger::logf("[RenderGraph] analyseDependencyGraph time = %fms", (analyseDependencyGraphEnd - analyseDependencyGraphStart).milliseconds());
+  // os::Logger::logf("[RenderGraph] analyseStateTransition time = %fms", (analyseStateTransitionEnd - analyseStateTransitionStart).milliseconds());
+
   os::Logger::logf("[RenderGraph] analyseTaskLevels time = %fms", (analyseTaskLevelsEnd - analyseTaskLevelsStart).milliseconds());
   os::Logger::logf("[RenderGraph] analyseAllocations time = %fms", (analyseAllocationsEnd - analyseAllocationsStart).milliseconds());
   os::Logger::logf("[RenderGraph] analyseSemaphores time = %fms", (analyseSemaphoresEnd - analyseSemaphoresStart).milliseconds());
   // os::Logger::logf("[TimeScheduler] outputCommands time = %fns", (outputCommandsEnd - outputCommandsStart).nanoseconds());
 
+  for (const auto &[name, meta] : resources.bufferMetadatas)
+  {
+    if (meta.usages.empty())
+    {
+      os::Logger::warningf("Buffer %s not used in current graph", name.c_str());
+    }
+  }
+
+  for (const auto &[name, meta] : resources.textureMetadatas)
+  {
+    if (meta.usages.empty())
+    {
+      os::Logger::warningf("Buffer %s not used in current graph", name.c_str());
+    }
+  }
+  for (const auto &[name, meta] : resources.samplerMetadatas)
+  {
+    if (meta.usages.empty())
+    {
+      os::Logger::warningf("Sampler %s not used in current graph", name.c_str());
+    }
+  }
+  for (const auto &[name, meta] : resources.bindingsLayoutMetadata)
+  {
+    if (meta.usages.empty())
+    {
+      os::Logger::warningf("Binding Layout %s not used in current graph", name.c_str());
+    }
+  }
+
+  for (const auto &[name, meta] : resources.bindingGroupsMetadata)
+  {
+    if (meta.usages.empty())
+    {
+      os::Logger::warningf("Binding Groups %s not used in current graph", name.c_str());
+    }
+  }
+
+  for (const auto &[name, meta] : resources.graphicsPipelineMetadata)
+  {
+    if (meta.usages.empty())
+    {
+      os::Logger::warningf("Graphics Pipeline %s not used in current graph", name.c_str());
+    }
+  }
+  for (const auto &[name, meta] : resources.computePipelineMetadata)
+  {
+    if (meta.usages.empty())
+    {
+      os::Logger::warningf("Compute Pipeline %s not used in current graph", name.c_str());
+    }
+  }
+
+
   compiled = true;
+}
+
+void RenderGraph::run(Frame &frame)
+{
+  auto runStart = lib::time::TimeSpan::now();
+
+  os::Logger::logf("[RenderGraph] ===== Begin run =====");
+  os::Logger::logf("[RenderGraph] Node count = %zu", nodes.size());
+  uint64_t maxLevel = 0;
+
+  std::sort(
+      nodes.begin(),
+      nodes.end(),
+      [&maxLevel](const RenderGraphNode &a, const RenderGraphNode &b)
+      {
+        maxLevel = std::max(maxLevel, a.level);
+        maxLevel = std::max(maxLevel, b.level);
+        return a.level < b.level;
+      });
+
+  os::Logger::logf("[RenderGraph] Max level = %u", maxLevel);
+
+  frame.futures = std::vector<GPUFuture>(nodes.size());
+  std::vector<CommandBuffer> commandBuffers(nodes.size(), (CommandBuffer)0);
+
+  auto logQueue = [](Queue q)
+  {
+    switch (q)
+    {
+    case Queue::None:
+      return "None";
+      break;
+    case Queue::Graphics:
+      return "Graphics";
+      break;
+    case Queue::Compute:
+      return "Compute";
+      break;
+    case Queue::Transfer:
+      return "Transfer";
+      break;
+    default:
+      return "Unknown";
+      break;
+    }
+    return "";
+  };
+
+  for (auto &node : nodes)
+  {
+    commandBuffers[node.id] = rhi->allocateCommandBuffers(node.queue, 1)[0];
+
+    os::Logger::logf("[RenderGraph] Allocated CommandBuffer for node %u (level=%u queue=%d)", node.id, node.level, logQueue(node.queue));
+  }
+
+  for (auto &node : nodes)
+  {
+    CommandBuffer commandBuffer = commandBuffers[node.id];
+
+    os::Logger::logf("[RenderGraph] * Recording %s (level=%u queue=%s, commandBuffer %u)", node.name.c_str(), node.level, logQueue(node.queue), (uint64_t)commandBuffer);
+    rhi->beginCommandBuffer(commandBuffer);
+
+    /* ================= BUFFER BARRIERS ================= */
+
+    for (auto &transition : node.bufferTransitions)
+    {
+      auto buffer = getBuffer(transition.resourceId);
+
+      if (transition.toQueue != transition.fromQueue)
+      {
+        os::Logger::logf(
+            "[RenderGraph][Barrier][Buffer][QueueTransfer] '%s' fromNode=%u -> node=%u offset=%zu size=%zu fromAccess=%u toAccess=%u fromQueue=%s toQueue=%s",
+            buffer.name.c_str(),
+            transition.fromNode,
+            node.id,
+            transition.offset,
+            transition.size,
+            (uint32_t)transition.fromAccess,
+            (uint32_t)transition.toAccess,
+            logQueue(transition.fromQueue),
+            logQueue(transition.toQueue));
+
+        if (transition.fromNode == -1)
+        {
+          rhi->cmdBufferBarrier(
+              commandBuffer,
+              buffer,
+              PipelineStage::ALL_COMMANDS,
+              PipelineStage::ALL_COMMANDS,
+              transition.fromAccess,
+              AccessPattern::NONE,
+              transition.offset,
+              transition.size,
+              Queue::None,
+              Queue::None);
+        }
+        else
+        {
+          rhi->cmdBufferBarrier(
+              commandBuffers[transition.fromNode],
+              buffer,
+              PipelineStage::ALL_COMMANDS,
+              PipelineStage::ALL_COMMANDS,
+              transition.fromAccess,
+              AccessPattern::NONE,
+              transition.offset,
+              transition.size,
+              transition.fromQueue,
+              transition.toQueue);
+          rhi->cmdBufferBarrier(
+              commandBuffer,
+              buffer,
+              PipelineStage::ALL_COMMANDS,
+              PipelineStage::ALL_COMMANDS,
+              AccessPattern::NONE,
+              transition.toAccess,
+              transition.offset,
+              transition.size,
+              transition.fromQueue,
+              transition.toQueue);
+        }
+      }
+      else
+      {
+        os::Logger::logf(
+            "[RenderGraph][Barrier][Buffer] '%s' offset=%zu size=%zu fromAccess=%u toAccess=%u queue=%s",
+            buffer.name.c_str(),
+            transition.offset,
+            transition.size,
+            (uint32_t)transition.fromAccess,
+            (uint32_t)transition.toAccess,
+            logQueue(transition.fromQueue));
+
+        rhi->cmdBufferBarrier(
+            commandBuffer,
+            buffer,
+            PipelineStage::ALL_COMMANDS,
+            PipelineStage::ALL_COMMANDS,
+            transition.fromAccess,
+            transition.toAccess,
+            transition.offset,
+            transition.size,
+            transition.fromQueue,
+            transition.toQueue);
+      }
+    }
+
+    /* ================= IMAGE BARRIERS ================= */
+
+    for (auto &transition : node.textureTransitions)
+    {
+      auto texture = getTexture(transition.resourceId);
+
+      if (transition.toQueue != transition.fromQueue)
+      {
+        os::Logger::logf(
+            "[RenderGraph][Barrier][Image][QueueTransfer] '%s' fromNode=%u -> node=%u layout %u -> %u access %u -> %u mips [%u..%u) layers [%u..%u) fromQueue=%s toQueue=%s",
+            texture.name.c_str(),
+            transition.fromNode,
+            node.id,
+            (uint32_t)transition.fromLayout,
+            (uint32_t)transition.toLayout,
+            (uint32_t)transition.fromAccess,
+            (uint32_t)transition.toAccess,
+            transition.baseMip,
+            transition.baseMip + transition.mipCount,
+            transition.baseLayer,
+            transition.baseLayer + transition.layerCount,
+            logQueue(transition.fromQueue),
+            logQueue(transition.toQueue));
+
+        if (transition.fromNode == -1)
+        {
+          rhi->cmdImageBarrier(
+              commandBuffer,
+              texture,
+              PipelineStage::ALL_COMMANDS,
+              PipelineStage::ALL_COMMANDS,
+              transition.fromAccess,
+              AccessPattern::NONE,
+              transition.fromLayout,
+              transition.toLayout,
+              GetImageAspectFlags(resources.textureMetadatas[transition.resourceId]->textureInfo.format),
+              transition.baseMip,
+              transition.mipCount,
+              transition.baseLayer,
+              transition.layerCount,
+              Queue::None,
+              Queue::None);
+        }
+        else
+        {
+
+          rhi->cmdImageBarrier(
+              commandBuffers[transition.fromNode],
+              texture,
+              PipelineStage::ALL_COMMANDS,
+              PipelineStage::ALL_COMMANDS,
+              transition.fromAccess,
+              AccessPattern::NONE,
+              transition.fromLayout,
+              transition.toLayout,
+              GetImageAspectFlags(resources.textureMetadatas[transition.resourceId]->textureInfo.format),
+              transition.baseMip,
+              transition.mipCount,
+              transition.baseLayer,
+              transition.layerCount,
+              transition.fromQueue,
+              transition.toQueue);
+          rhi->cmdImageBarrier(
+              commandBuffer,
+              texture,
+              PipelineStage::ALL_COMMANDS,
+              PipelineStage::ALL_COMMANDS,
+              AccessPattern::NONE,
+              transition.toAccess,
+              transition.fromLayout,
+              transition.toLayout,
+              GetImageAspectFlags(resources.textureMetadatas[transition.resourceId]->textureInfo.format),
+              transition.baseMip,
+              transition.mipCount,
+              transition.baseLayer,
+              transition.layerCount,
+              transition.fromQueue,
+              transition.toQueue);
+        }
+      }
+      else
+      {
+        os::Logger::logf(
+            "[RenderGraph][Barrier][Image] '%s' layout %u -> %u access %u -> %u mips [%u..%u) layers [%u..%u) queue=%s",
+            texture.name.c_str(),
+            (uint32_t)transition.fromLayout,
+            (uint32_t)transition.toLayout,
+            (uint32_t)transition.fromAccess,
+            (uint32_t)transition.toAccess,
+            transition.baseMip,
+            transition.baseMip + transition.mipCount,
+            transition.baseLayer,
+            transition.baseLayer + transition.layerCount,
+            logQueue(transition.fromQueue));
+
+        rhi->cmdImageBarrier(
+            commandBuffer,
+            texture,
+            PipelineStage::ALL_COMMANDS,
+            PipelineStage::ALL_COMMANDS,
+            transition.fromAccess,
+            transition.toAccess,
+            transition.fromLayout,
+            transition.toLayout,
+            GetImageAspectFlags(resources.textureMetadatas[transition.resourceId]->textureInfo.format),
+            transition.baseMip,
+            transition.mipCount,
+            transition.baseLayer,
+            transition.layerCount,
+            transition.fromQueue,
+            transition.toQueue);
+      }
+    }
+
+    /* ================= COMMANDS ================= */
+
+    for (auto &cmd : node.commands)
+    {
+      switch (cmd.type)
+      {
+      case BeginRenderPass:
+        os::Logger::logf("[RenderGraph][Cmd] BeginRenderPass '%s'", cmd.args.renderPassInfo->name.c_str());
+        rhi->cmdBeginRenderPass(commandBuffer, *cmd.args.renderPassInfo);
+        break;
+
+      case EndRenderPass:
+        os::Logger::logf("[RenderGraph][Cmd] EndRenderPass");
+        rhi->cmdEndRenderPass(commandBuffer);
+        break;
+
+      case CopyBuffer:
+        os::Logger::logf(
+            "[RenderGraph][Cmd] CopyBuffer '%s'[%zu] -> '%s'[%zu] size=%zu",
+            cmd.args.copyBuffer->src.buffer.name.c_str(),
+            cmd.args.copyBuffer->src.offset,
+            cmd.args.copyBuffer->dst.buffer.name.c_str(),
+            cmd.args.copyBuffer->dst.offset,
+            cmd.args.copyBuffer->src.size);
+
+        rhi->cmdCopyBuffer(
+            commandBuffer,
+            cmd.args.copyBuffer->src.buffer,
+            cmd.args.copyBuffer->dst.buffer,
+            cmd.args.copyBuffer->src.offset,
+            cmd.args.copyBuffer->dst.offset,
+            cmd.args.copyBuffer->src.size);
+        break;
+
+      case BindBindingGroups:
+      {
+        auto metadata = resources.bindingGroupsMetadata[cmd.args.bindGroups->groups.name];
+
+        const BindingGroupsInfo &info = metadata->groupsInfo;
+
+        os::Logger::logf(
+            "[RenderGraph][Cmd] BindBindingGroups '%s' groupCount=%zu dynamicOffsets=%zu", info.name.c_str(), info.groups.size(), cmd.args.bindGroups->dynamicOffsets.size());
+
+        /* ===== Dynamic Offsets ===== */
+
+        for (size_t i = 0; i < cmd.args.bindGroups->dynamicOffsets.size(); ++i)
+        {
+          os::Logger::logf("[RenderGraph]       [DynamicOffset] index=%zu value=%u", i, cmd.args.bindGroups->dynamicOffsets[i]);
+        }
+
+        /* ===== Groups ===== */
+
+        for (size_t g = 0; g < info.groups.size(); ++g)
+        {
+          const GroupInfo &group = info.groups[g];
+
+          os::Logger::logf("[RenderGraph]       [BindingGroup] index=%zu name='%s'", g, group.name.c_str());
+
+          /* -------- Buffers -------- */
+
+          for (const BindingBuffer &buf : group.buffers)
+          {
+            const BufferView &view = buf.bufferView;
+
+            os::Logger::logf(
+                "[RenderGraph]          [Buffer] binding=%u name='%s' offset=%llu size=%llu access=%u",
+                buf.binding,
+                view.buffer.name.c_str(),
+                (unsigned long long)view.offset,
+                (unsigned long long)view.size,
+                (uint32_t)view.access);
+          }
+
+          /* -------- Samplers -------- */
+
+          for (const BindingSampler &sampler : group.samplers)
+          {
+            const TextureView &view = sampler.view;
+
+            const char *textureName = view.texture.name.c_str();
+
+            os::Logger::logf(
+                "[RenderGraph]          [Sampler] binding=%u sampler='%s' texture='%s' "
+                "mips=[%u..%u) layers=[%u..%u) aspect=%u layout=%u access=%u",
+                sampler.binding,
+                sampler.sampler.name.c_str(),
+                textureName,
+                view.baseMipLevel,
+                view.baseMipLevel + view.levelCount,
+                view.baseArrayLayer,
+                view.baseArrayLayer + view.layerCount,
+                (uint32_t)view.flags,
+                (uint32_t)view.layout,
+                (uint32_t)view.access);
+          }
+
+          /* -------- Sampled Textures -------- */
+
+          for (const BindingTextureInfo &tex : group.textures)
+          {
+            const TextureView &view = tex.textureView;
+
+            const char *textureName = view.texture.name.c_str();
+
+            os::Logger::logf(
+                "[RenderGraph]          [Texture] binding=%u texture='%s' "
+                "mips=[%u..%u) layers=[%u..%u) aspect=%u layout=%u access=%u",
+                tex.binding,
+                textureName,
+                view.baseMipLevel,
+                view.baseMipLevel + view.levelCount,
+                view.baseArrayLayer,
+                view.baseArrayLayer + view.layerCount,
+                (uint32_t)view.flags,
+                (uint32_t)view.layout,
+                (uint32_t)view.access);
+          }
+
+          /* -------- Storage Textures -------- */
+
+          for (const BindingStorageTextureInfo &tex : group.storageTextures)
+          {
+            const TextureView &view = tex.textureView;
+
+            const char *textureName = view.texture.name.c_str();
+
+            os::Logger::logf(
+                "[RenderGraph]          [StorageTexture] binding=%u texture='%s' "
+                "mips=[%u..%u) layers=[%u..%u) aspect=%u layout=%u access=%u",
+                tex.binding,
+                textureName,
+                view.baseMipLevel,
+                view.baseMipLevel + view.levelCount,
+                view.baseArrayLayer,
+                view.baseArrayLayer + view.layerCount,
+                (uint32_t)view.flags,
+                (uint32_t)view.layout,
+                (uint32_t)view.access);
+          }
+        }
+
+        rhi->cmdBindBindingGroups(commandBuffer, cmd.args.bindGroups->groups, cmd.args.bindGroups->dynamicOffsets.data(), cmd.args.bindGroups->dynamicOffsets.size());
+
+        break;
+      }
+
+      case BindGraphicsPipeline:
+        os::Logger::logf("[RenderGraph][Cmd] BindGraphicsPipeline '%s'", cmd.args.graphicsPipeline->name.c_str());
+        rhi->cmdBindGraphicsPipeline(commandBuffer, *cmd.args.graphicsPipeline);
+        break;
+
+      case BindComputePipeline:
+        os::Logger::logf("[RenderGraph][Cmd] BindComputePipeline '%s'", cmd.args.computePipeline->name.c_str());
+        rhi->cmdBindComputePipeline(commandBuffer, *cmd.args.computePipeline);
+        break;
+
+      case BindVertexBuffer:
+        os::Logger::logf(
+            "[RenderGraph][Cmd] BindVertexBuffer slot=%u '%s' offset=%zu",
+            cmd.args.bindVertexBuffer->slot,
+            cmd.args.bindVertexBuffer->buffer.buffer.name.c_str(),
+            cmd.args.bindVertexBuffer->buffer.offset);
+
+        rhi->cmdBindVertexBuffer(commandBuffer, cmd.args.bindVertexBuffer->slot, cmd.args.bindVertexBuffer->buffer.buffer, cmd.args.bindVertexBuffer->buffer.offset);
+        break;
+
+      case BindIndexBuffer:
+        os::Logger::logf(
+            "[RenderGraph][Cmd] BindIndexBuffer '%s' offset=%zu type=%u",
+            cmd.args.bindIndexBuffer->buffer.buffer.name.c_str(),
+            cmd.args.bindIndexBuffer->buffer.offset,
+            (uint32_t)cmd.args.bindIndexBuffer->type);
+
+        rhi->cmdBindIndexBuffer(commandBuffer, cmd.args.bindIndexBuffer->buffer.buffer, cmd.args.bindIndexBuffer->type, cmd.args.bindIndexBuffer->buffer.offset);
+        break;
+
+      case Draw:
+        os::Logger::logf(
+            "[RenderGraph][Cmd] Draw vertices=%u instances=%u firstVertex=%u firstInstance=%u",
+            cmd.args.draw->vertexCount,
+            cmd.args.draw->instanceCount,
+            cmd.args.draw->firstVertex,
+            cmd.args.draw->firstInstance);
+
+        rhi->cmdDraw(commandBuffer, cmd.args.draw->vertexCount, cmd.args.draw->instanceCount, cmd.args.draw->firstVertex, cmd.args.draw->firstInstance);
+        break;
+
+      case DrawIndexed:
+        os::Logger::logf(
+            "[RenderGraph][Cmd] DrawIndexed indices=%u instances=%u firstIndex=%u vertexOffset=%d firstInstance=%u",
+            cmd.args.drawIndexed->indexCount,
+            cmd.args.drawIndexed->instanceCount,
+            cmd.args.drawIndexed->firstIndex,
+            cmd.args.drawIndexed->vertexOffset,
+            cmd.args.drawIndexed->firstInstance);
+
+        rhi->cmdDrawIndexed(
+            commandBuffer,
+            cmd.args.drawIndexed->indexCount,
+            cmd.args.drawIndexed->instanceCount,
+            cmd.args.drawIndexed->firstIndex,
+            cmd.args.drawIndexed->vertexOffset,
+            cmd.args.drawIndexed->firstInstance);
+        break;
+
+      case DrawIndexedIndirect:
+        os::Logger::logf(
+            "[RenderGraph][Cmd] DrawIndexedIndirect buffer='%s' offset=%zu count=%u stride=%u",
+            cmd.args.drawIndexedIndirect->buffer.buffer.name.c_str(),
+            cmd.args.drawIndexedIndirect->buffer.offset,
+            cmd.args.drawIndexedIndirect->drawCount,
+            cmd.args.drawIndexedIndirect->stride);
+
+        rhi->cmdDrawIndexedIndirect(
+            commandBuffer,
+            cmd.args.drawIndexedIndirect->buffer.buffer,
+            cmd.args.drawIndexedIndirect->buffer.offset,
+            cmd.args.drawIndexedIndirect->drawCount,
+            cmd.args.drawIndexedIndirect->stride);
+        break;
+
+      case Dispatch:
+        os::Logger::logf("[RenderGraph][Cmd] Dispatch (%u, %u, %u)", cmd.args.dispatch->x, cmd.args.dispatch->y, cmd.args.dispatch->z);
+
+        rhi->cmdDispatch(commandBuffer, cmd.args.dispatch->x, cmd.args.dispatch->y, cmd.args.dispatch->z);
+        break;
+      }
+    }
+  }
+
+  for (auto commandBuffer : commandBuffers)
+  {
+    rhi->endCommandBuffer(commandBuffer);
+  }
+  auto submitStart = lib::time::TimeSpan::now();
+
+  /* ================= SUBMISSION ================= */
+
+  for (auto &node : nodes)
+  {
+    std::vector<GPUFuture> waits;
+
+    for (auto semaphoreIndex : node.waitSemaphores)
+    {
+      auto &sem = semaphores[semaphoreIndex];
+
+      os::Logger::logf("[RenderGraph][Submit] Node %u waits on %s", node.id, nodes[sem.signalTask].name.c_str());
+
+      waits.push_back(frame.futures[sem.signalTask]);
+    }
+
+    os::Logger::logf("[RenderGraph][Submit] Submitting node %u queue=%s waits=%zu", node.id, logQueue(node.queue), waits.size());
+
+    frame.futures[node.id] = rhi->submit(node.queue, &commandBuffers[node.id], 1, waits.data(), waits.size());
+  }
+
+  auto runEnd = lib::time::TimeSpan::now();
+
+  os::Logger::logf("[RenderGraph] ===== End run recordTime=%fms, submitTime=%fms =====", (submitStart - runStart).milliseconds(), (runEnd - runStart).milliseconds());
+}
+
+void RenderGraph::waitFrame(Frame &frame)
+{
+  for (auto &future : frame.futures)
+  {
+    while (!rhi->isCompleted(future))
+    {
+      // TODO: yhield in job system
+    }
+  }
+}
+
+static void validateBufferUsage(const BufferInfo &info)
+{
+  const BufferUsage u = info.usage;
+
+  auto has = [&](BufferUsage flag)
+  {
+    return (u & flag) != 0;
+  };
+
+  if (has(BufferUsage_Push) && has(BufferUsage_Pull))
+  {
+    RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' cannot have both MAP_WRITE (Push) and MAP_READ (Pull)", info.name.c_str());
+  }
+
+  if (has(BufferUsage_Pull))
+  {
+    if (!has(BufferUsage_CopyDst))
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' BufferUsage_Pull (Pull) requires BufferUsage_CopyDst usage", info.name.c_str());
+    }
+
+    if (has(BufferUsage_Storage) || has(BufferUsage_Uniform) || has(BufferUsage_Vertex) || has(BufferUsage_Index) || has(BufferUsage_Indirect) || has(BufferUsage_Timestamp) ||
+        has(BufferUsage_CopySrc))
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' BufferUsage_Pull buffers may not have GPU write or bind usages", info.name.c_str());
+    }
+  }
+
+  if (has(BufferUsage_Push) && has(BufferUsage_CopyDst))
+  {
+    RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' BufferUsage_Push buffers cannot have BufferUsage_CopyDst usage", info.name.c_str());
+  }
+
+  if (has(BufferUsage_CopySrc))
+  {
+    if (has(BufferUsage_Pull))
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' BufferUsage_CopySrc buffers cannot be BufferUsage_Pull", info.name.c_str());
+    }
+  }
+
+  if (has(BufferUsage_CopyDst))
+  {
+    if (has(BufferUsage_Push))
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' BufferUsage_CopyDst buffers cannot be BufferUsage_Push", info.name.c_str());
+    }
+  }
+
+  if (has(BufferUsage_Timestamp))
+  {
+    if (has(BufferUsage_Push) || has(BufferUsage_Pull))
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' Timestamp buffers cannot be CPU mapped", info.name.c_str());
+    }
+
+    if (has(BufferUsage_Storage) || has(BufferUsage_Uniform) || has(BufferUsage_Vertex) || has(BufferUsage_Index))
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' Timestamp buffers cannot be bound to shaders", info.name.c_str());
+    }
+
+    if (!has(BufferUsage_CopyDst))
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' Timestamp buffers must include CopyDst usage", info.name.c_str());
+    }
+  }
+
+  if (has(BufferUsage_Uniform))
+  {
+    if (has(BufferUsage_Pull))
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' Uniform buffers cannot be BufferUsage_Pull", info.name.c_str());
+    }
+
+    if (has(BufferUsage_Storage))
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' cannot be both BufferUsage_Uniform and BufferUsage_Storage", info.name.c_str());
+    }
+  }
+
+  if ((has(BufferUsage_Vertex) || has(BufferUsage_Index)) && has(BufferUsage_Pull))
+  {
+    RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' Vertex/Index buffers cannot be MAP_READ", info.name.c_str());
+  }
+
+  if (!(has(BufferUsage_CopySrc) || has(BufferUsage_CopyDst) || has(BufferUsage_Uniform) || has(BufferUsage_Storage) || has(BufferUsage_Vertex) || has(BufferUsage_Index) ||
+        has(BufferUsage_Indirect) || has(BufferUsage_Timestamp)))
+  {
+    RENDER_GRAPH_FATAL("[RenderGraph] Buffer '%s' has no GPU-visible usage flags", info.name.c_str());
+  }
 }
 
 RHICommandBuffer::RHICommandBuffer()
@@ -1557,110 +2628,220 @@ RHICommandBuffer::RHICommandBuffer()
   recorded.push_back(CommandSequence());
 }
 
-void RenderGraph::deleteBuffer(const std::string &name)
+void RenderGraph::deleteBuffer(const Buffer &name)
 {
-  if (!resources.bufferMetadatas.remove(name))
+  if (!resources.bufferMetadatas.remove(name.name))
   {
-    throw std::runtime_error("Buffer not found");
+    RENDER_GRAPH_FATAL("Buffer %s not found", name.name.c_str());
   }
+
+  rhi->deleteBuffer(name);
 }
 
-void RenderGraph::deleteTexture(const std::string &name)
+void RenderGraph::deleteTexture(const Texture &name)
 {
-  if (!resources.textureMetadatas.remove(name))
+  if (!resources.textureMetadatas.remove(name.name))
   {
-    throw std::runtime_error("Buffer not found");
+    RENDER_GRAPH_FATAL("Texture %s not found", name.name.c_str());
   }
+  rhi->deleteTexture(name);
 }
 
-void RenderGraph::deleteSampler(const std::string &name)
+void RenderGraph::deleteSampler(const Sampler &name)
 {
-  if (!resources.samplerMetadatas.remove(name))
+  if (!resources.samplerMetadatas.remove(name.name))
   {
-    throw std::runtime_error("Buffer not found");
+    RENDER_GRAPH_FATAL("Sampler %s not found", name.name.c_str());
   }
+  rhi->deleteSampler(name);
 }
 
-void RenderGraph::deleteBindingsLayout(const std::string &name)
+void RenderGraph::deleteBindingsLayout(const BindingsLayout &name)
 {
-  if (!resources.bindingsLayoutMetadata.remove(name))
+  if (!resources.bindingsLayoutMetadata.remove(name.name))
   {
-    throw std::runtime_error("Buffer not found");
+    RENDER_GRAPH_FATAL("Bindings Layout %s not found", name.name.c_str());
   }
+
+  rhi->deleteBindingsLayout(name);
 }
 
-void RenderGraph::deleteBindingGroups(const std::string &name)
+void RenderGraph::deleteBindingGroups(const BindingGroups &name)
 {
-  if (!resources.bindingGroupsMetadata.remove(name))
+  if (!resources.bindingGroupsMetadata.remove(name.name))
   {
-    throw std::runtime_error("Buffer not found");
+    RENDER_GRAPH_FATAL("Binding Groups %s not found", name.name.c_str());
   }
+
+  rhi->deleteBindingGroups(name);
 }
 
-void RenderGraph::deleteGraphicsPipeline(const std::string &name)
+void RenderGraph::deleteGraphicsPipeline(const GraphicsPipeline &name)
 {
-  if (!resources.graphicsPipelineMetadata.remove(name))
+  if (!resources.graphicsPipelineMetadata.remove(name.name))
   {
-    throw std::runtime_error("Buffer not found");
+    RENDER_GRAPH_FATAL("Graphics Pipeline %s not found", name.name.c_str());
   }
+  rhi->deleteGraphicsPipeline(name);
 }
 
-void RenderGraph::deleteComputePipeline(const std::string &name)
+void RenderGraph::deleteComputePipeline(const ComputePipeline &name)
 {
-  if (!resources.computePipelineMetadata.remove(name))
+  if (!resources.computePipelineMetadata.remove(name.name))
   {
-    throw std::runtime_error("Buffer not found");
+    RENDER_GRAPH_FATAL("Compute Pipeline %s not found", name.name.c_str());
   }
+  rhi->deleteComputePipeline(name);
 }
 
 const Buffer RenderGraph::createBuffer(const BufferInfo &info)
 {
+  if (resources.bufferMetadatas.contains(info.name))
+  {
+    throw std::runtime_error("Buffer already created");
+  }
+
+  validateBufferUsage(info);
+
   const auto &name = info.name;
 
   resources.bufferMetadatas.insert(
       name,
       BufferResourceMetadata{
         .bufferInfo = info,
+        .firstUsedAt = UINT64_MAX,
+        .lastUsedAt = 0,
       });
 
-  return Buffer{
-    .name = info.name,
-  };
+  return rhi->createBuffer(info);
 }
 
 const Texture RenderGraph::createTexture(const TextureInfo &info)
 {
   const auto &name = info.name;
-
+  if (resources.textureMetadatas.contains(info.name))
+  {
+    throw std::runtime_error("Texture already created");
+  }
   resources.textureMetadatas.insert(
       name,
       TextureResourceMetadata{
         .textureInfo = info,
       });
 
-  return Texture{
-    .name = info.name,
-  };
+  return rhi->createTexture(info);
 }
 
 const Sampler RenderGraph::createSampler(const SamplerInfo &info)
 {
   const auto &name = info.name;
-
+  if (resources.samplerMetadatas.contains(info.name))
+  {
+    throw std::runtime_error("Sampler already created");
+  }
   resources.samplerMetadatas.insert(
       name,
       SamplerResourceMetadata{
         .samplerInfo = info,
       });
 
-  return Sampler{
-    .name = info.name,
-  };
+  return rhi->createSampler(info);
+}
+
+bool isSamplerCompatible(ResourceLayout layout)
+{
+  switch (layout)
+  {
+  case ResourceLayout::SHADER_READ_ONLY:
+  case ResourceLayout::GENERAL:
+  case ResourceLayout::DEPTH_STENCIL_READ_ONLY:
+    return true;
+  default:
+    return false;
+  }
 }
 
 const BindingGroups RenderGraph::createBindingGroups(const BindingGroupsInfo &info)
 {
   const auto &name = info.name;
+
+  if (resources.bindingGroupsMetadata.contains(info.name))
+  {
+    throw std::runtime_error("Binding Groups already created");
+  }
+
+  auto layoutObject = resources.bindingsLayoutMetadata[info.layout.name];
+
+  if (layoutObject->layoutsInfo.groups.size() != info.groups.size())
+  {
+    RENDER_GRAPH_FATAL("[RenderGraph] binding groups %s size don't match given layout %s", info.name.c_str(), info.layout.name.c_str());
+  }
+
+  for (uint32_t i = 0; i < info.groups.size(); i++)
+  {
+    if (layoutObject->layoutsInfo.groups[i].buffers.size() != info.groups[i].buffers.size())
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] binding groups %s buffers size don't match given layout %s", info.name.c_str(), info.layout.name.c_str());
+    }
+    if (layoutObject->layoutsInfo.groups[i].samplers.size() != info.groups[i].samplers.size())
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] binding groups %s samplers size don't match given layout %s", info.name.c_str(), info.layout.name.c_str());
+    }
+    if (layoutObject->layoutsInfo.groups[i].storageTextures.size() != info.groups[i].storageTextures.size())
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] binding groups %s storageTextures size don't match given layout %s", info.name.c_str(), info.layout.name.c_str());
+    }
+    if (layoutObject->layoutsInfo.groups[i].textures.size() != info.groups[i].textures.size())
+    {
+      RENDER_GRAPH_FATAL("[RenderGraph] binding groups %s textures size don't match given layout %s", info.name.c_str(), info.layout.name.c_str());
+    }
+  }
+
+  for (uint32_t i = 0; i < info.groups.size(); i++)
+  {
+    for (uint32_t j = 0; j < layoutObject->layoutsInfo.groups[i].buffers.size(); j++)
+    {
+      if (layoutObject->layoutsInfo.groups[i].buffers[j].type == BufferBindingType::BufferBindingType_StorageBuffer)
+      {
+        auto usage = resources.bufferMetadatas[info.groups[i].buffers[j].bufferView.buffer.name]->bufferInfo.usage;
+        if ((usage & BufferUsage::BufferUsage_Storage) == 0)
+        {
+          RENDER_GRAPH_FATAL(
+              "[RenderGraph] binding groups %s at group %u, buffer %s bound with type BufferBindingType_StorageBuffer, but buffer usage did not include BufferUsage_Storage",
+              info.name.c_str(),
+              i,
+              info.groups[i].buffers[j].bufferView.buffer.name.c_str());
+        }
+      }
+
+      if (layoutObject->layoutsInfo.groups[i].buffers[j].type == BufferBindingType::BufferBindingType_UniformBuffer)
+      {
+        auto usage = resources.bufferMetadatas[info.groups[i].buffers[j].bufferView.buffer.name]->bufferInfo.usage;
+        if ((usage & BufferUsage::BufferUsage_Uniform) == 0)
+        {
+          RENDER_GRAPH_FATAL(
+              "[RenderGraph] binding groups %s at group %u, buffer %s bound with type BufferBindingType_UniformBuffer, but buffer usage did not include BufferUsage_Uniform",
+              info.name.c_str(),
+              i,
+              info.groups[i].buffers[j].bufferView.buffer.name.c_str());
+        }
+      }
+    }
+  }
+
+  for (uint32_t i = 0; i < info.groups.size(); i++)
+  {
+    for (uint32_t j = 0; j < info.groups[i].samplers.size(); j++)
+    {
+      if (!isSamplerCompatible(info.groups[i].samplers[j].view.layout))
+      {
+        RENDER_GRAPH_FATAL(
+            "[RenderGraph] Invalid layout for sampler %s in group %i, expects GENERAL, SHADER_READ_ONLY or DEPTH_STENCIL_READ_ONLY",
+            info.groups[i].samplers[j].sampler.name.c_str(),
+            i);
+      }
+    }
+  }
 
   resources.bindingGroupsMetadata.insert(
       name,
@@ -1668,14 +2849,19 @@ const BindingGroups RenderGraph::createBindingGroups(const BindingGroupsInfo &in
         .groupsInfo = info,
       });
 
-  return BindingGroups{
-    .name = info.name,
-  };
+  assert(resources.bindingGroupsMetadata.contains(name));
+
+  return rhi->createBindingGroups(info);
 }
 
 const GraphicsPipeline RenderGraph::createGraphicsPipeline(const GraphicsPipelineInfo &info)
 {
   const auto &name = info.name;
+
+  if (resources.graphicsPipelineMetadata.contains(info.name))
+  {
+    throw std::runtime_error("Graphics Pipeline already created");
+  }
 
   resources.graphicsPipelineMetadata.insert(
       name,
@@ -1683,14 +2869,17 @@ const GraphicsPipeline RenderGraph::createGraphicsPipeline(const GraphicsPipelin
         .pipelineInfo = info,
       });
 
-  return GraphicsPipeline{
-    .name = info.name,
-  };
+  return rhi->createGraphicsPipeline(info);
 }
 
 const ComputePipeline RenderGraph::createComputePipeline(const ComputePipelineInfo &info)
 {
   const auto &name = info.name;
+
+  if (resources.computePipelineMetadata.contains(info.name))
+  {
+    throw std::runtime_error("Compute Pipeline already created");
+  }
 
   resources.computePipelineMetadata.insert(
       name,
@@ -1698,14 +2887,17 @@ const ComputePipeline RenderGraph::createComputePipeline(const ComputePipelineIn
         .pipelineInfo = info,
       });
 
-  return ComputePipeline{
-    .name = info.name,
-  };
+  return rhi->createComputePipeline(info);
 }
 
 const BindingsLayout RenderGraph::createBindingsLayout(const BindingsLayoutInfo &info)
 {
   const auto &name = info.name;
+
+  if (resources.bindingsLayoutMetadata.contains(info.name))
+  {
+    throw std::runtime_error("Binding Layout already created");
+  }
 
   resources.bindingsLayoutMetadata.insert(
       name,
@@ -1713,37 +2905,80 @@ const BindingsLayout RenderGraph::createBindingsLayout(const BindingsLayoutInfo 
         .layoutsInfo = info,
       });
 
-  return BindingsLayout{
-    .name = info.name,
-  };
+  assert(resources.bindingsLayoutMetadata.contains(name));
+  return rhi->createBindingsLayout(info);
 }
 
-const Buffer RenderGraph::createScratchBuffer(const BufferInfo &info)
+const Shader RenderGraph::createShader(const ShaderInfo info)
 {
   const auto &name = info.name;
 
-  resources.scratchBuffersRequestsMetadatas.insert(
-      name,
-      ScratchBufferResourceMetadata{
-        .bufferInfo = info,
-      });
-
-  return Buffer{
-    .name = info.name,
-  };
-}
-
-const Buffer RHIResources::getScratchBuffer(const std::string &name)
-{
-  if (!scratchMap.contains(name))
+  if (resources.shadersMetadatas.contains(info.name))
   {
-    throw std::runtime_error("Buffer not found");
+    throw std::runtime_error("Shader already created");
   }
 
-  return Buffer{
-    .name = name,
-  };
+  resources.shadersMetadatas.insert(
+      name,
+      ShaderResourceMetadata{
+        .info = info,
+      });
+
+  return rhi->createShader(info);
 }
+
+void RenderGraph::deleteShader(Shader handle)
+{
+  if (!resources.shadersMetadatas.remove(handle.name))
+  {
+    RENDER_GRAPH_FATAL("Shader %s not found", handle.name.c_str());
+  }
+
+  rhi->deleteShader(handle);
+}
+
+void RenderGraph::bufferRead(const Buffer &buffer, const uint64_t offset, const uint64_t size, std::function<void(const void *)> callback)
+{
+  rhi->bufferRead(buffer, offset, size, callback);
+}
+
+void RenderGraph::bufferWrite(const Buffer &buffer, const uint64_t offset, const uint64_t size, void *data)
+{
+  rhi->bufferWrite(buffer, offset, size, data);
+}
+
+// const Buffer RenderGraph::createScratchBuffer(const BufferInfo &info)
+// {
+//   const auto &name = info.name;
+
+//   resources.scratchBuffersRequestsMetadatas.insert(
+//       name,
+//       ScratchBufferResourceMetadata{
+//         .bufferInfo = info,
+//       });
+
+//   return Buffer{
+//     .name = info.name,
+//   };
+// }
+
+// const Buffer RHIResources::getScratchBuffer(const BufferInfo &info)
+// {
+//   if (!scratchBuffersRequestsMetadatas.contains(info.name))
+//   {
+//     scratchBuffersRequestsMetadatas.insert(
+//         info.name,
+//         ScratchBufferResourceMetadata{
+//           .bufferInfo = info,
+//           .firstUsedAt = UINT64_MAX,
+//           .lastUsedAt = 0,
+//         });
+//   }
+
+//   return Buffer{
+//     .name = info.name,
+//   };
+// }
 
 const Buffer RHIResources::getBuffer(const std::string &name)
 {
@@ -1819,12 +3054,55 @@ const Texture RHIResources::getTexture(const std::string &name)
 {
   if (!textureMetadatas.contains(name))
   {
+    os::print("texture = %s\n", name.c_str());
     throw std::runtime_error("Texture not found");
   }
 
   return Texture{
     .name = name,
   };
+}
+
+// const Buffer RenderGraph::getScratchBuffer(BufferInfo &info)
+// {
+//   return resources.getScratchBuffer(info);
+// }
+
+// const Buffer RenderGraph::getScratchBuffer(BufferInfo &info)
+// {
+//   return resources.getScratchBuffer(info);
+// }
+const BindingGroups RenderGraph::getBindingGroups(const std::string &name)
+{
+  return resources.getBindingGroups(name);
+}
+const GraphicsPipeline RenderGraph::getGraphicsPipeline(const std::string &name)
+{
+  return resources.getGraphicsPipeline(name);
+}
+const ComputePipeline RenderGraph::getComputePipeline(const std::string &name)
+{
+  return resources.getComputePipeline(name);
+}
+const BindingsLayout RenderGraph::getBindingsLayout(const std::string &name)
+{
+  return resources.getBindingsLayout(name);
+}
+const Sampler RenderGraph::getSampler(const std::string &name)
+{
+  return resources.getSampler(name);
+}
+const Buffer RenderGraph::getBuffer(const std::string &name)
+{
+  return resources.getBuffer(name);
+}
+// const Buffer RenderGraph::getScratchBuffer(const std::string &name)
+// {
+//   return resources.getScratchBuffer(name);
+// }
+const Texture RenderGraph::getTexture(const std::string &name)
+{
+  return resources.getTexture(name);
 }
 
 void RHICommandBuffer::cmdBeginRenderPass(const RenderPassInfo &info)
@@ -1845,8 +3123,8 @@ void RHICommandBuffer::cmdCopyBuffer(BufferView src, BufferView dst)
   Command cmd{CommandType::CopyBuffer};
   cmd.args.copyBuffer = new CopyBufferArgs();
   *cmd.args.copyBuffer = {src, dst};
+
   recorded.back().commands.push_back(std::move(cmd));
-  recorded.push_back(CommandSequence());
 }
 
 void RHICommandBuffer::cmdBindBindingGroups(BindingGroups groups, uint32_t *dynamicOffsets, uint32_t dynamicOffsetsCount)
@@ -1896,7 +3174,7 @@ void RHICommandBuffer::cmdDraw(uint32_t vertexCount, uint32_t instanceCount, uin
   cmd.args.draw = new DrawArgs();
   *cmd.args.draw = {vertexCount, instanceCount, firstVertex, firstInstance};
   recorded.back().commands.push_back(std::move(cmd));
-  recorded.push_back(CommandSequence());
+  // recorded.push_back(CommandSequence());
 }
 
 void RHICommandBuffer::cmdDrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance)
@@ -1905,7 +3183,7 @@ void RHICommandBuffer::cmdDrawIndexed(uint32_t indexCount, uint32_t instanceCoun
   cmd.args.drawIndexed = new DrawIndexedArgs();
   *cmd.args.drawIndexed = {indexCount, instanceCount, firstIndex, firstInstance, vertexOffset};
   recorded.back().commands.push_back(std::move(cmd));
-  recorded.push_back(CommandSequence());
+  // recorded.push_back(CommandSequence());
 }
 
 void RHICommandBuffer::cmdDrawIndexedIndirect(BufferView buffer, uint32_t offset, uint32_t drawCount, uint32_t stride)
@@ -1914,7 +3192,7 @@ void RHICommandBuffer::cmdDrawIndexedIndirect(BufferView buffer, uint32_t offset
   cmd.args.drawIndexedIndirect = new DrawIndexedIndirectArgs();
   *cmd.args.drawIndexedIndirect = {buffer, offset, drawCount, stride};
   recorded.back().commands.push_back(std::move(cmd));
-  recorded.push_back(CommandSequence());
+  // recorded.push_back(CommandSequence());
 }
 
 void RHICommandBuffer::cmdDispatch(uint32_t x, uint32_t y, uint32_t z)
@@ -1923,7 +3201,42 @@ void RHICommandBuffer::cmdDispatch(uint32_t x, uint32_t y, uint32_t z)
   cmd.args.dispatch = new DispatchArgs();
   *cmd.args.dispatch = {x, y, z};
   recorded.back().commands.push_back(std::move(cmd));
-  recorded.push_back(CommandSequence());
+  // recorded.push_back(CommandSequence());
+}
+
+void RenderGraph::addSwapChainImages(SwapChain sc)
+{
+  uint64_t imagesCount = rhi->getSwapChainImagesCount(sc);
+
+  for (uint64_t index = 0; index < imagesCount; index++)
+  {
+    TextureInfo info = {
+      .name = "_SwapChainImage[" + std::to_string((uint64_t)sc) + "," + std::to_string(index) + "].texture",
+      .format = rhi->getSwapChainFormat(sc),
+      .depth = 1,
+      .mipLevels = 1,
+      .usage = ImageUsage::ImageUsage_ColorAttachment,
+      .memoryProperties = BufferUsage::BufferUsage_None,
+      .height = rhi->getSwapChainImagesHeight(sc),
+      .width = rhi->getSwapChainImagesWidth(sc),
+    };
+
+    resources.textureMetadatas.insert(
+        info.name,
+        TextureResourceMetadata{
+          .textureInfo = info,
+        });
+  }
+}
+void RenderGraph::removeSwapChainImages(SwapChain sc)
+{
+  uint64_t imagesCount = rhi->getSwapChainImagesCount(sc);
+
+  for (uint64_t index = 0; index < imagesCount; index++)
+  {
+    auto name = "_SwapChainImage[" + std::to_string((uint64_t)sc) + "," + std::to_string(index) + "].texture";
+    resources.textureMetadatas.remove(name);
+  }
 }
 
 } // namespace rendering

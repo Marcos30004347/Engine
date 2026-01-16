@@ -254,6 +254,8 @@ VulkanDevice::VulkanDevice(VulkanVersion version, DeviceRequiredLimits requiredL
   instanceExtensions.push_back(strdup(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME));
   instanceExtensions.push_back(strdup(VK_EXT_DEBUG_UTILS_EXTENSION_NAME));
 
+
+  
   std::unordered_set<std::string> uniqueExtensions;
   for (auto instanceExtension : instanceExtensions)
   {

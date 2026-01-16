@@ -62,7 +62,9 @@ int main()
   // device->init();
   // RHI *rhi = new VulkanRHI();
 
-  RHI *rhi = new vulkan::VulkanRHI(vulkan::Vulkan_1_2, limits, features, {});
+  vulkan::VulkanRHI *rhi = new vulkan::VulkanRHI(vulkan::Vulkan_1_2, limits, features, {});
+  auto surfaces = std::vector<VkSurfaceKHR>();
+  rhi->init(surfaces);
 
   RenderGraph *renderGraph = new RenderGraph(rhi);
 
@@ -76,6 +78,7 @@ int main()
               .binding = 0,
               .isDynamic = false,
               .name = "FirstBuffer",
+              .type = BufferBindingType::BufferBindingType_StorageBuffer,
               .visibility = BindingVisibility::BindingVisibility_Compute,
             },
           },
@@ -97,12 +100,14 @@ int main()
               .binding = 0,
               .isDynamic = false,
               .name = "FirstBuffer",
+              .type = BufferBindingType::BufferBindingType_StorageBuffer,
               .visibility = BindingVisibility::BindingVisibility_Compute,
             },
             BindingGroupLayoutBufferEntry{
               .binding = 1,
               .isDynamic = false,
               .name = "SecondBuffer",
+              .type = BufferBindingType::BufferBindingType_StorageBuffer,
               .visibility = BindingVisibility::BindingVisibility_Compute,
             },
           },
@@ -115,9 +120,11 @@ int main()
       .buffers =
           {
             BindingGroupLayoutBufferEntry{
+              .name = "FirstBuffer",
+
               .binding = 0,
               .isDynamic = false,
-              .name = "FirstBuffer",
+              .type = BufferBindingType::BufferBindingType_StorageBuffer,
               .visibility = BindingVisibility::BindingVisibility_Compute,
             },
           },
@@ -134,6 +141,7 @@ int main()
               .binding = 0,
               .isDynamic = false,
               .name = "FirstBuffer",
+              .type = BufferBindingType::BufferBindingType_StorageBuffer,
               .visibility = BindingVisibility::BindingVisibility_Compute,
             },
           },
@@ -149,6 +157,7 @@ int main()
               .binding = 0,
               .isDynamic = false,
               .name = "FirstBuffer",
+              .type = BufferBindingType::BufferBindingType_StorageBuffer,
               .visibility = BindingVisibility::BindingVisibility_Compute,
             },
           },
@@ -159,6 +168,7 @@ int main()
   auto bufferAInfo = mockBufferInfo("BufferA");
   auto bufferBInfo = mockBufferInfo("BufferB");
   auto bufferCInfo = mockBufferInfo("BufferC");
+  auto bufferDInfo = mockBufferInfo("BufferD");
 
   auto textureAInfo = mockTextureInfo("TextureA");
   auto samplerAInfo = mockSamplerInfo("SamplerA");
@@ -166,9 +176,11 @@ int main()
   auto buffer = renderGraph->createBuffer(bufferAInfo);
   auto bufferB = renderGraph->createBuffer(bufferBInfo);
   auto bufferC = renderGraph->createBuffer(bufferCInfo);
+  auto bufferD = renderGraph->createBuffer(bufferDInfo);
 
   auto textureA = renderGraph->createTexture(textureAInfo);
   auto samplerA = renderGraph->createSampler(samplerAInfo);
+
   auto layoutB = renderGraph->createBindingsLayout(layoutBInfo);
   auto layoutC = renderGraph->createBindingsLayout(layoutCInfo);
   auto layoutD = renderGraph->createBindingsLayout(layoutDInfo);
@@ -180,7 +192,7 @@ int main()
     .layout = layoutB,
     .groups =
         {
-          GroupInfo {
+          GroupInfo{
             .buffers =
                 {
                   {
@@ -190,13 +202,13 @@ int main()
                           .buffer = buffer,
                           .offset = 0,
                           .size = 512,
-                          .access = AccessPattern::COLOR_ATTACHMENT_WRITE,
+                          .access = AccessPattern::MEMORY_WRITE,
                         },
                   },
                 },
             .samplers =
                 {
-                  BindingSampler {
+                  BindingSampler{
                     .binding = 1,
                     .sampler = samplerA,
                     .view =
@@ -208,13 +220,15 @@ int main()
                           .layerCount = 1,
                           .levelCount = 1,
                           .flags = ImageAspectFlags::Color,
-                          .layout = ResourceLayout::COLOR_ATTACHMENT,
+                          .layout = ResourceLayout::SHADER_READ_ONLY,
                         },
                   },
                 },
           },
         },
   };
+
+  renderGraph->createBindingGroups(bindingGroupsBInfo);
   auto bindingGroupsCInfo = BindingGroupsInfo{
     .name = "BindingsPassC",
     .layout = layoutC,
@@ -227,7 +241,7 @@ int main()
                 .bufferView =
                     {
                       .buffer = buffer,
-                      .offset = 512,
+                      .offset = 0,
                       .size = 512,
                       .access = AccessPattern::COLOR_ATTACHMENT_WRITE,
                     },
@@ -245,6 +259,8 @@ int main()
             },
       },
     }};
+
+  renderGraph->createBindingGroups(bindingGroupsCInfo);
 
   auto bindingGroupsDInfo = BindingGroupsInfo{
     .name = "BindingsPassD",
@@ -266,6 +282,7 @@ int main()
             },
       },
     }};
+  renderGraph->createBindingGroups(bindingGroupsDInfo);
 
   auto bindingGroupsEInfo = BindingGroupsInfo{
     .name = "BindingsPassE",
@@ -279,7 +296,7 @@ int main()
                 .bufferView =
                     {
                       .buffer = buffer,
-                      .offset = 512 + 256,
+                      .offset = 0,
                       .size = 256,
                       .access = AccessPattern::SHADER_READ,
                     },
@@ -287,6 +304,8 @@ int main()
             },
       },
     }};
+  
+  renderGraph->createBindingGroups(bindingGroupsEInfo);
 
   auto bindingGroupsFInfo = BindingGroupsInfo{
     .name = "BindingsPassF",
@@ -309,88 +328,62 @@ int main()
       },
     }};
 
-  renderGraph->createBindingGroups(bindingGroupsBInfo);
-  renderGraph->createBindingGroups(bindingGroupsCInfo);
-  renderGraph->createBindingGroups(bindingGroupsDInfo);
-  renderGraph->createBindingGroups(bindingGroupsEInfo);
   renderGraph->createBindingGroups(bindingGroupsFInfo);
 
-  renderGraph->enqueuePass(
-      "passB",
-      RenderGraph::ExecuteAlways,
-      [](RHIResources &resources, RHICommandBuffer &cmd)
-      {
-        auto textureA = resources.getTexture("TextureA");
-        auto buffer = resources.getBuffer("BufferA");
-        auto sampler = resources.getSampler("SamplerA");
-        auto bindings = resources.getBindingGroups("BindingsPassB");
+  auto bindingsB = renderGraph->getBindingGroups("BindingsPassB");
+  auto bindingsC = renderGraph->getBindingGroups("BindingsPassC");
+  auto bindingsD = renderGraph->getBindingGroups("BindingsPassD");
+  auto bindingsE = renderGraph->getBindingGroups("BindingsPassE");
+  auto bindingsF = renderGraph->getBindingGroups("BindingsPassF");
 
-        cmd.cmdBindBindingGroups(bindings, nullptr, 0);
-        cmd.cmdDispatch(0, 0, 0);
-      });
+  RHICommandBuffer passB;
+  passB.cmdBindBindingGroups(bindingsB, nullptr, 0);
+  passB.cmdDispatch(0, 0, 0);
 
-  renderGraph->enqueuePass(
-      "passC",
-      RenderGraph::ExecuteAlways,
-      [](RHIResources &resources, RHICommandBuffer &cmd)
-      {
-        auto buffer = resources.getBuffer("BufferA");
-        auto bufferC = resources.getBuffer("BufferC");
-        auto bindings = resources.getBindingGroups("BindingsPassC");
+  RHICommandBuffer passC;
+  passC.cmdBindBindingGroups(bindingsC, nullptr, 0);
+  passC.cmdDispatch(0, 0, 0);
 
-        cmd.cmdBindBindingGroups(bindings, nullptr, 0);
-        cmd.cmdDispatch(0, 0, 0);
-      });
+  RHICommandBuffer passD;
+  passD.cmdBindBindingGroups(bindingsD, nullptr, 0);
+  passD.cmdDispatch(0, 0, 0);
 
-  renderGraph->enqueuePass(
-      "passD",
-      RenderGraph::ExecuteAlways,
-      [](RHIResources &resources, RHICommandBuffer &cmd)
-      {
-        auto bindings = resources.getBindingGroups("BindingsPassD");
-        auto buffer = resources.getBuffer("BufferA");
+  RHICommandBuffer passE;
+  passE.cmdBindBindingGroups(bindingsE, nullptr, 0);
+  passE.cmdDispatch(0, 0, 0);
 
-        cmd.cmdBindBindingGroups(bindings, nullptr, 0);
-        cmd.cmdDispatch(0, 0, 0);
-      });
+  RHICommandBuffer passF;
+  passF.cmdBindBindingGroups(bindingsF, nullptr, 0);
+  passF.cmdDispatch(0, 0, 0);
 
-  renderGraph->enqueuePass(
-      "passE",
-      RenderGraph::ExecuteAlways,
-      [](RHIResources &resources, RHICommandBuffer &cmd)
-      {
-        auto buffer = resources.getBuffer("BufferA");
-        auto bindings = resources.getBindingGroups("BindingsPassE");
-
-        cmd.cmdBindBindingGroups(bindings, nullptr, 0);
-        cmd.cmdDispatch(0, 0, 0);
-      });
-
-  renderGraph->enqueuePass(
-      "passF",
-      RenderGraph::ExecuteAlways,
-      [](RHIResources &resources, RHICommandBuffer &cmd)
-      {
-        auto buffer = resources.getBuffer("BufferA");
-        auto bindings = resources.getBindingGroups("BindingsPassF");
-        cmd.cmdBindBindingGroups(bindings, nullptr, 0);
-        cmd.cmdDispatch(0, 0, 0);
-      });
+  renderGraph->enqueuePass("passB", passB);
+  renderGraph->enqueuePass("passC", passC);
+  renderGraph->enqueuePass("passD", passD);
+  renderGraph->enqueuePass("passE", passE);
+  renderGraph->enqueuePass("passF", passF);
 
   lib::time::TimeSpan now = lib::time::TimeSpan::now();
   renderGraph->compile();
   lib::time::TimeSpan then = lib::time::TimeSpan::now();
 
-  // const Buffer &buffer = renderGraph->getBuffer("BufferA");
-
-  // const uint64_t data[] = {0,1,2,3,4,5};
-  // rhi->bufferWrite(buffer, 0, sizeof(data), (void*)data);
-
-  // GPUFuture future = renderGraph->execute();
-
   os::Logger::logf("Task Graph compilation time = %fms", (then - now).milliseconds());
 
-  // program.log();
+  renderGraph->deleteBindingGroups(bindingsB);
+  renderGraph->deleteBindingGroups(bindingsC);
+  renderGraph->deleteBindingGroups(bindingsD);
+  renderGraph->deleteBindingGroups(bindingsE);
+  renderGraph->deleteBindingGroups(bindingsF);
+  renderGraph->deleteBindingsLayout(layoutB);
+  renderGraph->deleteBindingsLayout(layoutC);
+  renderGraph->deleteBindingsLayout(layoutD);
+  renderGraph->deleteBindingsLayout(layoutE);
+  renderGraph->deleteBindingsLayout(layoutF);
+
+  renderGraph->deleteBuffer(buffer);
+  renderGraph->deleteBuffer(bufferB);
+  renderGraph->deleteBuffer(bufferC);
+  renderGraph->deleteBuffer(bufferD);
+  renderGraph->deleteSampler(samplerA);
 
   os::Logger::shutdown();
 

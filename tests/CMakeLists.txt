@@ -20,3 +20,5 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/rhi/EventLoopTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/rhi/BufferAllocatorTests.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/rendering/RenderGraphTests.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/rendering/ComputeAddTests.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/rendering/TriangleExample.cmake)

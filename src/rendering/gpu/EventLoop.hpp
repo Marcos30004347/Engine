@@ -113,9 +113,7 @@ public:
   AsyncEvent<Fence> submit(Fence fence, CompletionCallback callback = nullptr)
   {
     auto entry = std::make_shared<EntryType>(std::move(fence), std::move(callback));
-
     pendingQueue_.enqueue(entry);
-
     return AsyncEvent<Fence>(entry);
   }
 

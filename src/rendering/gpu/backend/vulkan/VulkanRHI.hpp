@@ -101,6 +101,7 @@ public:
 struct VulkanShader
 {
   VkShaderModule shaderModule;
+  ShaderInfo info;
 };
 
 struct VulkanQueueFamilyIndices
@@ -135,8 +136,8 @@ struct VulkanSwapChain
   uint32_t height;
 
   VkQueue presentQueue;
-
-  std::vector<VulkanTextureView *> swapChainImages;
+  std::vector<VulkanTexture*> swapChainImages;
+  std::vector<VulkanTextureView *> swapChainImageViews;
   std::vector<VkSemaphore> achireSemaphores;
   std::vector<VkSemaphore> presentSemaphores;
 
@@ -175,19 +176,23 @@ struct VulkanCommandBufferRenderPass
   std::vector<VulkanTextureView> views;
   std::vector<VulkanAttatchment> attatchments;
 };
-
-struct VulkanCommandBuffer
-{
-  VkCommandBuffer commandBuffer;
-  VkCommandPool commandPool;
-  VulkanGraphicsPipeline *boundGraphicsPipeline;
-  VulkanComputePipeline *boundComputePipeline;
-  // VulkanBindingGroups *boundGroups;
-  std::vector<VulkanCommandBufferRenderPass> renderPasses;
-};
 struct VulkanCommandPool
 {
   VkCommandPool commandPool;
+};
+struct VulkanCommandBuffer
+{
+  bool submited;
+
+  VkFence fence;
+  Queue queue;
+  VkCommandBuffer commandBuffer;
+  VulkanCommandPool commandPool;
+  bool hasGraphicsPipeline = false;
+  bool hascomputePipeline = false;
+  GraphicsPipeline boundGraphicsPipeline;
+  ComputePipeline boundComputePipeline;
+  std::vector<VulkanCommandBufferRenderPass> renderPasses;
 };
 
 class VulkanRHI : public RHI
@@ -202,11 +207,9 @@ private:
 
     VkFence fence;
     VkSemaphore semaphore;
-
-    std::vector<VkFramebuffer> framebuffers;
-    std::vector<VulkanTextureView> views;
-
-    VulkanAsyncHandler(VulkanRHI *, VkFence, VkSemaphore, std::vector<VkFramebuffer> &, std::vector<VulkanTextureView> &);
+    std::vector<CommandBuffer> commandBuffers;
+    // bool valid();
+    VulkanAsyncHandler(VulkanRHI *, std::vector<CommandBuffer>, VkFence, VkSemaphore);
     static rendering::FenceStatus getStatus(VulkanAsyncHandler &future);
   };
 
@@ -242,14 +245,12 @@ private:
   std::vector<const char *> validationLayers = {
     "VK_LAYER_KHRONOS_validation",
   };
-  std::vector<char *> instanceExtensions = {};
+  std::vector<const char *> instanceExtensions = {};
   std::vector<const char *> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
   };
 
   uint64_t requestedFeaturesFlags;
-
-  void init(std::vector<VkSurfaceKHR> &surfaces);
 
   void setupDebugMessenger();
   void createLogicalDevice();
@@ -263,7 +264,7 @@ private:
   VkFence getFence();
   VkSemaphore getSemaphore();
 
-  VkRenderPass createRenderPass(const ColorAttatchment *attachments, uint32_t attatchmentsCount, DepthAttatchment depth);
+  VkRenderPass createRenderPass(const ColorAttatchment *attachments, uint32_t attatchmentsCount, DepthAttatchment* depth);
   VulkanQueueFamilyIndices findQueueFamilyIndices();
 
   lib::ConcurrentHashMap<std::string, VulkanBuffer *> vkBuffers;
@@ -274,6 +275,10 @@ private:
   lib::ConcurrentHashMap<std::string, VulkanBindingGroups *> vkBindingsGroups;
   lib::ConcurrentHashMap<std::string, VulkanGraphicsPipeline *> vkGraphicsPipeline;
   lib::ConcurrentHashMap<std::string, VulkanComputePipeline *> vkComputePipeline;
+
+  lib::ConcurrentShardedQueue<VulkanCommandPool> graphicsCommandPool;
+  lib::ConcurrentShardedQueue<VulkanCommandPool> transferCommandPool;
+  lib::ConcurrentShardedQueue<VulkanCommandPool> computeCommandPool;
 
   VkQueue getQueueHandle(Queue queueType);
   void processPresentations(CommandBuffer *cmds, uint32_t count, const std::vector<VkSemaphore> &signalSemaphores);
@@ -306,8 +311,8 @@ protected:
   VulkanCommandPool allocateCommandPool(uint32_t queueFamilyIndex);
   void releaseCommandPool(VulkanCommandPool &pool);
 
-  std::vector<CommandBuffer> allocateCommandBuffers(VulkanCommandPool &commandPool, uint32_t count, VkCommandBufferLevel level);
-  void releaseCommandBuffer(std::vector<CommandBuffer> &buffers);
+  std::vector<CommandBuffer> allocateCommandBuffers(Queue queue, uint32_t count) override;
+  void releaseCommandBuffer(std::vector<CommandBuffer> &buffers) override;
 
   const VulkanShader &getVulkanShader(const std::string &obj);
   const VulkanTexture &getVulkanTexture(const std::string &obj);
@@ -331,7 +336,13 @@ protected:
   void cmdDraw(CommandBuffer, uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0) override;
   void cmdDrawIndexed(CommandBuffer, uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0) override;
   void cmdDrawIndexedIndirect(CommandBuffer, Buffer indirectBuffer, size_t offset, uint32_t drawCount, uint32_t stride) override;
-
+  // void cmdCopyBuffer(
+  //     CommandBuffer cmdHandle,
+  //     Buffer srcHandle,
+  //     Buffer dstHandle,
+  //     uint32_t srcOffset,
+  //     uint32_t dstOffset,
+  //     uint32_t size) override;
   void cmdDispatch(CommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) override;
   void cmdImageBarrier(
       CommandBuffer cmd,
@@ -347,8 +358,8 @@ protected:
       uint32_t level_count,
       uint32_t base_array_layer,
       uint32_t layer_count,
-      uint32_t src_queue_family,
-      uint32_t dst_queue_family) override;
+      Queue src_queue_family,
+      Queue dst_queue_family) override;
   void cmdBufferBarrier(
       CommandBuffer cmd,
       Buffer b,
@@ -358,30 +369,60 @@ protected:
       AccessPattern dst_access,
       uint32_t offset,
       uint32_t size,
-      uint32_t src_queue_family,
-      uint32_t dst_queue_family) override;
+      Queue src_queue_family,
+      Queue dst_queue_family) override;
+
   void cmdMemoryBarrier(CommandBuffer cmd, PipelineStage src_stage, PipelineStage dst_stage, AccessPattern src_access, AccessPattern dst_access) override;
   void cmdPipelineBarrier(CommandBuffer cmd, PipelineStage src_stage, PipelineStage dst_stage, AccessPattern src_access, AccessPattern dst_access) override;
 
   GPUFuture submit(Queue queue, CommandBuffer *commandBuffers, uint32_t count, GPUFuture *wait, uint32_t waitCount) override;
 
-  void blockUntil(GPUFuture &) override;
-  void waitIdle() override;
-  bool isCompleted(GPUFuture &future) override;
   static void cleanupSubmitCallback(VulkanRHI::VulkanAsyncHandler &future);
 
 public:
   VulkanRHI(VulkanVersion version, DeviceRequiredLimits requiredLimits, DeviceFeatures requestedFeatures, std::vector<std::string> extensions);
   ~VulkanRHI();
 
-  void bufferMapRead(const Buffer &buffer, const uint64_t offset, const uint64_t size, void **ptr) override;
-  void bufferUnmap(const Buffer &buffer) override;
+  void waitIdle() override;
+  void blockUntil(GPUFuture &) override;
+  bool isCompleted(GPUFuture &future) override;
+
+  inline VkInstance getInstance()
+  {
+    return instance;
+  }
+
+  void init(std::vector<VkSurfaceKHR> &surfaces);
+
+  void bufferRead(const Buffer &buffer, const uint64_t offset, const uint64_t size, std::function<void(const void *)>) override;
   void bufferWrite(const Buffer &buffer, const uint64_t offset, const uint64_t size, void *data) override;
 
+  const Buffer createBuffer(const BufferInfo &info) override;
+  const Texture createTexture(const TextureInfo &info) override;
+  const Sampler createSampler(const SamplerInfo &info) override;
+  const BindingsLayout createBindingsLayout(const BindingsLayoutInfo &info) override;
+  const BindingGroups createBindingGroups(const BindingGroupsInfo &info) override;
+  const GraphicsPipeline createGraphicsPipeline(const GraphicsPipelineInfo &info) override;
+  const ComputePipeline createComputePipeline(const ComputePipelineInfo &info) override;
+
+  void deleteBuffer(const Buffer &name) override;
+  void deleteTexture(const Texture &name) override;
+  void deleteSampler(const Sampler &name) override;
+  void deleteBindingsLayout(const BindingsLayout &name) override;
+  void deleteBindingGroups(const BindingGroups &name) override;
+  void deleteGraphicsPipeline(const GraphicsPipeline &name) override;
+  void deleteComputePipeline(const ComputePipeline &name) override;
+
   const SwapChain createSwapChain(uint32_t surfaceIndex, uint32_t width, uint32_t height) override;
-  const uint32_t getSwapChainImagesCount(SwapChain swapChainHandle);
+  const uint32_t getSwapChainImagesCount(SwapChain swapChainHandle) override;
   void destroySwapChain(SwapChain) override;
+  Format getSwapChainFormat(SwapChain handle) override;
   const TextureView getCurrentSwapChainTextureView(SwapChain swapChainHandle, uint32_t imageIndex) override;
+  const uint32_t getSwapChainImagesWidth(SwapChain swapChainHandle) override;
+  const uint32_t getSwapChainImagesHeight(SwapChain swapChainHandle) override;
+
+  const Shader createShader(const ShaderInfo data) override;
+  void deleteShader(Shader handle) override;
 };
 
 } // namespace vulkan

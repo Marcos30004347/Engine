@@ -7,6 +7,10 @@
 
 namespace os
 {
+
+std::atomic<size_t> Logger::s_maxQueueSize{0}; // 0 = unlimited
+std::atomic<size_t> Logger::s_resumeQueueSize{0};
+
 std::atomic<bool> Logger::s_started{false};
 std::atomic<bool> Logger::s_running{false};
 std::atomic<bool> Logger::s_consoleEnabled{true};
@@ -18,8 +22,16 @@ lib::ConcurrentQueue<Logger::LogItem> Logger::s_queue;
 std::mutex Logger::s_fileMutex;
 std::ofstream Logger::s_file;
 
-void Logger::start()
+void Logger::setMaxQueueSize(size_t maxSize)
 {
+  s_maxQueueSize.store(maxSize);
+  s_resumeQueueSize.store(static_cast<size_t>(maxSize * 0.8));
+}
+
+void Logger::start(uint32_t maxQueueSize)
+{
+  setMaxQueueSize(maxQueueSize);
+  
   bool expected = false;
   if (s_started.compare_exchange_strong(expected, true))
   {
@@ -51,6 +63,25 @@ void Logger::shutdown()
     std::lock_guard<std::mutex> lk(s_fileMutex);
     if (s_file.is_open())
       s_file.close();
+  }
+}
+
+void Logger::waitForQueueSpace()
+{
+  const size_t maxSize = s_maxQueueSize.load();
+  if (maxSize == 0)
+    return;
+
+  const size_t resumeSize = s_resumeQueueSize.load();
+
+  while (s_queue.length() > maxSize)
+  {
+    std::this_thread::sleep_for(std::chrono::microseconds(200));
+  }
+
+  while (s_queue.length() > resumeSize)
+  {
+    std::this_thread::sleep_for(std::chrono::microseconds(200));
   }
 }
 
@@ -98,11 +129,14 @@ void Logger::ensureStarted()
 void Logger::enqueue(Level lvl, std::string_view msg)
 {
   ensureStarted();
+  waitForQueueSpace();
+
   LogItem item;
   item.level = lvl;
   item.text.assign(msg.begin(), msg.end());
   item.ts = std::chrono::system_clock::now();
   item.tid = std::this_thread::get_id();
+
   s_queue.enqueue(std::move(item));
 }
 
@@ -164,7 +198,7 @@ void Logger::writeItem(const LogItem &it)
   levelStr = std::string(color) + levelToString(it.level) + reset;
 
   line << levelStr << " " << it.text << '\n';
-  //line << levelStr << " [tid " << it.tid << "] " << it.text << '\n';
+  // line << levelStr << " [tid " << it.tid << "] " << it.text << '\n';
 
   const std::string s = line.str();
 

@@ -1,12 +1,12 @@
 #pragma once
+#include "datastructure/ConcurrentQueue.hpp"
+#include "time/TimeSpan.hpp"
 #include <atomic>
 #include <fstream>
 #include <mutex>
 #include <string>
 #include <string_view>
 #include <thread>
-#include "time/TimeSpan.hpp"
-#include "datastructure/ConcurrentQueue.hpp" 
 
 namespace os
 {
@@ -21,7 +21,7 @@ public:
     Error
   };
 
-  static void start();
+  static void start(uint32_t maxQueueSize = 1024);
   static void shutdown();
   static void setOutputFile(const std::string &path, bool append = false);
   static void setConsoleEnabled(bool enabled);
@@ -35,6 +35,7 @@ public:
   static void logf(const char *fmt, ...);
   static void warningf(const char *fmt, ...);
   static void errorf(const char *fmt, ...);
+  static void setMaxQueueSize(size_t maxSize);
 
 private:
   struct LogItem
@@ -44,10 +45,12 @@ private:
     std::chrono::system_clock::time_point ts;
     std::thread::id tid;
   };
-
+  static std::atomic<size_t> s_maxQueueSize;
+  static std::atomic<size_t> s_resumeQueueSize;
   static void ensureStarted();
   static void enqueue(Level lvl, std::string_view msg);
   static void enqueuef(Level lvl, const char *fmt, va_list args);
+  static void waitForQueueSpace();
 
   static const char *levelToString(Level l);
   static std::string formatTimestamp(const std::chrono::system_clock::time_point &tp);

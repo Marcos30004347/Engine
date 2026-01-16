@@ -1,8 +1,10 @@
 #include "./VulkanRHI.hpp"
 #include "os/Logger.hpp"
+#include <charconv>
+#include <cstdint>
 #include <set>
+#include <string>
 #include <vulkan/vulkan_format_traits.hpp>
-
 namespace rendering
 {
 namespace backend
@@ -27,20 +29,32 @@ static VkBufferUsageFlags toVkBufferUsageFlags(BufferUsage usage)
 {
   VkBufferUsageFlags flags = 0;
 
+  // Pipeline usage
   if (usage & BufferUsage_Uniform)
     flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
   if (usage & BufferUsage_Storage)
     flags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+
   if (usage & BufferUsage_Vertex)
     flags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
   if (usage & BufferUsage_Index)
     flags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+
   if (usage & BufferUsage_Indirect)
     flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+
+  // Timestamp buffers are written by GPU
   if (usage & BufferUsage_Timestamp)
-    flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; // Typically written by queries
-  if (usage & (BufferUsage_Push | BufferUsage_Pull))
-    flags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+  // Explicit transfer usage (WebGPU-like)
+  if (usage & BufferUsage_CopySrc)
+    flags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+  if (usage & BufferUsage_CopyDst)
+    flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
   return flags;
 }
@@ -458,7 +472,21 @@ static VkDescriptorSetLayoutBinding bufferEntryToBinding(const BindingGroupLayou
 {
   VkDescriptorSetLayoutBinding binding{};
   binding.binding = entry.binding;
-  binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  VkDescriptorType type;
+
+  switch (entry.type)
+  {
+  case BufferBindingType_UniformBuffer:
+    type = entry.isDynamic ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+    break;
+  case BufferBindingType_StorageBuffer:
+    type = entry.isDynamic ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+
+    break;
+  }
+
+  binding.descriptorType = type;
   binding.descriptorCount = 1;
   binding.stageFlags = toVkShaderStageFlags(entry.visibility);
   binding.pImmutableSamplers = nullptr;
@@ -893,6 +921,14 @@ void VulkanRHI::initializeInstance(VulkanVersion version)
     break;
   }
 
+#if defined(__APPLE__)
+  const char *VK_EXT_METAL_SURFACE_EXTENSION_NAME = "VK_EXT_metal_surface";
+  const char *VK_MVK_MACOS_SURFACE_EXTENSION_NAME = "VK_MVK_macos_surface";
+
+  instanceExtensions.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
+  instanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
+#endif
+
   VkInstanceCreateInfo createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   createInfo.pApplicationInfo = &appInfo;
@@ -1049,48 +1085,45 @@ void VulkanRHI::createLogicalDevice()
 
   std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
   std::set<uint32_t> uniqueFamiles;
-  std::unordered_map<uint32_t, uint32_t> familyToCount;
 
   if (indices.hasComputeFamily)
   {
-    familyToCount[indices.computeFamily] = indices.computeQueueCount;
     uniqueFamiles.insert(indices.computeFamily);
   }
 
   if (indices.hasGraphicsFamily)
   {
-    familyToCount[indices.graphicsFamily] = indices.graphicsQueueCount;
     uniqueFamiles.insert(indices.graphicsFamily);
   }
 
   if (indices.hasTransferFamily)
   {
-    familyToCount[indices.transferFamily] = indices.transferQueueCount;
     uniqueFamiles.insert(indices.transferFamily);
   }
 
   for (auto &surface : surfaces)
   {
-
     if (surface.hasPresentFamily)
     {
-      familyToCount[surface.presentFamily] += 1;
       uniqueFamiles.insert(surface.presentFamily);
     }
   }
 
-  std::vector<std::vector<float>> queuePriorityStorage;
+  std::vector<float *> queuePriorityStorage;
 
   for (uint32_t familyIndex : uniqueFamiles)
   {
-    std::vector<float> priorities(familyToCount[familyIndex], 1.0f);
+    float *priorities = new float[1];
+    priorities[0] = 1;
+
+    // std::vector<float> priorities(familyToCount[familyIndex], 1.0f);
     queuePriorityStorage.push_back(priorities);
 
     VkDeviceQueueCreateInfo queueCreateInfo{};
     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     queueCreateInfo.queueFamilyIndex = familyIndex;
-    queueCreateInfo.queueCount = familyToCount[familyIndex];
-    queueCreateInfo.pQueuePriorities = priorities.data();
+    queueCreateInfo.queueCount = 1; // familyToCount[familyIndex];
+    queueCreateInfo.pQueuePriorities = priorities;
     queueCreateInfos.push_back(queueCreateInfo);
   }
 
@@ -1098,8 +1131,46 @@ void VulkanRHI::createLogicalDevice()
 
   deviceFeatures.multiDrawIndirect = features & DeviceFeatures_MultiDrawIndirect ? VK_TRUE : VK_FALSE;
   deviceFeatures.drawIndirectFirstInstance = features & DeviceFeatures_DrawIndirectFirstInstance ? VK_TRUE : VK_FALSE;
+  deviceFeatures.samplerAnisotropy = VK_TRUE;
 
   VkDeviceCreateInfo createInfo = {};
+
+  std::vector<VkExtensionProperties> availableExtensions;
+
+  uint32_t extensionCount = 0;
+  vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+
+  availableExtensions.resize(extensionCount);
+  vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+
+  bool hasPortabilitySubset = false;
+  bool hasDebugUtils = false;
+
+  const char *VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME = "VK_KHR_portability_subset";
+
+  for (const auto &ext : availableExtensions)
+  {
+    if (strcmp(ext.extensionName, VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME) == 0)
+    {
+      hasPortabilitySubset = true;
+      break;
+    }
+    if (strcmp(ext.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
+    {
+      hasDebugUtils = true;
+      break;
+    }
+  }
+
+  if (hasPortabilitySubset)
+  {
+    deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
+  }
+
+  if (hasDebugUtils)
+  {
+    deviceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+  }
 
   createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
@@ -1181,6 +1252,11 @@ void VulkanRHI::createLogicalDevice()
   }
 
   this->device = device;
+
+  for (auto buffer : queuePriorityStorage)
+  {
+    delete[] buffer;
+  }
 }
 
 VulkanBuffer &VulkanRHI::allocateBuffer(const BufferInfo &info)
@@ -1219,10 +1295,10 @@ VulkanBuffer &VulkanRHI::allocateBuffer(const BufferInfo &info)
 
   vkBindBufferMemory(device, vkBuf->buffer, vkBuf->memory, 0);
 
-  if (vkBuf->memoryFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
-  {
-    vkMapMemory(device, vkBuf->memory, 0, info.size, 0, &vkBuf->mapped);
-  }
+  // if (vkBuf->memoryFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+  // {
+  //   vkMapMemory(device, vkBuf->memory, 0, info.size, 0, &vkBuf->mapped);
+  // }
 
   vkBuffers.insert(info.name, vkBuf);
   return *vkBuf;
@@ -1254,7 +1330,6 @@ void VulkanRHI::releaseBuffer(VulkanBuffer &buf)
   buf.info = BufferInfo{};
 
   vkBuffers.remove(buf.info.name);
-  delete &buf;
 }
 
 VulkanTexture &VulkanRHI::allocateTexture(const TextureInfo &info)
@@ -1265,8 +1340,7 @@ VulkanTexture &VulkanRHI::allocateTexture(const TextureInfo &info)
   tex->extent = {info.width, info.height, std::max(1u, info.depth)};
   tex->mipLevels = std::max(1u, info.mipLevels);
   tex->usageFlags = toVkImageUsageFlags(info.usage);
-  tex->memoryFlags = toVkMemoryPropertyFlags(info.memoryProperties, true);
-
+  tex->memoryFlags = toVkMemoryPropertyFlags(info.memoryProperties, false);
   VkImageCreateInfo imageInfo{};
   imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   imageInfo.imageType = info.depth > 1 ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
@@ -1308,28 +1382,26 @@ VulkanTexture &VulkanRHI::allocateTexture(const TextureInfo &info)
 
 void VulkanRHI::releaseTexture(VulkanTexture &vkTex)
 {
-  VulkanTexture *tex = &vkTex;
-  if (tex->image != VK_NULL_HANDLE)
+  if (vkTex.image != VK_NULL_HANDLE)
   {
-    vkDestroyImage(device, tex->image, nullptr);
-    tex->image = VK_NULL_HANDLE;
+    vkDestroyImage(device, vkTex.image, nullptr);
+    vkTex.image = VK_NULL_HANDLE;
   }
 
-  if (tex->memory != VK_NULL_HANDLE)
+  if (vkTex.memory != VK_NULL_HANDLE)
   {
-    vkFreeMemory(device, tex->memory, nullptr);
-    tex->memory = VK_NULL_HANDLE;
+    vkFreeMemory(device, vkTex.memory, nullptr);
+    vkTex.memory = VK_NULL_HANDLE;
   }
 
-  tex->format = VK_FORMAT_UNDEFINED;
-  tex->extent = {};
-  tex->mipLevels = 1;
-  tex->usageFlags = 0;
-  tex->memoryFlags = 0;
-  tex->currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  vkTex.format = VK_FORMAT_UNDEFINED;
+  vkTex.extent = {};
+  vkTex.mipLevels = 1;
+  vkTex.usageFlags = 0;
+  vkTex.memoryFlags = 0;
+  vkTex.currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-  vkTextures.remove(tex->info.name);
-  delete tex;
+  vkTextures.remove(vkTex.info.name);
 }
 
 VulkanTextureView VulkanRHI::createTextureView(const TextureView &view)
@@ -1408,7 +1480,6 @@ VulkanSampler &VulkanRHI::allocateSampler(const SamplerInfo &info)
 
 void VulkanRHI::releaseSampler(VulkanSampler &sampler)
 {
-  VulkanSampler *vkSampler = &sampler;
   if (sampler.sampler != VK_NULL_HANDLE)
   {
     vkDestroySampler(device, sampler.sampler, nullptr);
@@ -1416,7 +1487,6 @@ void VulkanRHI::releaseSampler(VulkanSampler &sampler)
   }
 
   vkSamplers.remove(sampler.info.name);
-  delete vkSampler;
 }
 
 VulkanBindingsLayout &VulkanRHI::allocateBindingsLayout(const BindingsLayoutInfo &info)
@@ -1486,7 +1556,6 @@ VulkanBindingsLayout &VulkanRHI::allocateBindingsLayout(const BindingsLayoutInfo
 
 void VulkanRHI::releaseBindingsLayout(VulkanBindingsLayout &layout)
 {
-  VulkanBindingsLayout *l = &layout;
   for (VkDescriptorSetLayout setLayout : layout.setLayouts)
   {
     if (setLayout != VK_NULL_HANDLE)
@@ -1500,168 +1569,220 @@ void VulkanRHI::releaseBindingsLayout(VulkanBindingsLayout &layout)
   layout.name.clear();
 
   vkBindingsGroups.remove(layout.name);
-  delete l;
 }
 
 VulkanBindingGroups &VulkanRHI::allocateBindings(const BindingGroupsInfo &groups, const VulkanBindingsLayout &layout)
 {
-  std::vector<VulkanBindingGroup> result;
+  auto *resultGroups = new VulkanBindingGroups();
+  resultGroups->info = groups;
+
+  resultGroups->groups.reserve(groups.groups.size());
 
   for (size_t groupIndex = 0; groupIndex < groups.groups.size(); ++groupIndex)
   {
     const GroupInfo &groupInfo = groups.groups[groupIndex];
-    // const BindingGroupLayout &groupLayout = layout.groups[groupIndex];
+    const auto &groupLayout = layout.groups[groupIndex];
 
     VulkanBindingGroup vkGroup{};
     vkGroup.info = groupInfo;
 
-    // Count descriptor types
-    uint32_t bufferCount = static_cast<uint32_t>(groupInfo.buffers.size());
-    uint32_t samplerCount = static_cast<uint32_t>(groupInfo.samplers.size());
-    uint32_t textureCount = static_cast<uint32_t>(groupInfo.textures.size());
-    uint32_t storageTextureCount = static_cast<uint32_t>(groupInfo.storageTextures.size());
+    /* -----------------------------------------------------------
+     * Descriptor pool sizing
+     * ----------------------------------------------------------- */
+
+    std::unordered_map<VkDescriptorType, uint32_t> descriptorCounts;
+
+    for (const auto &b : groupLayout.buffers)
+    {
+      VkDescriptorType type = b.type == BufferBindingType_UniformBuffer ? (b.isDynamic ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                                                                        : (b.isDynamic ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+
+      descriptorCounts[type]++;
+    }
+
+    if (!groupInfo.samplers.empty())
+      descriptorCounts[VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER] += static_cast<uint32_t>(groupInfo.samplers.size());
+
+    if (!groupInfo.textures.empty())
+      descriptorCounts[VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE] += static_cast<uint32_t>(groupInfo.textures.size());
+
+    if (!groupInfo.storageTextures.empty())
+      descriptorCounts[VK_DESCRIPTOR_TYPE_STORAGE_IMAGE] += static_cast<uint32_t>(groupInfo.storageTextures.size());
 
     std::vector<VkDescriptorPoolSize> poolSizes;
-    if (bufferCount > 0)
-      poolSizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, bufferCount});
-    if (samplerCount > 0)
-      poolSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, samplerCount});
-    if (textureCount > 0)
-      poolSizes.push_back({VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, textureCount});
-    if (storageTextureCount > 0)
-      poolSizes.push_back({VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, storageTextureCount});
+    poolSizes.reserve(descriptorCounts.size());
 
-    // Create descriptor pool
+    for (auto &[type, count] : descriptorCounts)
+      poolSizes.push_back({type, count});
+
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = 1; // one descriptor set per group
+    poolInfo.maxSets = 1;
     poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
     if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &vkGroup.descriptorPool) != VK_SUCCESS)
+    {
       throw std::runtime_error("Failed to create descriptor pool");
+    }
 
-    // Allocate descriptor set
+    /* -----------------------------------------------------------
+     * Allocate descriptor set
+     * ----------------------------------------------------------- */
+
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = vkGroup.descriptorPool;
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &layout.setLayouts[groupIndex];
 
-    VkDescriptorSet descriptorSet;
+    VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
     if (vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) != VK_SUCCESS)
+    {
       throw std::runtime_error("Failed to allocate descriptor set");
+    }
 
     vkGroup.descriptorSets.push_back(descriptorSet);
 
-    // Write descriptors
-    std::vector<VkWriteDescriptorSet> descriptorWrites;
+    /* -----------------------------------------------------------
+     * Descriptor write storage (must outlive vkUpdateDescriptorSets)
+     * ----------------------------------------------------------- */
 
-    // Buffers
+    std::vector<VkWriteDescriptorSet> writes;
+    writes.reserve(groupInfo.buffers.size() + groupInfo.samplers.size() + groupInfo.textures.size() + groupInfo.storageTextures.size());
+
+    std::vector<VkDescriptorBufferInfo> bufferInfos;
+    bufferInfos.reserve(groupInfo.buffers.size());
+
+    std::vector<VkDescriptorImageInfo> imageInfos;
+    imageInfos.reserve(groupInfo.samplers.size() + groupInfo.textures.size() + groupInfo.storageTextures.size());
+
+    /* -----------------------------------------------------------
+     * Buffers
+     * ----------------------------------------------------------- */
+
+    assert(groupLayout.buffers.size() == groupInfo.buffers.size());
+
     for (size_t i = 0; i < groupInfo.buffers.size(); ++i)
     {
       const BindingBuffer &binding = groupInfo.buffers[i];
+      const auto &layoutBinding = groupLayout.buffers[i];
+
       VulkanBuffer buf = getVulkanBuffer(binding.bufferView.buffer.name);
 
-      VkDescriptorBufferInfo bufferInfo{};
-      bufferInfo.buffer = buf.buffer;
-      bufferInfo.offset = binding.bufferView.offset;
-      bufferInfo.range = binding.bufferView.size;
+      bufferInfos.push_back({
+        .buffer = buf.buffer,
+        .offset = binding.bufferView.offset,
+        .range = binding.bufferView.size,
+      });
 
-      VkDescriptorType type = binding.isDynamic ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      VkDescriptorType type = layoutBinding.type == BufferBindingType_UniformBuffer
+                                  ? (layoutBinding.isDynamic ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                                  : (layoutBinding.isDynamic ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
       VkWriteDescriptorSet write{};
       write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       write.dstSet = descriptorSet;
       write.dstBinding = binding.binding;
-      write.dstArrayElement = 0;
+      write.descriptorCount = 1;
       write.descriptorType = type;
-      write.descriptorCount = 1;
-      write.pBufferInfo = &bufferInfo;
+      write.pBufferInfo = &bufferInfos.back();
 
-      descriptorWrites.push_back(write);
+      writes.push_back(write);
     }
 
-    // Samplers
-    for (size_t i = 0; i < groupInfo.samplers.size(); ++i)
+    /* -----------------------------------------------------------
+     * Samplers
+     * ----------------------------------------------------------- */
+
+    for (const auto &binding : groupInfo.samplers)
     {
-      const BindingSampler &binding = groupInfo.samplers[i];
       const VulkanSampler &sampler = getVulkanSampler(binding.sampler.name);
-      const VulkanTextureView &view = createTextureView(binding.view);
+
+      VulkanTextureView view = createTextureView(binding.view);
+
       vkGroup.textureViews.push_back(view);
 
-      VkDescriptorImageInfo imageInfo{};
-      imageInfo.sampler = sampler.sampler;
-      imageInfo.imageView = view.view;
-      imageInfo.imageLayout = toVkImageLayout(binding.view.layout);
+      imageInfos.push_back({
+        .sampler = sampler.sampler,
+        .imageView = view.view,
+        .imageLayout = toVkImageLayout(binding.view.layout),
+      });
 
       VkWriteDescriptorSet write{};
       write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       write.dstSet = descriptorSet;
       write.dstBinding = binding.binding;
-      write.dstArrayElement = 0;
+      write.descriptorCount = 1;
       write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      write.descriptorCount = 1;
-      write.pImageInfo = &imageInfo;
+      write.pImageInfo = &imageInfos.back();
 
-      descriptorWrites.push_back(write);
+      writes.push_back(write);
     }
 
-    for (size_t i = 0; i < groupInfo.textures.size(); ++i)
+    /* -----------------------------------------------------------
+     * Sampled textures
+     * ----------------------------------------------------------- */
+
+    for (const auto &binding : groupInfo.textures)
     {
-      const BindingTextureInfo &binding = groupInfo.textures[i];
       VulkanTextureView view = createTextureView(binding.textureView);
+
       vkGroup.textureViews.push_back(view);
-      VkDescriptorImageInfo imageInfo{};
-      imageInfo.sampler = VK_NULL_HANDLE;
-      imageInfo.imageView = view.view;
-      imageInfo.imageLayout = toVkImageLayout(binding.textureView.layout);
+
+      imageInfos.push_back({
+        .sampler = VK_NULL_HANDLE,
+        .imageView = view.view,
+        .imageLayout = toVkImageLayout(binding.textureView.layout),
+      });
 
       VkWriteDescriptorSet write{};
       write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       write.dstSet = descriptorSet;
       write.dstBinding = binding.binding;
-      write.dstArrayElement = 0;
+      write.descriptorCount = 1;
       write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-      write.descriptorCount = 1;
-      write.pImageInfo = &imageInfo;
+      write.pImageInfo = &imageInfos.back();
 
-      descriptorWrites.push_back(write);
+      writes.push_back(write);
     }
 
-    for (size_t i = 0; i < groupInfo.storageTextures.size(); ++i)
+    /* -----------------------------------------------------------
+     * Storage textures
+     * ----------------------------------------------------------- */
+
+    for (const auto &binding : groupInfo.storageTextures)
     {
-      const BindingStorageTextureInfo &binding = groupInfo.storageTextures[i];
       VulkanTextureView view = createTextureView(binding.textureView);
+
       vkGroup.textureViews.push_back(view);
-      ;
-      VkDescriptorImageInfo imageInfo{};
-      imageInfo.sampler = VK_NULL_HANDLE;
-      imageInfo.imageView = view.view;
-      imageInfo.imageLayout = toVkImageLayout(binding.textureView.layout);
+
+      imageInfos.push_back({
+        .sampler = VK_NULL_HANDLE,
+        .imageView = view.view,
+        .imageLayout = toVkImageLayout(binding.textureView.layout),
+      });
 
       VkWriteDescriptorSet write{};
       write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       write.dstSet = descriptorSet;
       write.dstBinding = binding.binding;
-      write.dstArrayElement = 0;
-      write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
       write.descriptorCount = 1;
-      write.pImageInfo = &imageInfo;
+      write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+      write.pImageInfo = &imageInfos.back();
 
-      descriptorWrites.push_back(write);
+      writes.push_back(write);
     }
 
-    vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+    /* -----------------------------------------------------------
+     * Update descriptors (safe)
+     * ----------------------------------------------------------- */
 
-    result.push_back(vkGroup);
+    vkUpdateDescriptorSets(device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+
+    resultGroups->groups.push_back(vkGroup);
   }
-
-  VulkanBindingGroups *resultGroups = new VulkanBindingGroups();
-
-  resultGroups->groups = result;
-  resultGroups->info = groups;
 
   vkBindingsGroups.insert(groups.name, resultGroups);
   return *resultGroups;
@@ -1669,7 +1790,6 @@ VulkanBindingGroups &VulkanRHI::allocateBindings(const BindingGroupsInfo &groups
 
 void VulkanRHI::releaseBindingGroup(VulkanBindingGroups &groups)
 {
-  VulkanBindingGroups *g = &groups;
   for (auto &group : groups.groups)
   {
     if (group.descriptorPool != VK_NULL_HANDLE)
@@ -1689,12 +1809,10 @@ void VulkanRHI::releaseBindingGroup(VulkanBindingGroups &groups)
   groups.groups.clear();
 
   vkBindingsGroups.remove(groups.info.name);
-  delete g;
 }
 
 VulkanSwapChainSupportDetails querySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDevice device)
 {
-
   VulkanSwapChainSupportDetails details;
 
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -1834,7 +1952,7 @@ const SwapChain VulkanRHI::createSwapChain(uint32_t surfaceIndex, uint32_t width
   std::vector<VkImage> images;
   std::vector<VkImageView> imagesViews;
 
-  if (swapChainImp->swapChainImages.size() == 0)
+  if (swapChainImp->swapChainImageViews.size() == 0)
   {
     imagesViews = std::vector<VkImageView>(imageCount);
     images = std::vector<VkImage>(imageCount);
@@ -1868,6 +1986,19 @@ const SwapChain VulkanRHI::createSwapChain(uint32_t surfaceIndex, uint32_t width
   for (int i = 0; i < images.size(); i++)
   {
     VulkanTextureView *view = new VulkanTextureView();
+    view->image = images[i];
+    view->format = surfaceFormat.format;
+
+    VulkanTexture *texture = new VulkanTexture();
+
+    texture->image = images[i];
+    texture->format = surfaceFormat.format;
+    texture->info.depth = 1;
+    texture->info.memoryProperties = BufferUsage::BufferUsage_None;
+    texture->info.mipLevels = 1;
+    texture->info.name = "_SwapChainImage[" + std::to_string((uint64_t)surfaceIndex) + "," + std::to_string(i) + "].texture";
+    texture->info.height = getSwapChainImagesHeight((SwapChain)surfaceIndex);
+    texture->info.width = getSwapChainImagesWidth((SwapChain)surfaceIndex);
 
     // view->fence = VK_NULL_HANDLE;
     // view->achireSemaphore = VK_NULL_HANDLE;
@@ -1879,7 +2010,10 @@ const SwapChain VulkanRHI::createSwapChain(uint32_t surfaceIndex, uint32_t width
     // TextureViewInfo info;
     // info.name = "SwapChainImage";
     // info.flags = ImageAspectFlags::Color;
-    swapChainImp->swapChainImages.push_back(view);
+    swapChainImp->swapChainImages.push_back(texture);
+    swapChainImp->swapChainImageViews.push_back(view);
+
+    vkTextures.insert(texture->info.name, texture);
   }
 
   swapChainImp->swapChainImageFormat = surfaceFormat.format;
@@ -1918,13 +2052,20 @@ void VulkanRHI::destroySwapChain(SwapChain swapChain)
 
   // vkDeviceWaitIdle(device);
 
-  for (auto &imageView : swapChainImp->swapChainImages)
+  for (auto &imageView : swapChainImp->swapChainImageViews)
   {
     vkDestroyImageView(device, imageView->view, nullptr);
     delete imageView;
   }
 
-  // swapChainImp->swapChainImages.clear();
+  // for (auto &imageView : swapChainImp->swapChainImages)
+  // {
+  //   deleteTexture({
+  //     .name = imageView->info.name,
+  //   });
+
+  //   delete imageView;
+  // }
 
   for (auto &semaphore : swapChainImp->achireSemaphores)
   {
@@ -1944,10 +2085,15 @@ void VulkanRHI::destroySwapChain(SwapChain swapChain)
   swapChains.remove(swapChain);
 }
 
+Format VulkanRHI::getSwapChainFormat(SwapChain handle)
+{
+  return vkFormatToFormat(swapChains[handle]->swapChainImageFormat);
+}
+
 const uint32_t VulkanRHI::getSwapChainImagesCount(SwapChain swapChainHandle)
 {
   auto swapChain = swapChains[swapChainHandle];
-  return swapChain->swapChainImages.size();
+  return swapChain->swapChainImageViews.size();
 }
 
 const TextureView VulkanRHI::getCurrentSwapChainTextureView(SwapChain swapChainHandle, uint32_t imageIndex)
@@ -1961,10 +2107,10 @@ const TextureView VulkanRHI::getCurrentSwapChainTextureView(SwapChain swapChainH
     throw std::runtime_error("Failed to achire next image, you probably did not submit the commands");
   }
 
-  VulkanTextureView *viewImp = swapChain->swapChainImages[index];
+  // VulkanTextureView *viewImp = swapChain->swapChainImageViews[index];
 
-  VkSemaphore expectedAchire = VK_NULL_HANDLE;
-  VkSemaphore expectedPresent = VK_NULL_HANDLE;
+  // VkSemaphore expectedAchire = VK_NULL_HANDLE;
+  // VkSemaphore expectedPresent = VK_NULL_HANDLE;
 
   // while (!viewImp->achireSemaphore.compare_exchange_strong(expectedAchire, swapChain->achireSemaphores[current]))
   // {
@@ -1979,13 +2125,22 @@ const TextureView VulkanRHI::getCurrentSwapChainTextureView(SwapChain swapChainH
   view.layout = ResourceLayout::COLOR_ATTACHMENT;
   view.baseArrayLayer = 0;
   view.baseMipLevel = 0;
-  view.layerCount = UINT32_MAX;
-  view.levelCount = UINT32_MAX;
+  view.layerCount = 1;
+  view.levelCount = 1;
   view.flags = ImageAspectFlags::Color;
 
   view.texture.name = "_SwapChainImage[" + std::to_string((uint64_t)swapChainHandle) + "," + std::to_string(index) + "].texture";
 
   return view;
+}
+const uint32_t VulkanRHI::getSwapChainImagesWidth(SwapChain swapChainHandle)
+{
+  return swapChains[swapChainHandle]->width;
+}
+
+const uint32_t VulkanRHI::getSwapChainImagesHeight(SwapChain swapChainHandle)
+{
+  return swapChains[swapChainHandle]->height;
 }
 
 const VulkanTexture &VulkanRHI::getVulkanTexture(const std::string &obj)
@@ -2084,15 +2239,12 @@ const VulkanShader &VulkanRHI::getVulkanShader(const std::string &obj)
   return *result.value();
 };
 
-void VulkanRHI::bufferMapRead(const Buffer &buffer, const uint64_t offset, const uint64_t size, void **ptr)
+void VulkanRHI::bufferRead(const Buffer &buffer, const uint64_t offset, const uint64_t size, std::function<void(const void *)> callback)
 {
   const VulkanBuffer &heap = getVulkanBuffer(buffer.name);
-  vkMapMemory(device, heap.memory, offset, size, 0, ptr);
-}
-
-void VulkanRHI::bufferUnmap(const Buffer &buffer)
-{
-  const VulkanBuffer &heap = getVulkanBuffer(buffer.name);
+  void *ptr;
+  vkMapMemory(device, heap.memory, offset, size, 0, &ptr);
+  callback(ptr);
   vkUnmapMemory(device, heap.memory);
 }
 
@@ -2135,7 +2287,7 @@ inline VkAttachmentStoreOp storeOpToVkStoreOp(StoreOp op)
   }
   return VK_ATTACHMENT_STORE_OP_DONT_CARE;
 }
-VkRenderPass VulkanRHI::createRenderPass(const ColorAttatchment *attachments, uint32_t attatchmentsCount, DepthAttatchment depth)
+VkRenderPass VulkanRHI::createRenderPass(const ColorAttatchment *attachments, uint32_t attatchmentsCount, DepthAttatchment *depth)
 {
   std::vector<VkAttachmentDescription> attachmentsDescriptions;
   std::vector<VkAttachmentReference> colorAttachmentRefs;
@@ -2164,11 +2316,11 @@ VkRenderPass VulkanRHI::createRenderPass(const ColorAttatchment *attachments, ui
 
   // Depth attachment (optional)
   VkAttachmentReference depthAttachmentRef{};
-  if (depth.format != Format_None)
+  if (depth != nullptr)
   {
     VkAttachmentDescription depthAttachment{};
 
-    switch (depth.format)
+    switch (depth->format)
     {
     case Format_Depth32Float:
       depthAttachment.format = VK_FORMAT_D32_SFLOAT;
@@ -2190,11 +2342,11 @@ VkRenderPass VulkanRHI::createRenderPass(const ColorAttatchment *attachments, ui
     }
 
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    depthAttachment.loadOp = loadOpToVkLoadOp(depth.loadOp);
-    depthAttachment.storeOp = storeOpToVkStoreOp(depth.storeOp);
+    depthAttachment.loadOp = loadOpToVkLoadOp(depth->loadOp);
+    depthAttachment.storeOp = storeOpToVkStoreOp(depth->storeOp);
     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = depth.loadOp == LoadOp::LoadOp_Clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depthAttachment.initialLayout = depth->loadOp == LoadOp::LoadOp_Clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     attachmentsDescriptions.push_back(depthAttachment);
@@ -2209,7 +2361,7 @@ VkRenderPass VulkanRHI::createRenderPass(const ColorAttatchment *attachments, ui
   subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
   subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
   subpass.pColorAttachments = colorAttachmentRefs.data();
-  bool hasDepth = depth.format != Format_None;
+  bool hasDepth = depth != nullptr; //.format != Format_None;
   if (hasDepth)
   {
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
@@ -2266,20 +2418,29 @@ VulkanGraphicsPipeline &VulkanRHI::allocateGraphicsPipeline(const GraphicsPipeli
     VK_DYNAMIC_STATE_SCISSOR,
   };
 
-  VkPipelineDynamicStateCreateInfo dynamicState;
+  VkPipelineDynamicStateCreateInfo dynamicState = {};
+  dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
   dynamicState.dynamicStateCount = dynamicStates.size();
   dynamicState.pDynamicStates = dynamicStates.data();
+  dynamicState.pNext = nullptr;
 
-  VkPipelineViewportStateCreateInfo viewportState;
+  VkPipelineViewportStateCreateInfo viewportState = {};
+  viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+  viewportState.pNext = nullptr;
   viewportState.viewportCount = 1;
   viewportState.scissorCount = 1;
   viewportState.pViewports = nullptr;
   viewportState.pScissors = nullptr;
 
-  VkPipelineRasterizationStateCreateInfo rasterizer = {};
-  rasterizer.depthBiasClamp = VK_FALSE;
+  VkPipelineRasterizationStateCreateInfo rasterizer{};
+  rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+  rasterizer.pNext = nullptr;
+  rasterizer.flags = 0;
+  rasterizer.depthClampEnable = VK_FALSE;
   rasterizer.rasterizerDiscardEnable = VK_FALSE;
   rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+  rasterizer.lineWidth = 1.0f;
+  rasterizer.depthBiasEnable = VK_FALSE;
 
   switch (info.vertexStage.cullType)
   {
@@ -2312,6 +2473,9 @@ VulkanGraphicsPipeline &VulkanRHI::allocateGraphicsPipeline(const GraphicsPipeli
   rasterizer.lineWidth = 1.0f;
 
   VkPipelineMultisampleStateCreateInfo multisampling{};
+  multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  multisampling.pNext = nullptr;
+  multisampling.flags = 0;
   multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
   multisampling.sampleShadingEnable = VK_FALSE;
 
@@ -2328,12 +2492,15 @@ VulkanGraphicsPipeline &VulkanRHI::allocateGraphicsPipeline(const GraphicsPipeli
   colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
   VkPipelineColorBlendStateCreateInfo colorBlending{};
+  colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+  colorBlending.pNext = nullptr;
+  colorBlending.flags = 0;
   colorBlending.logicOpEnable = VK_FALSE;
-  colorBlending.logicOp = VK_LOGIC_OP_COPY;
   colorBlending.attachmentCount = 1;
   colorBlending.pAttachments = &colorBlendAttachment;
 
   VkGraphicsPipelineCreateInfo pipelineInfo{};
+  pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
   std::vector<VkVertexInputAttributeDescription> attributes;
   std::unordered_map<uint32_t, uint32_t> bindingStrideMap;
@@ -2377,7 +2544,11 @@ VulkanGraphicsPipeline &VulkanRHI::allocateGraphicsPipeline(const GraphicsPipeli
   vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size());
   vertexInputInfo.pVertexAttributeDescriptions = attributes.data();
 
-  VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
+  VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+  inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+  inputAssembly.pNext = nullptr;
+  inputAssembly.flags = 0;
+  inputAssembly.primitiveRestartEnable = VK_FALSE;
 
   switch (info.vertexStage.primitiveType)
   {
@@ -2415,11 +2586,17 @@ VulkanGraphicsPipeline &VulkanRHI::allocateGraphicsPipeline(const GraphicsPipeli
   }
 
   VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+  vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  vertShaderStageInfo.pNext = nullptr;
+  vertShaderStageInfo.flags = 0;
   vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
   vertShaderStageInfo.module = vertex.shaderModule;
   vertShaderStageInfo.pName = info.vertexStage.shaderEntry.c_str();
 
   VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+  fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  fragShaderStageInfo.pNext = nullptr;
+  fragShaderStageInfo.flags = 0;
   fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
   fragShaderStageInfo.module = fragment.shaderModule;
   fragShaderStageInfo.pName = info.fragmentStage.shaderEntry.c_str();
@@ -2430,6 +2607,23 @@ VulkanGraphicsPipeline &VulkanRHI::allocateGraphicsPipeline(const GraphicsPipeli
   };
 
   // pipelineInfo.pNext = &pipelineRenderingCreateInfo;
+
+  VkPipelineDepthStencilStateCreateInfo depthStencil{};
+  depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+  depthStencil.depthTestEnable = VK_FALSE;
+  depthStencil.depthWriteEnable = VK_FALSE;
+  depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+  depthStencil.depthBoundsTestEnable = VK_FALSE;
+  depthStencil.stencilTestEnable = VK_FALSE;
+
+  if (info.fragmentStage.depthAttatchment != nullptr)
+  {
+    depthStencil.depthTestEnable = VK_TRUE;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+  }
+
+  pipelineInfo.pDepthStencilState = &depthStencil;
 
   pipelineInfo.stageCount = 2;
   pipelineInfo.pStages = shaderStages;
@@ -2459,6 +2653,7 @@ VulkanGraphicsPipeline &VulkanRHI::allocateGraphicsPipeline(const GraphicsPipeli
   result->pipeline = pipeline;
   result->renderPass = renderPass;
   result->info = info;
+  result->layout = info.layout;
 
   vkGraphicsPipeline.insert(info.name, result);
   return *result;
@@ -2466,11 +2661,9 @@ VulkanGraphicsPipeline &VulkanRHI::allocateGraphicsPipeline(const GraphicsPipeli
 
 void VulkanRHI::releaseGraphicsPipeline(VulkanGraphicsPipeline &handle)
 {
-  VulkanGraphicsPipeline *pipeline = &handle;
   vkDestroyPipeline(device, handle.pipeline, NULL);
   vkDestroyRenderPass(device, handle.renderPass, NULL);
   vkGraphicsPipeline.remove(handle.info.name);
-  delete pipeline;
 }
 
 VulkanComputePipeline &VulkanRHI::allocateComputePipeline(const ComputePipelineInfo &info)
@@ -2517,14 +2710,12 @@ VulkanComputePipeline &VulkanRHI::allocateComputePipeline(const ComputePipelineI
 
 void VulkanRHI::releaseComputePipeline(VulkanComputePipeline &vkPipeline)
 {
-  VulkanComputePipeline *pipeline = &vkPipeline;
   if (vkPipeline.pipeline != VK_NULL_HANDLE)
   {
     vkDestroyPipeline(device, vkPipeline.pipeline, nullptr);
   }
 
   vkComputePipeline.remove(vkPipeline.info.name);
-  delete pipeline;
 }
 
 VulkanCommandPool VulkanRHI::allocateCommandPool(uint32_t queueFamilyIndex)
@@ -2534,11 +2725,12 @@ VulkanCommandPool VulkanRHI::allocateCommandPool(uint32_t queueFamilyIndex)
   poolInfo.queueFamilyIndex = queueFamilyIndex;
   poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
 
-  VkCommandPool commandPool;
+  VkCommandPool commandPool = VK_NULL_HANDLE;
   if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
   {
     throw std::runtime_error("Failed to create command pool");
   }
+  
   VulkanCommandPool pool;
   pool.commandPool = commandPool;
   return pool;
@@ -2549,13 +2741,40 @@ void VulkanRHI::releaseCommandPool(VulkanCommandPool &pool)
   vkDestroyCommandPool(device, pool.commandPool, nullptr);
 }
 
-std::vector<CommandBuffer> VulkanRHI::allocateCommandBuffers(VulkanCommandPool &commandPool, uint32_t count, VkCommandBufferLevel level)
+std::vector<CommandBuffer> VulkanRHI::allocateCommandBuffers(Queue queue, uint32_t count)
 {
   VkCommandBufferAllocateInfo allocInfo{};
+  VulkanCommandPool commandPool;
+
+  // TODO: reuse command pools
+  switch (queue)
+  {
+  case Queue::Graphics:
+    if (!graphicsCommandPool.dequeue(commandPool))
+    {
+      commandPool = allocateCommandPool(indices.graphicsFamily);
+    }
+    break;
+  case Queue::Compute:
+    if (!computeCommandPool.dequeue(commandPool))
+    {
+      commandPool = allocateCommandPool(indices.computeFamily);
+    }
+    break;
+  case Queue::Transfer:
+    if (!transferCommandPool.dequeue(commandPool))
+    {
+      commandPool = allocateCommandPool(indices.transferFamily);
+    }
+    break;
+  default:
+    throw new std::runtime_error("Unsuported queue");
+    break;
+  }
 
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   allocInfo.commandPool = commandPool.commandPool;
-  allocInfo.level = level;
+  allocInfo.level = VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY;
   allocInfo.commandBufferCount = count;
 
   std::vector<VkCommandBuffer> cmbs(count);
@@ -2574,10 +2793,15 @@ std::vector<CommandBuffer> VulkanRHI::allocateCommandBuffers(VulkanCommandPool &
     auto commandBufferData = commandBuffers.insert(
         (CommandBuffer)index,
         VulkanCommandBuffer{
+          .submited = false,
+          .fence = VK_NULL_HANDLE,
+          .queue = queue,
           .commandBuffer = cmbs[i],
-          .commandPool = commandPool.commandPool,
-          .boundComputePipeline = nullptr,
-          .boundGraphicsPipeline = nullptr,
+          .commandPool = commandPool,
+          .hascomputePipeline = false,
+          .hasGraphicsPipeline = false,
+          .boundComputePipeline = ComputePipeline{.name = ""},
+          .boundGraphicsPipeline = GraphicsPipeline{.name = ""},
           .renderPasses = std::vector<VulkanCommandBufferRenderPass>(),
         });
 
@@ -2593,6 +2817,11 @@ void VulkanRHI::releaseCommandBuffer(std::vector<CommandBuffer> &buffers)
   {
     auto commandbuffer = commandBuffers[buff];
 
+    if (commandbuffer->submited)
+    {
+      vkWaitForFences(device, 1, &commandbuffer->fence, VK_TRUE, UINT64_MAX);
+    }
+
     for (auto renderPassData : commandbuffer->renderPasses)
     {
       for (auto view : renderPassData.views)
@@ -2603,7 +2832,27 @@ void VulkanRHI::releaseCommandBuffer(std::vector<CommandBuffer> &buffers)
       vkDestroyFramebuffer(device, renderPassData.frameBuffer, nullptr);
     }
 
-    vkFreeCommandBuffers(device, commandbuffer->commandPool, 1, &(commandbuffer->commandBuffer));
+    vkFreeCommandBuffers(device, commandbuffer->commandPool.commandPool, 1, &(commandbuffer->commandBuffer));
+
+    switch (commandbuffer->queue)
+    {
+    case Queue::Graphics:
+      graphicsCommandPool.enqueue(commandbuffer->commandPool);
+      break;
+    case Queue::Compute:
+      computeCommandPool.enqueue(commandbuffer->commandPool);
+      break;
+    case Queue::Transfer:
+      transferCommandPool.enqueue(commandbuffer->commandPool);
+      break;
+    default:
+      throw std::runtime_error("Invalid Command Buffer");
+      break;
+    }
+
+    //releaseCommandPool(commandbuffer->commandPool);
+
+    commandBuffers.remove(buff);
   }
 }
 
@@ -2687,38 +2936,68 @@ struct SwapChainInfo
 
 bool parseSwapChainString(const std::string &input, SwapChainInfo &outInfo)
 {
-  try
-  {
-    if (input.rfind("_SwapChainImage", 0) == 0)
-    {
-      return false;
-    }
+  const char *prefix = "_SwapChainImage[";
+  const char *suffix = "].texture";
 
-    size_t startBracket = input.find('[');
-    size_t comma = input.find(',');
-    size_t endBracket = input.find(']');
+  const size_t prefixLen = std::strlen(prefix);
+  const size_t suffixLen = std::strlen(suffix);
 
-    if (startBracket == std::string::npos || comma == std::string::npos || endBracket == std::string::npos)
-    {
-      return false;
-    }
-
-    // Extract substrings
-    std::string handleStr = input.substr(startBracket + 1, comma - startBracket - 1);
-    std::string indexStr = input.substr(comma + 1, endBracket - comma - 1);
-
-    // Convert strings to numbers
-    outInfo.handle = std::stoull(handleStr);
-    outInfo.index = static_cast<uint32_t>(std::stoul(indexStr));
-
-    return true;
-  }
-  catch (...)
-  {
-    // Handle cases where stoull might fail due to non-numeric content
+  // Check prefix
+  if (input.compare(0, prefixLen, prefix) != 0)
     return false;
-  }
+
+  // Check suffix
+  if (input.size() < prefixLen + suffixLen || input.compare(input.size() - suffixLen, suffixLen, suffix) != 0)
+    return false;
+
+  // Find closing bracket
+  const size_t numbersStart = prefixLen;
+  const size_t numbersEnd = input.find(']', numbersStart);
+  if (numbersEnd == std::string::npos)
+    return false;
+
+  // Extract "handle,index"
+  const std::string numbers = input.substr(numbersStart, numbersEnd - numbersStart);
+
+  const size_t commaPos = numbers.find(',');
+  if (commaPos == std::string::npos)
+    return false;
+
+  const std::string handleStr = numbers.substr(0, commaPos);
+  const std::string indexStr = numbers.substr(commaPos + 1);
+
+  // Parse handle
+  char *endPtr = nullptr;
+  unsigned long long handle = std::strtoull(handleStr.c_str(), &endPtr, 10);
+
+  if (endPtr == handleStr.c_str() || *endPtr != '\0')
+    return false;
+
+  // Parse index
+  endPtr = nullptr;
+  unsigned long index = std::strtoul(indexStr.c_str(), &endPtr, 10);
+
+  if (endPtr == indexStr.c_str() || *endPtr != '\0')
+    return false;
+
+  outInfo.handle = static_cast<uint64_t>(handle);
+  outInfo.index = static_cast<uint32_t>(index);
+  return true;
 }
+
+// void VulkanRHI::cmdCopyBuffer(CommandBuffer cmdHandle, Buffer srcHandle, Buffer dstHandle, uint32_t srcOffset, uint32_t dstOffset, uint32_t size)
+// {
+//   auto cmd = commandBuffers[cmdHandle]; // *commandBuffers.get(cmdHandle);
+//   auto src = getVulkanBuffer(srcHandle.name);
+//   auto dst = getVulkanBuffer(dstHandle.name);
+
+//   VkBufferCopy region{};
+//   region.srcOffset = srcOffset;
+//   region.dstOffset = dstOffset;
+//   region.size = size;
+
+//   vkCmdCopyBuffer(cmd->commandBuffer, src.buffer, dst.buffer, 1, &region);
+// }
 
 void VulkanRHI::cmdBindGraphicsPipeline(CommandBuffer handle, GraphicsPipeline pipelineHandle)
 {
@@ -2728,12 +3007,13 @@ void VulkanRHI::cmdBindGraphicsPipeline(CommandBuffer handle, GraphicsPipeline p
 
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
 
-  if (commandBuffer->boundComputePipeline || commandBuffer->boundGraphicsPipeline)
+  if (commandBuffer->hascomputePipeline || commandBuffer->hasGraphicsPipeline)
   {
     throw std::runtime_error("pipeline already binded to command buffer");
   }
 
-  commandBuffer->boundGraphicsPipeline = &pipeline; // reinterpret_cast<VulkanGraphicsPipeline *>(pipelineHandle.get());
+  commandBuffer->hasGraphicsPipeline = true;
+  commandBuffer->boundGraphicsPipeline = pipelineHandle; // reinterpret_cast<VulkanGraphicsPipeline *>(pipelineHandle.get());
 }
 
 void VulkanRHI::cmdBindComputePipeline(CommandBuffer handle, ComputePipeline pipelineHandle)
@@ -2746,12 +3026,13 @@ void VulkanRHI::cmdBindComputePipeline(CommandBuffer handle, ComputePipeline pip
 
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.pipeline);
 
-  if (commandBuffer->boundComputePipeline || commandBuffer->boundGraphicsPipeline)
+  if (commandBuffer->hascomputePipeline || commandBuffer->hasGraphicsPipeline)
   {
     throw std::runtime_error("pipeline already binded to command buffer");
   }
 
-  commandBuffer->boundComputePipeline = &pipeline; // reinterpret_cast<VulkanComputePipeline *>(pipelineHandle);
+  commandBuffer->hascomputePipeline = true;
+  commandBuffer->boundComputePipeline = pipelineHandle; // reinterpret_cast<VulkanComputePipeline *>(pipelineHandle);
 }
 
 void VulkanRHI::cmdBeginRenderPass(CommandBuffer cmdHandle, const RenderPassInfo &rpInfo)
@@ -2760,19 +3041,19 @@ void VulkanRHI::cmdBeginRenderPass(CommandBuffer cmdHandle, const RenderPassInfo
 
   auto commandBuffer = commandBuffers[cmdHandle]; // reinterpret_cast<VulkanCommandBuffer *>(cmdHandle.get());
 
-  if (!commandBuffer->boundGraphicsPipeline)
+  if (!commandBuffer->hasGraphicsPipeline)
   {
     throw std::runtime_error("no pipeline was bound");
   }
 
-  VulkanGraphicsPipeline *pipelineData = commandBuffer->boundGraphicsPipeline;
+  auto pipelineData = getVulkanGraphicsPipeline(commandBuffer->boundGraphicsPipeline.name);
 
-  if (pipelineData->renderPass == VK_NULL_HANDLE)
+  if (pipelineData.renderPass == VK_NULL_HANDLE)
   {
     throw std::runtime_error("no render pass");
   }
 
-  if (pipelineData->pipeline == VK_NULL_HANDLE)
+  if (pipelineData.pipeline == VK_NULL_HANDLE)
   {
     throw std::runtime_error("no pipeline");
   }
@@ -2781,14 +3062,14 @@ void VulkanRHI::cmdBeginRenderPass(CommandBuffer cmdHandle, const RenderPassInfo
 
   VkFramebufferCreateInfo framebufferInfo{};
   framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-  framebufferInfo.renderPass = pipelineData->renderPass;
+  framebufferInfo.renderPass = pipelineData.renderPass;
 
   std::vector<VulkanTextureView> views;
   std::vector<VkImageView> attachments;
   std::vector<VkSemaphore> achireSemaphores;
   std::vector<VkSemaphore> presentSemaphores;
 
-  if (rpInfo.colorAttachments.size() != pipelineData->info.fragmentStage.colorAttatchments.size())
+  if (rpInfo.colorAttachments.size() != pipelineData.info.fragmentStage.colorAttatchments.size())
   {
     throw std::runtime_error("render pass color attatchments count does not match pipeline");
   }
@@ -2831,9 +3112,9 @@ void VulkanRHI::cmdBeginRenderPass(CommandBuffer cmdHandle, const RenderPassInfo
     // }
   }
 
-  if (rpInfo.depthStencilAttachment.clearDepth)
+  if (rpInfo.depthStencilAttachment != nullptr)
   {
-    auto depthTexture = createTextureView(rpInfo.depthStencilAttachment.view);
+    auto depthTexture = createTextureView(rpInfo.depthStencilAttachment->view);
     attachments.push_back(depthTexture.view);
     views.push_back(depthTexture);
   }
@@ -2853,7 +3134,7 @@ void VulkanRHI::cmdBeginRenderPass(CommandBuffer cmdHandle, const RenderPassInfo
 
   VulkanCommandBufferRenderPass commandBufferFrameData;
   commandBufferFrameData.frameBuffer = frameBuffer;
-  commandBufferFrameData.renderPass = pipelineData->renderPass;
+  commandBufferFrameData.renderPass = pipelineData.renderPass;
   commandBufferFrameData.achireSemaphores = std::move(achireSemaphores);
   commandBufferFrameData.presentSemaphores = std::move(presentSemaphores);
   commandBufferFrameData.views = std::move(views);
@@ -2873,6 +3154,16 @@ void VulkanRHI::cmdBeginRenderPass(CommandBuffer cmdHandle, const RenderPassInfo
 
       commandBufferFrameData.attatchments.push_back(info);
     }
+    // else
+    // {
+    //   VulkanAttatchment info = {};
+
+    //   info.presentQueue = VK_NULL_HANDLE;
+    //   info.swapChain = (SwapChain)(-1);
+    //   info.swapChainImageIndex = -1;
+
+    //   commandBufferFrameData.attatchments.push_back(info);
+    // }
   }
 
   commandBuffer->renderPasses.push_back(commandBufferFrameData);
@@ -2892,18 +3183,18 @@ void VulkanRHI::cmdBeginRenderPass(CommandBuffer cmdHandle, const RenderPassInfo
     clearValues.push_back(clearColor);
   }
 
-  if (rpInfo.depthStencilAttachment.clearDepth)
+  if (rpInfo.depthStencilAttachment != nullptr)
   {
     VkClearValue clearDepth{};
-    clearDepth.depthStencil.depth = rpInfo.depthStencilAttachment.clearDepth;
-    clearDepth.depthStencil.stencil = rpInfo.depthStencilAttachment.clearStencil;
+    clearDepth.depthStencil.depth = rpInfo.depthStencilAttachment->clearDepth;
+    clearDepth.depthStencil.stencil = rpInfo.depthStencilAttachment->clearStencil;
     clearValues.push_back(clearDepth);
   }
 
   // Begin info
   VkRenderPassBeginInfo rpBeginInfo{};
   rpBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  rpBeginInfo.renderPass = pipelineData->renderPass;
+  rpBeginInfo.renderPass = pipelineData.renderPass;
   rpBeginInfo.framebuffer = frameBuffer;
   rpBeginInfo.renderArea.offset = {static_cast<int32_t>(rpInfo.scissor.x), static_cast<int32_t>(rpInfo.scissor.y)};
   rpBeginInfo.renderArea.extent = {rpInfo.scissor.width, rpInfo.scissor.height};
@@ -2939,13 +3230,15 @@ void VulkanRHI::cmdBindBindingGroups(CommandBuffer cmdBuffer, BindingGroups grou
   auto commandBuffer = commandBuffers[cmdBuffer]; // reinterpret_cast<VulkanCommandBuffer *>(cmdBuffer.get());
   VkPipelineLayout layout = VK_NULL_HANDLE;
 
-  if (commandBuffer->boundComputePipeline)
+  if (commandBuffer->hascomputePipeline)
   {
-    layout = getVulkanBindingsLayout(commandBuffer->boundComputePipeline->layout.name).pipelineLayout;
+    auto pip = getVulkanComputePipeline(commandBuffer->boundComputePipeline.name);
+    layout = getVulkanBindingsLayout(pip.layout.name).pipelineLayout;
   }
-  else if (commandBuffer->boundGraphicsPipeline)
+  else if (commandBuffer->hasGraphicsPipeline)
   {
-    layout = getVulkanBindingsLayout(commandBuffer->boundGraphicsPipeline->layout.name).pipelineLayout;
+    auto pip = getVulkanGraphicsPipeline(commandBuffer->boundGraphicsPipeline.name);
+    layout = getVulkanBindingsLayout(pip.layout.name).pipelineLayout;
   }
   else
   {
@@ -2956,11 +3249,11 @@ void VulkanRHI::cmdBindBindingGroups(CommandBuffer cmdBuffer, BindingGroups grou
 
   VkPipelineBindPoint point = VK_PIPELINE_BIND_POINT_MAX_ENUM;
 
-  if (commandBuffer->boundGraphicsPipeline)
+  if (commandBuffer->hasGraphicsPipeline)
   {
     point = VK_PIPELINE_BIND_POINT_GRAPHICS;
   }
-  if (commandBuffer->boundComputePipeline)
+  if (commandBuffer->hascomputePipeline)
   {
     point = VK_PIPELINE_BIND_POINT_COMPUTE;
   }
@@ -3038,12 +3331,62 @@ void VulkanRHI::cmdDispatch(CommandBuffer commandBuffer, uint32_t groupCountX, u
 {
   auto cmd = commandBuffers[commandBuffer];
 
-  if (cmd->boundComputePipeline == VK_NULL_HANDLE)
+  if (!cmd->hascomputePipeline)
   {
     throw std::runtime_error("Attempted to dispatch with no compute pipeline bound!");
   }
 
   vkCmdDispatch(cmd->commandBuffer, groupCountX, groupCountY, groupCountZ);
+}
+
+static VkAccessFlags toVulkanAccess(AccessPattern access)
+{
+  VkAccessFlags flags = 0;
+  uint64_t bits = static_cast<uint64_t>(access);
+
+  if (bits & static_cast<uint64_t>(AccessPattern::VERTEX_ATTRIBUTE_READ))
+    flags |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::INDEX_READ))
+    flags |= VK_ACCESS_INDEX_READ_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::UNIFORM_READ))
+    flags |= VK_ACCESS_UNIFORM_READ_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::SHADER_READ))
+    flags |= VK_ACCESS_SHADER_READ_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::SHADER_WRITE))
+    flags |= VK_ACCESS_SHADER_WRITE_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::COLOR_ATTACHMENT_READ))
+    flags |= VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::COLOR_ATTACHMENT_WRITE))
+    flags |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::DEPTH_STENCIL_ATTACHMENT_READ))
+    flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::DEPTH_STENCIL_ATTACHMENT_WRITE))
+    flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::TRANSFER_READ))
+    flags |= VK_ACCESS_TRANSFER_READ_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::TRANSFER_WRITE))
+    flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::INDIRECT_COMMAND_READ))
+    flags |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::MEMORY_READ))
+    flags |= VK_ACCESS_MEMORY_READ_BIT;
+
+  if (bits & static_cast<uint64_t>(AccessPattern::MEMORY_WRITE))
+    flags |= VK_ACCESS_MEMORY_WRITE_BIT;
+
+  return flags;
 }
 
 static VkPipelineStageFlags toVulkanStage(PipelineStage stage)
@@ -3088,46 +3431,6 @@ static VkPipelineStageFlags toVulkanStage(PipelineStage stage)
   }
 }
 
-static VkAccessFlags toVulkanAccess(AccessPattern access)
-{
-  switch (access)
-  {
-  case AccessPattern::NONE:
-    return 0;
-  case AccessPattern::VERTEX_ATTRIBUTE_READ:
-    return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-  case AccessPattern::INDEX_READ:
-    return VK_ACCESS_INDEX_READ_BIT;
-  case AccessPattern::UNIFORM_READ:
-    return VK_ACCESS_UNIFORM_READ_BIT;
-  case AccessPattern::SHADER_READ:
-    return VK_ACCESS_SHADER_READ_BIT;
-  case AccessPattern::SHADER_WRITE:
-    return VK_ACCESS_SHADER_WRITE_BIT;
-  case AccessPattern::COLOR_ATTACHMENT_READ:
-    return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-  case AccessPattern::COLOR_ATTACHMENT_WRITE:
-    return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-  case AccessPattern::DEPTH_STENCIL_ATTACHMENT_READ:
-    return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-  case AccessPattern::DEPTH_STENCIL_ATTACHMENT_WRITE:
-    return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-  case AccessPattern::TRANSFER_READ:
-    return VK_ACCESS_TRANSFER_READ_BIT;
-  case AccessPattern::TRANSFER_WRITE:
-    return VK_ACCESS_TRANSFER_WRITE_BIT;
-  case AccessPattern::INDIRECT_COMMAND_READ:
-    return VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-  case AccessPattern::MEMORY_READ:
-    return VK_ACCESS_MEMORY_READ_BIT;
-  case AccessPattern::MEMORY_WRITE:
-    return VK_ACCESS_MEMORY_WRITE_BIT;
-  default:
-    assert(false && "Invalid access pattern");
-    return 0;
-  }
-}
-
 static VkBufferMemoryBarrier createBufferBarrier(
     VkBuffer buffer,
     PipelineStage src_stage,
@@ -3160,7 +3463,7 @@ static VkImageMemoryBarrier createImageBarrier(
     AccessPattern dst_access,
     ResourceLayout old_layout,
     ResourceLayout new_layout,
-    VkImageAspectFlags aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT,
+    VkImageAspectFlags aspect_mask,
     uint32_t base_mip_level = 0,
     uint32_t level_count = VK_REMAINING_MIP_LEVELS,
     uint32_t base_array_layer = 0,
@@ -3205,13 +3508,44 @@ void VulkanRHI::cmdBufferBarrier(
     AccessPattern dst_access,
     uint32_t offset,
     uint32_t size,
-    uint32_t src_queue_family,
-    uint32_t dst_queue_family)
+    Queue src_queue_family,
+    Queue dst_queue_family)
 {
   auto commandBuffer = commandBuffers[cmd];
   auto buffer = getVulkanBuffer(b.name);
-
-  VkBufferMemoryBarrier barrier = createBufferBarrier(buffer.buffer, src_stage, dst_stage, src_access, dst_access, offset, size, src_queue_family, dst_queue_family);
+  uint32_t queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
+  uint32_t queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
+  switch (src_queue_family)
+  {
+  case Queue::Compute:
+    queueFamilySrc = indices.computeFamily;
+    break;
+  case Queue::Graphics:
+    queueFamilySrc = indices.graphicsFamily;
+    break;
+  case Queue::Transfer:
+    queueFamilySrc = indices.transferFamily;
+    break;
+  default:
+    queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
+    break;
+  }
+  switch (dst_queue_family)
+  {
+  case Queue::Compute:
+    queueFamilyDst = indices.computeFamily;
+    break;
+  case Queue::Graphics:
+    queueFamilyDst = indices.graphicsFamily;
+    break;
+  case Queue::Transfer:
+    queueFamilyDst = indices.transferFamily;
+    break;
+  default:
+    queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
+    break;
+  }
+  VkBufferMemoryBarrier barrier = createBufferBarrier(buffer.buffer, src_stage, dst_stage, src_access, dst_access, offset, size, queueFamilySrc, queueFamilyDst);
 
   vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), 0, 0, nullptr, 1, &barrier, 0, nullptr);
 }
@@ -3247,12 +3581,45 @@ void VulkanRHI::cmdImageBarrier(
     uint32_t level_count,
     uint32_t base_array_layer,
     uint32_t layer_count,
-    uint32_t src_queue_family,
-    uint32_t dst_queue_family)
+    Queue src_queue_family,
+    Queue dst_queue_family)
 {
   auto commandBuffer = commandBuffers[cmd];
 
   auto vkImage = getVulkanTexture(image.name);
+
+  uint32_t queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
+  uint32_t queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
+  switch (src_queue_family)
+  {
+  case Queue::Compute:
+    queueFamilySrc = indices.computeFamily;
+    break;
+  case Queue::Graphics:
+    queueFamilySrc = indices.graphicsFamily;
+    break;
+  case Queue::Transfer:
+    queueFamilySrc = indices.transferFamily;
+    break;
+  default:
+    queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
+    break;
+  }
+  switch (dst_queue_family)
+  {
+  case Queue::Compute:
+    queueFamilyDst = indices.computeFamily;
+    break;
+  case Queue::Graphics:
+    queueFamilyDst = indices.graphicsFamily;
+    break;
+  case Queue::Transfer:
+    queueFamilyDst = indices.transferFamily;
+    break;
+  default:
+    queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
+    break;
+  }
   VkImageMemoryBarrier barrier = createImageBarrier(
       vkImage.image,
       src_stage,
@@ -3266,8 +3633,8 @@ void VulkanRHI::cmdImageBarrier(
       level_count,
       base_array_layer,
       layer_count,
-      src_queue_family,
-      dst_queue_family);
+      queueFamilySrc,
+      queueFamilyDst);
 
   vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
@@ -3343,32 +3710,15 @@ void VulkanRHI::cleanupSubmitCallback(VulkanRHI::VulkanAsyncHandler &future)
 {
   future.device->fences.enqueue(future.fence);
   future.device->semaphores.enqueue(future.semaphore);
-
-  future.fence = VK_NULL_HANDLE;
-
-  for (auto fb : future.framebuffers)
-  {
-    vkDestroyFramebuffer(future.device->device, fb, NULL);
-  }
-
-  for (auto &view : future.views)
-  {
-    // view.fence = VK_NULL_HANDLE;
-    // view->presentSemaphore = VK_NULL_HANDLE;
-    // view->achireSemaphore = VK_NULL_HANDLE;
-  }
-
-  future.framebuffers.clear();
-  future.views.clear();
+  future.device->releaseCommandBuffer(future.commandBuffers);
 }
 
-VulkanRHI::VulkanAsyncHandler::VulkanAsyncHandler(VulkanRHI *device, VkFence fence, VkSemaphore semaphore, std::vector<VkFramebuffer> &fb, std::vector<VulkanTextureView> &views)
+VulkanRHI::VulkanAsyncHandler::VulkanAsyncHandler(VulkanRHI *device, std::vector<CommandBuffer> cb, VkFence f, VkSemaphore s)
 {
   this->device = device;
-  this->fence = fence;
-  this->views = std::move(views);
-  this->framebuffers = std::move(fb);
-  this->semaphore = semaphore;
+  this->fence = f;
+  this->semaphore = s;
+  this->commandBuffers = cb;
 }
 
 FenceStatus VulkanRHI::VulkanAsyncHandler::getStatus(VulkanAsyncHandler &future)
@@ -3457,18 +3807,15 @@ void VulkanRHI::processPresentations(CommandBuffer *cmds, uint32_t count, const 
     }
   }
 }
+
 GPUFuture VulkanRHI::submit(Queue queueType, CommandBuffer *cmds, uint32_t count, GPUFuture *wait, uint32_t waitCount)
 {
-  VkQueue queue = getQueueHandle(queueType); // Helper to handle the switch logic
+  VkQueue queue = getQueueHandle(queueType);
 
   std::vector<VkCommandBuffer> vkCmds;
   std::vector<VkSemaphore> waitSemaphores;
   std::vector<VkPipelineStageFlags> waitStages;
   std::vector<VkSemaphore> signalSemaphores;
-
-  // Resource tracking for the handler
-  std::vector<VkFramebuffer> framebuffers;
-  std::vector<VulkanTextureView> views;
 
   vkCmds.reserve(count);
 
@@ -3477,6 +3824,7 @@ GPUFuture VulkanRHI::submit(Queue queueType, CommandBuffer *cmds, uint32_t count
     for (uint32_t i = 0; i < waitCount; i++)
     {
       auto internalEvent = wait[i].getIf<rendering::AsyncEvent<VulkanAsyncHandler>>();
+
       if (internalEvent && internalEvent->isValid())
       {
         waitSemaphores.push_back(internalEvent->getFence()->semaphore);
@@ -3484,19 +3832,23 @@ GPUFuture VulkanRHI::submit(Queue queueType, CommandBuffer *cmds, uint32_t count
       }
     }
   }
+  VkSemaphore semaphore = getSemaphore();
+  VkFence fence = getFence();
 
-  VkSemaphore mainSemaphore = getSemaphore();
-  signalSemaphores.push_back(mainSemaphore);
+  signalSemaphores.push_back(semaphore);
 
   for (uint32_t i = 0; i < count; ++i)
   {
     auto cmdBuf = commandBuffers[cmds[i]];
+
     vkCmds.push_back(cmdBuf->commandBuffer);
+
+    cmdBuf->fence = fence;
+    cmdBuf->submited = true;
 
     for (auto &frameData : cmdBuf->renderPasses)
     {
-      framebuffers.push_back(frameData.frameBuffer);
-      views.insert(views.end(), frameData.views.begin(), frameData.views.end());
+      // views.insert(views.end(), frameData.views.begin(), frameData.views.end());
 
       for (auto s : frameData.achireSemaphores)
       {
@@ -3514,8 +3866,6 @@ GPUFuture VulkanRHI::submit(Queue queueType, CommandBuffer *cmds, uint32_t count
     }
   }
 
-  VkFence fence = getFence();
-
   VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
   submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
   submitInfo.pWaitSemaphores = waitSemaphores.data();
@@ -3531,8 +3881,12 @@ GPUFuture VulkanRHI::submit(Queue queueType, CommandBuffer *cmds, uint32_t count
   }
 
   processPresentations(cmds, count, signalSemaphores);
-
-  VulkanAsyncHandler handler(this, fence, mainSemaphore, framebuffers, views);
+  std::vector<CommandBuffer> cbs;
+  for (uint32_t i = 0; i < count; i++)
+  {
+    cbs.push_back(cmds[i]);
+  }
+  VulkanAsyncHandler handler(this, cbs, fence, semaphore);
   GPUFuture resultFuture = eventLoop.submit(std::move(handler), cleanupSubmitCallback);
 
   eventLoop.tick();
@@ -3563,6 +3917,128 @@ bool VulkanRHI::isCompleted(GPUFuture &future)
   }
 
   return true;
+}
+
+const Buffer VulkanRHI::createBuffer(const BufferInfo &info)
+{
+  auto buffer = allocateBuffer(info);
+  return Buffer{.name = info.name};
+}
+
+const Texture VulkanRHI::createTexture(const TextureInfo &info)
+{
+  auto texture = allocateTexture(info);
+  return Texture{.name = info.name};
+}
+const Sampler VulkanRHI::createSampler(const SamplerInfo &info)
+{
+  auto sampler = allocateSampler(info);
+  return Sampler{.name = info.name};
+}
+
+const BindingsLayout VulkanRHI::createBindingsLayout(const BindingsLayoutInfo &info)
+{
+  auto bindings = allocateBindingsLayout(info);
+  return BindingsLayout{.name = info.name};
+}
+
+const BindingGroups VulkanRHI::createBindingGroups(const BindingGroupsInfo &info)
+{
+  auto vkLayout = getVulkanBindingsLayout(info.layout.name);
+  auto bindings = allocateBindings(info, vkLayout);
+  return BindingGroups{.name = info.name};
+}
+
+const GraphicsPipeline VulkanRHI::createGraphicsPipeline(const GraphicsPipelineInfo &info)
+{
+  auto pipeline = allocateGraphicsPipeline(info);
+  return GraphicsPipeline{.name = info.name};
+}
+
+const ComputePipeline VulkanRHI::createComputePipeline(const ComputePipelineInfo &info)
+{
+  auto pipeline = allocateComputePipeline(info);
+  return ComputePipeline{.name = info.name};
+}
+
+void VulkanRHI::deleteBuffer(const Buffer &name)
+{
+  auto buffer = getVulkanBuffer(name.name);
+  releaseBuffer(buffer);
+}
+
+void VulkanRHI::deleteTexture(const Texture &name)
+{
+  auto texture = getVulkanTexture(name.name);
+  releaseTexture(texture);
+}
+
+void VulkanRHI::deleteSampler(const Sampler &name)
+{
+  auto sampler = getVulkanSampler(name.name);
+  releaseSampler(sampler);
+}
+
+void VulkanRHI::deleteBindingsLayout(const BindingsLayout &name)
+{
+  auto layout = getVulkanBindingsLayout(name.name);
+  releaseBindingsLayout(layout);
+}
+
+void VulkanRHI::deleteBindingGroups(const BindingGroups &name)
+{
+  auto groups = getVulkanBindingGroups(name.name);
+  releaseBindingGroup(groups);
+}
+
+void VulkanRHI::deleteGraphicsPipeline(const GraphicsPipeline &name)
+{
+  auto pipeline = getVulkanGraphicsPipeline(name.name);
+  releaseGraphicsPipeline(pipeline);
+}
+
+void VulkanRHI::deleteComputePipeline(const ComputePipeline &name)
+{
+  auto pipeline = getVulkanComputePipeline(name.name);
+  releaseComputePipeline(pipeline);
+}
+
+const Shader VulkanRHI::createShader(const ShaderInfo info)
+{
+  if (info.type != SpirV)
+  {
+    os::Logger::errorf("Invalid type of shader %s, VulkanRHI only accepts spirv shader types", info.name.c_str());
+    exit(1);
+  }
+
+  VkShaderModuleCreateInfo createInfo{};
+  createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  createInfo.codeSize = info.src.size();
+  createInfo.pCode = reinterpret_cast<const uint32_t *>(info.src.data());
+
+  VkShaderModule shaderModule = VK_NULL_HANDLE;
+
+  if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+  {
+    throw std::runtime_error("failed to create shader module!");
+  }
+
+  VulkanShader *s = new VulkanShader();
+  s->shaderModule = shaderModule;
+  s->info = info;
+
+  vkShaders.insert(info.name, s);
+
+  return Shader{
+    .name = info.name,
+  };
+}
+
+void VulkanRHI::deleteShader(Shader handle)
+{
+  auto vkShader = getVulkanShader(handle.name);
+  vkShaders.remove(handle.name);
+  vkDestroyShaderModule(device, vkShader.shaderModule, nullptr);
 }
 
 } // namespace vulkan

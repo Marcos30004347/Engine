@@ -22,14 +22,14 @@ enum class CommandBuffer : uint32_t
 {
 };
 
-
 enum Queue
 {
-  None,
+  None = 0,
   Graphics,
   Compute,
   Transfer,
   Present,
+  QueuesCount,
 };
 
 enum class PipelineStage
@@ -170,15 +170,23 @@ enum class ImageAspectFlags : uint32_t
 
 enum BufferUsage
 {
-  BufferUsage_None = 0,
-  BufferUsage_Uniform = 1 << 0,
-  BufferUsage_Storage = 1 << 1,
-  BufferUsage_Push = 1 << 2, // Flag indicating buffer can be used as dest from cpu write
-  BufferUsage_Pull = 1 << 3, // Flag indicating buffer can be mapped and read from cpu
-  BufferUsage_Vertex = 1 << 4,
-  BufferUsage_Indirect = 1 << 5,
-  BufferUsage_Timestamp = 1 << 6, // Flag indicating buffer is used as timestamp storage
-  BufferUsage_Index = 1 << 7,
+  BufferUsage_None       = 0,
+
+  // Shader / pipeline usage
+  BufferUsage_Uniform    = 1 << 0,
+  BufferUsage_Storage    = 1 << 1,
+  BufferUsage_Vertex     = 1 << 4,
+  BufferUsage_Index      = 1 << 7,
+  BufferUsage_Indirect   = 1 << 5,
+  BufferUsage_Timestamp  = 1 << 6,
+
+  // CPU mapping intent
+  BufferUsage_Push       = 1 << 2, // MAP_WRITE
+  BufferUsage_Pull       = 1 << 3, // MAP_READ
+
+  // Explicit copy intent 
+  BufferUsage_CopySrc    = 1 << 8,
+  BufferUsage_CopyDst    = 1 << 9,
 };
 
 enum class SamplerAddressMode
@@ -421,78 +429,99 @@ enum class AccessPattern
   // No access - used for initialization or when no access is needed
   // Common in source stage of barriers where resource isn't actively used yet
   // Also used in TOP_OF_PIPE barriers
-  NONE,
+  NONE = 0,
 
   // Reading vertex attribute data from vertex buffers
   // Used in VERTEX_INPUT stage when GPU fetches vertex data
   // Applied to vertex buffers bound with vkCmdBindVertexBuffers
-  VERTEX_ATTRIBUTE_READ,
+  VERTEX_ATTRIBUTE_READ = 1 << 1,
 
   // Reading index data from index buffers
   // Used in VERTEX_INPUT stage when GPU fetches index data for indexed draws
   // Applied to index buffers bound with vkCmdBindIndexBuffer
-  INDEX_READ,
+  INDEX_READ = 1 << 2,
 
   // Reading uniform buffer data in shaders
   // Used when shaders access uniform buffer objects (UBOs)
   // Applied to buffers bound as uniform buffers in descriptor sets
-  UNIFORM_READ,
+  UNIFORM_READ = 1 << 3,
 
   // Reading data in shaders (textures, storage buffers, etc.)
   // General shader read access for textures and storage resources
   // Used for texture sampling, storage buffer reads
-  SHADER_READ,
+  SHADER_READ = 1 << 4,
 
   // Writing data in shaders (storage images, storage buffers)
   // Used for compute shaders writing to storage resources
   // Also for fragment shaders writing to storage images
-  SHADER_WRITE,
+  SHADER_WRITE = 1 << 5,
 
   // Reading from color attachments (rare - mainly for blending)
   // Used when GPU needs to read existing framebuffer contents
   // Common in blending operations that need source color
-  COLOR_ATTACHMENT_READ,
+  COLOR_ATTACHMENT_READ = 1 << 6,
 
   // Writing to color attachments (render targets)
   // Used when fragment shaders write color output
   // Applied to images bound as color attachments in render pass
-  COLOR_ATTACHMENT_WRITE,
+  COLOR_ATTACHMENT_WRITE = 1 << 7,
 
   // Reading from depth/stencil attachments
   // Used during depth testing and stencil testing operations
   // Applied when GPU reads existing depth values for comparison
-  DEPTH_STENCIL_ATTACHMENT_READ,
+  DEPTH_STENCIL_ATTACHMENT_READ = 1 << 8,
 
   // Writing to depth/stencil attachments
   // Used when fragment processing writes new depth/stencil values
   // Applied during depth buffer updates and stencil modifications
-  DEPTH_STENCIL_ATTACHMENT_WRITE,
+  DEPTH_STENCIL_ATTACHMENT_WRITE = 1 << 9,
 
   // Reading data during transfer operations
   // Used when resource is source of copy/blit operations
   // Applied to source resources in vkCmdCopyBuffer, vkCmdBlitImage, etc.
-  TRANSFER_READ,
+  TRANSFER_READ = 1 << 10,
 
   // Writing data during transfer operations
   // Used when resource is destination of copy/blit operations
   // Applied to destination resources in copy commands
-  TRANSFER_WRITE,
+  TRANSFER_WRITE = 1 << 11,
 
   // Reading indirect draw/dispatch parameters
   // Used when GPU reads draw parameters from buffer (indirect rendering)
   // Applied to buffers used in vkCmdDrawIndirect, vkCmdDispatchIndirect
-  INDIRECT_COMMAND_READ,
+  INDIRECT_COMMAND_READ = 1 << 12,
 
   // Generic memory read access
   // Conservative option covering any type of read operation
   // Used when specific read type is unknown or multiple read types possible
-  MEMORY_READ,
+  MEMORY_READ = 1 << 13,
 
   // Generic memory write access
   // Conservative option covering any type of write operation
   // Used when specific write type is unknown or multiple write types possible
-  MEMORY_WRITE
+  MEMORY_WRITE = 1 << 14
 };
+
+inline ImageAspectFlags GetImageAspectFlags(Format format)
+{
+  switch (format)
+  {
+  case Format_Stencil8:
+    return (ImageAspectFlags::Stencil);
+
+  case Format_Depth16Unorm:
+  case Format_Depth24Plus:
+  case Format_Depth32Float:
+    return (ImageAspectFlags::Depth);
+
+  case Format_Depth24PlusStencil8:
+  case Format_Depth32FloatStencil8:
+    return (ImageAspectFlags)((uint32_t)(ImageAspectFlags::Depth) | ((uint32_t)ImageAspectFlags::Stencil));
+
+  default:
+    return (ImageAspectFlags::Color);
+  }
+}
 
 struct Color
 {
@@ -553,6 +582,40 @@ struct Rect2D
   Rect2D(uint32_t x, uint32_t y, uint32_t width, uint32_t height) : x(x), y(y), width(width), height(height)
   {
   }
+};
+
+struct BufferInfo
+{
+  std::string name;
+  uint64_t size = 0U;
+  BufferUsage usage;
+  bool scratch = false;
+  // bool persistent = true;
+};
+
+struct TextureInfo
+{
+  std::string name;
+  Format format = Format::Format_RGBA8Uint;
+  BufferUsage memoryProperties;
+  ImageUsage usage;
+  uint32_t width = 0U;
+  uint32_t height = 0U;
+  uint32_t depth = 0U;
+  uint32_t mipLevels = 0U;
+};
+
+struct SamplerInfo
+{
+  std::string name;
+  Filter minFilter = Filter::Linear;
+  Filter magFilter = Filter::Linear;
+  SamplerAddressMode addressModeU = SamplerAddressMode::Repeat;
+  SamplerAddressMode addressModeV = SamplerAddressMode::Repeat;
+  SamplerAddressMode addressModeW = SamplerAddressMode::Repeat;
+  bool anisotropyEnable = false;
+  float maxAnisotropy = 1.0f;
+  float maxLod = 1.0f;
 };
 
 struct Buffer
@@ -622,8 +685,6 @@ struct BindingsLayout
   }
 };
 
-
-
 struct GraphicsPipeline
 {
   std::string name;
@@ -663,12 +724,11 @@ struct BindingGroups
   }
 };
 
-
 struct BufferView
 {
   Buffer buffer;
-  uint32_t offset = 0U;
-  uint32_t size = 0U;
+  uint64_t offset = 0U;
+  uint64_t size = 0U;
   AccessPattern access;
 
   bool operator==(const BufferView &other) const noexcept
@@ -697,7 +757,6 @@ struct TextureView
   AccessPattern access;
   ResourceLayout layout;
 
-
   bool operator==(const TextureView &other) const noexcept
   {
     return texture == other.texture && flags == other.flags && baseMipLevel == other.baseMipLevel && levelCount == other.levelCount && baseArrayLayer == other.baseArrayLayer &&
@@ -708,8 +767,6 @@ struct TextureView
     return !(*this == other);
   }
 };
-
-
 
 struct ColorAttachmentInfo
 {
@@ -733,7 +790,169 @@ struct RenderPassInfo
   Rect2D scissor;
 
   std::vector<ColorAttachmentInfo> colorAttachments;
-  DepthStencilAttachmentInfo depthStencilAttachment;
+  DepthStencilAttachmentInfo *depthStencilAttachment = nullptr;
+};
+
+struct BindingBuffer
+{
+  BufferView bufferView;
+  uint32_t binding;
+};
+
+struct BindingSampler
+{
+  Sampler sampler;
+  TextureView view;
+  uint32_t binding;
+};
+
+struct BindingTextureInfo
+{
+  TextureView textureView;
+  uint32_t binding;
+};
+
+struct BindingStorageTextureInfo
+{
+  TextureView textureView;
+  uint32_t binding;
+};
+
+struct GroupInfo
+{
+  std::string name;
+  std::vector<BindingBuffer> buffers;
+  std::vector<BindingSampler> samplers;
+  std::vector<BindingTextureInfo> textures;
+  std::vector<BindingStorageTextureInfo> storageTextures;
+};
+
+struct BindingGroupsInfo
+{
+  std::string name;
+  BindingsLayout layout;
+  std::vector<GroupInfo> groups;
+};
+
+enum BufferBindingType
+{
+  BufferBindingType_UniformBuffer,
+  BufferBindingType_StorageBuffer,
+};
+
+struct BindingGroupLayoutBufferEntry
+{
+  std::string name;
+  uint32_t binding;
+  BufferBindingType type;
+  BindingVisibility visibility;
+  bool isDynamic = false;
+};
+
+struct BindingGroupLayoutSamplerEntry
+{
+  std::string name;
+  uint32_t binding;
+  BindingVisibility visibility;
+};
+
+struct BindingGroupLayoutTextureEntry
+{
+  std::string name;
+  uint32_t binding;
+  BindingVisibility visibility;
+  bool multisampled = false;
+};
+
+struct BindingGroupLayoutStorageTextureEntry
+{
+  std::string name;
+  uint32_t binding;
+  BindingVisibility visibility;
+};
+
+struct BindingGroupLayout
+{
+  std::vector<BindingGroupLayoutBufferEntry> buffers;
+  std::vector<BindingGroupLayoutSamplerEntry> samplers;
+  std::vector<BindingGroupLayoutTextureEntry> textures;
+  std::vector<BindingGroupLayoutStorageTextureEntry> storageTextures;
+};
+
+struct BindingsLayoutInfo
+{
+  std::string name;
+  std::vector<BindingGroupLayout> groups;
+};
+struct VertexLayoutElement
+{
+  std::string name;
+  Type type;
+  uint32_t binding;
+  uint32_t offset;
+  uint32_t location;
+};
+struct GraphicsPipelineVertexStage
+{
+  Shader vertexShader;
+  std::string shaderEntry;
+
+  std::vector<VertexLayoutElement> vertexLayoutElements;
+
+  PrimitiveType primitiveType;
+  PrimitiveCullType cullType;
+};
+
+struct ColorAttatchment
+{
+  Format format;
+  LoadOp loadOp;
+  StoreOp storeOp;
+};
+
+struct DepthAttatchment
+{
+  Format format;
+  LoadOp loadOp;
+  StoreOp storeOp;
+};
+
+struct GraphicsPipelineFragmentStage
+{
+  Shader fragmentShader;
+  std::string shaderEntry;
+  std::vector<ColorAttatchment> colorAttatchments;
+  DepthAttatchment *depthAttatchment = nullptr;
+};
+
+struct GraphicsPipelineInfo
+{
+  std::string name;
+  BindingsLayout layout;
+  GraphicsPipelineVertexStage vertexStage;
+  GraphicsPipelineFragmentStage fragmentStage;
+};
+
+struct ComputePipelineInfo
+{
+  std::string name;
+  Shader shader;
+  const char *entry;
+  BindingsLayout layout;
+};
+
+enum ShaderType
+{
+  SpirV,
+  WGSL,
+};
+
+struct ShaderInfo
+{
+  std::string name;
+  std::string src;
+  ShaderType type;
+  BindingsLayout layout;
 };
 
 } // namespace rendering
@@ -826,3 +1045,38 @@ template <> struct std::hash<rendering::BufferView>
     return h;
   }
 };
+
+
+inline rendering::AccessPattern operator|(rendering::AccessPattern a, rendering::AccessPattern b)
+{
+  return static_cast<rendering::AccessPattern>(
+      static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
+}
+
+inline bool operator&(rendering::AccessPattern a, rendering::AccessPattern b)
+{
+  return (static_cast<uint64_t>(a) & static_cast<uint64_t>(b)) != 0;
+}
+
+inline rendering::BufferUsage operator|(rendering::BufferUsage a, rendering::BufferUsage b)
+{
+  return static_cast<rendering::BufferUsage>(
+      static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
+}
+
+inline bool operator&(rendering::BufferUsage a, rendering::BufferUsage b)
+{
+  return (static_cast<uint64_t>(a) & static_cast<uint64_t>(b)) != 0;
+}
+
+
+inline rendering::ImageUsage operator|(rendering::ImageUsage a, rendering::ImageUsage b)
+{
+  return static_cast<rendering::ImageUsage>(
+      static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
+}
+
+inline bool operator&(rendering::ImageUsage a, rendering::ImageUsage b)
+{
+  return (static_cast<uint64_t>(a) & static_cast<uint64_t>(b)) != 0;
+}

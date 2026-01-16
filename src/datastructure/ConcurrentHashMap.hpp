@@ -2,6 +2,7 @@
 
 #include "ConcurrentSkipListMap.hpp"
 #include <functional>
+#include <utility>
 
 namespace lib
 {
@@ -14,162 +15,186 @@ template <
 class ConcurrentHashMap
 {
 private:
-  using InternalMap = ConcurrentSkipListMap<size_t, V, MAX_LEVEL>;
-  using InternalIterator = typename InternalMap::Iterator;
+  using StoredValue   = std::pair<K, V>;
+  using InternalMap   = ConcurrentSkipListMap<size_t, StoredValue, MAX_LEVEL>;
+  using InternalIter  = typename InternalMap::Iterator;
 
   InternalMap map;
   Hasher hasher;
 
-  size_t hashKey(const K &key) const
+  size_t hashKey(const K& key) const
   {
     return hasher(key);
   }
 
 public:
-  ConcurrentHashMap() : map(), hasher()
-  {
-  }
-
+  ConcurrentHashMap() = default;
   ~ConcurrentHashMap() = default;
 
+  // =======================
+  // Iterator
+  // =======================
   class Iterator
   {
-    template <typename A, typename B, size_t C, typename H> friend class ConcurrentHashMap;
+    template <typename, typename, size_t, typename>
+    friend class ConcurrentHashMap;
 
   private:
-    InternalIterator internal_iter;
-    K original_key;
+    InternalIter it;
 
-    Iterator(InternalIterator iter, const K &key) : internal_iter(std::move(iter)), original_key(key)
-    {
-    }
+    explicit Iterator(InternalIter iter)
+      : it(std::move(iter))
+    {}
 
   public:
-    // Copy constructor
-    Iterator(const Iterator &other) : internal_iter(other.internal_iter), original_key(other.original_key)
-    {
-    }
+    Iterator() = default;
+    Iterator(const Iterator&) = default;
+    Iterator& operator=(const Iterator&) = default;
 
-    // Copy assignment operator
-    Iterator &operator=(const Iterator &other)
-    {
-      if (this != &other)
-      {
-        internal_iter = other.internal_iter;
-        original_key = other.original_key;
-      }
-      return *this;
-    }
-
-    // Move constructor
-    Iterator(Iterator &&other) noexcept : internal_iter(std::move(other.internal_iter)), original_key(std::move(other.original_key))
-    {
-    }
-
-    // Move assignment operator
-    Iterator &operator=(Iterator &&other) noexcept
-    {
-      if (this != &other)
-      {
-        internal_iter = std::move(other.internal_iter);
-        original_key = std::move(other.original_key);
-      }
-      return *this;
-    }
-
-    Iterator &operator=(const V &val)
-    {
-      internal_iter = val;
-      return *this;
-    }
+    Iterator(Iterator&&) noexcept = default;
+    Iterator& operator=(Iterator&&) noexcept = default;
 
     ~Iterator() = default;
 
-    const K &key() const
+    // Accessors
+    const K& key() const
     {
-      return original_key;
+      return it.value().first;
     }
 
-    V &value()
+    V& value()
     {
-      return internal_iter.value();
+      return it.value().second;
     }
 
-    const V &value() const
+    const V& value() const
     {
-      return internal_iter.value();
+      return it.value().second;
     }
 
-    operator V &()
+    // STL compatibility
+    std::pair<const K&, V&> operator*()
     {
-      return internal_iter.value();
+      auto& kv = it.value();
+      return { kv.first, kv.second };
     }
 
-    operator const V &() const
+    V* operator->()
     {
-      return internal_iter.value();
+      return &it.value().second;
     }
 
-    Iterator &operator++()
+    const V* operator->() const
     {
-      ++internal_iter;
+      return &it.value().second;
+    }
+
+    Iterator& operator++()
+    {
+      ++it;
       return *this;
     }
 
     Iterator operator++(int)
     {
-      Iterator tmp = *this;
-      ++internal_iter;
+      Iterator tmp(*this);
+      ++it;
       return tmp;
     }
 
-    std::pair<const K &, V &> operator*()
+    bool operator==(const Iterator& other) const
     {
-      return std::pair<const K &, V &>(original_key, internal_iter.value());
+      return it == other.it;
     }
 
-    bool operator==(const Iterator &other) const
+    bool operator!=(const Iterator& other) const
     {
-      return internal_iter == other.internal_iter;
-    }
-
-    bool operator!=(const Iterator &other) const
-    {
-      return internal_iter != other.internal_iter;
-    }
-
-    V *operator->()
-    {
-      return internal_iter.operator->();
-    }
-
-    const V *operator->() const
-    {
-      return internal_iter.operator->();
+      return it != other.it;
     }
   };
 
-  Iterator insert(const K &key, const V &value)
+  // =======================
+  // Modifiers
+  // =======================
+  Iterator insert(const K& key, const V& value)
   {
     size_t hash = hashKey(key);
-    auto internal_result = map.insert(hash, value);
-    return Iterator(std::move(internal_result), key);
+    auto iter = map.insert(hash, { key, value });
+    return Iterator(std::move(iter));
   }
 
-  bool remove(const K &key)
+  bool remove(const K& key)
   {
     size_t hash = hashKey(key);
+    auto it = map.find(hash);
+
+    if (it == map.end())
+      return false;
+
+    // hash collision safety
+    if (it.value().first != key)
+      return false;
+
     return map.remove(hash);
   }
 
-  Iterator find(const K &key)
+  // =======================
+  // Lookup
+  // =======================
+  Iterator find(const K& key)
   {
     size_t hash = hashKey(key);
-    auto internal_result = map.find(hash);
-    return Iterator(std::move(internal_result), key);
+    auto it = map.find(hash);
+
+    if (it == map.end())
+      return end();
+
+    // hash collision safety
+    if (it.value().first != key)
+      return end();
+
+    return Iterator(std::move(it));
   }
 
-  int getSize() const
+  bool contains(const K& key)
+  {
+    return find(key) != end();
+  }
+
+  // =======================
+  // Element access
+  // =======================
+  Iterator operator[](const K& key)
+  {
+    while (true)
+    {
+      auto it = find(key);
+      if (it != end())
+        return it;
+
+      auto inserted = insert(key, V{});
+      if (inserted != end())
+        return inserted;
+    }
+  }
+
+  // =======================
+  // Iteration
+  // =======================
+  Iterator begin()
+  {
+    return Iterator(map.begin());
+  }
+
+  Iterator end()
+  {
+    return Iterator(map.end());
+  }
+
+  // =======================
+  // Capacity
+  // =======================
+  uint64_t size() const
   {
     return map.size();
   }
@@ -179,35 +204,9 @@ public:
     return map.isEmpty();
   }
 
-  Iterator begin()
+  void clear()
   {
-    auto internal_result = map.begin();
-    return Iterator(std::move(internal_result), K());
-  }
-
-  Iterator end()
-  {
-    auto internal_result = map.end();
-    return Iterator(std::move(internal_result), K());
-  }
-
-  Iterator operator[](const K &key)
-  {
-    size_t hash = hashKey(key);
-    auto internal_result = map[hash];
-    return Iterator(std::move(internal_result), key);
-  }
-
-  void clear() {
     map.clear();
-  }
-
-  uint64_t size() {
-    return map.size();
-  }
-
-  bool contains(const K& key) {
-    return find(key) != end();
   }
 };
 

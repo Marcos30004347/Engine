@@ -16,183 +16,6 @@
 namespace rendering
 {
 
-struct BufferInfo
-{
-  std::string name;
-  uint32_t size = 0U;
-  BufferUsage usage;
-  // bool persistent = true;
-};
-
-struct TextureInfo
-{
-  std::string name;
-  Format format = Format::Format_RGBA8Uint;
-  BufferUsage memoryProperties;
-  ImageUsage usage;
-  uint32_t width = 0U;
-  uint32_t height = 0U;
-  uint32_t depth = 0U;
-  uint32_t mipLevels = 0U;
-};
-
-struct SamplerInfo
-{
-  std::string name;
-  Filter minFilter = Filter::Linear;
-  Filter magFilter = Filter::Linear;
-  SamplerAddressMode addressModeU = SamplerAddressMode::Repeat;
-  SamplerAddressMode addressModeV = SamplerAddressMode::Repeat;
-  SamplerAddressMode addressModeW = SamplerAddressMode::Repeat;
-  bool anisotropyEnable = false;
-  float maxAnisotropy = 1.0f;
-  float maxLod = 1.0f;
-};
-
-struct BindingBuffer
-{
-  BufferView bufferView;
-  uint32_t binding;
-  bool isDynamic = false;
-};
-
-struct BindingSampler
-{
-  Sampler sampler;
-  TextureView view;
-  uint32_t binding;
-};
-
-struct BindingTextureInfo
-{
-  TextureView textureView;
-  uint32_t binding;
-};
-
-struct BindingStorageTextureInfo
-{
-  TextureView textureView;
-  uint32_t binding;
-};
-
-struct GroupInfo
-{
-  std::string name;
-  std::vector<BindingBuffer> buffers;
-  std::vector<BindingSampler> samplers;
-  std::vector<BindingTextureInfo> textures;
-  std::vector<BindingStorageTextureInfo> storageTextures;
-};
-
-struct BindingGroupsInfo
-{
-  std::string name;
-  BindingsLayout layout;
-  std::vector<GroupInfo> groups;
-};
-
-struct BindingGroupLayoutBufferEntry
-{
-  std::string name;
-  uint32_t binding;
-  BindingVisibility visibility;
-  bool isDynamic = false;
-};
-
-struct BindingGroupLayoutSamplerEntry
-{
-  std::string name;
-  uint32_t binding;
-  BindingVisibility visibility;
-};
-
-struct BindingGroupLayoutTextureEntry
-{
-  std::string name;
-  uint32_t binding;
-  BindingVisibility visibility;
-  bool multisampled = false;
-};
-
-struct BindingGroupLayoutStorageTextureEntry
-{
-  std::string name;
-  uint32_t binding;
-  BindingVisibility visibility;
-};
-
-struct BindingGroupLayout
-{
-  std::vector<BindingGroupLayoutBufferEntry> buffers;
-  std::vector<BindingGroupLayoutSamplerEntry> samplers;
-  std::vector<BindingGroupLayoutTextureEntry> textures;
-  std::vector<BindingGroupLayoutStorageTextureEntry> storageTextures;
-};
-
-struct BindingsLayoutInfo
-{
-  std::string name;
-  std::vector<BindingGroupLayout> groups;
-};
-
-
-struct VertexLayoutElement
-{
-  std::string name;
-  Type type;
-  uint32_t binding;
-  uint32_t offset;
-  uint32_t location;
-};
-struct GraphicsPipelineVertexStage
-{
-  Shader vertexShader;
-  std::string shaderEntry;
-
-  std::vector<VertexLayoutElement> vertexLayoutElements;
-
-  PrimitiveType primitiveType;
-  PrimitiveCullType cullType;
-};
-
-struct ColorAttatchment
-{
-  Format format;
-  LoadOp loadOp;
-  StoreOp storeOp;
-};
-
-struct DepthAttatchment
-{
-  Format format;
-  LoadOp loadOp;
-  StoreOp storeOp;
-};
-
-struct GraphicsPipelineFragmentStage
-{
-  Shader fragmentShader;
-  std::string shaderEntry;
-  std::vector<ColorAttatchment> colorAttatchments;
-  DepthAttatchment depthAttatchment;
-};
-
-struct GraphicsPipelineInfo
-{
-  std::string name;
-  BindingsLayout layout;
-  GraphicsPipelineVertexStage vertexStage;
-  GraphicsPipelineFragmentStage fragmentStage;
-};
-
-struct ComputePipelineInfo
-{
-  std::string name;
-  Shader shader;
-  const char *entry;
-  BindingsLayout layout;
-};
-
 enum CommandType
 {
   BeginRenderPass,
@@ -220,6 +43,9 @@ struct BufferBarrier
   AccessPattern toAccess;
   // uint64_t fromLevel;
   uint64_t toLevel;
+  Queue fromQueue;
+  Queue toQueue;
+  uint64_t fromNode;
 };
 
 struct TextureBarrier
@@ -234,6 +60,9 @@ struct TextureBarrier
   AccessPattern toAccess;
   ResourceLayout fromLayout;
   ResourceLayout toLayout;
+  Queue fromQueue;
+  Queue toQueue;
+  uint64_t fromNode;
 };
 
 struct CopyBufferArgs
@@ -315,7 +144,6 @@ enum ResourceType
   ResourceType_Texture,
   ResourceType_TextureView,
   ResourceType_Sampler,
-  ResourceType_Shader,
   ResourceType_BindingsLayout,
   ResourceType_BindingGroups,
   ResourceType_ComputePipeline,
@@ -389,39 +217,46 @@ class Task;
 struct BindingsLayoutResourceUsage
 {
   uint64_t consumer;
+  Queue queue;
 };
 
 struct BindingGroupsResourceUsage
 {
   uint64_t consumer;
+  Queue queue;
 };
 
 struct GraphicsPipelineResourceUsage
 {
   uint64_t consumer;
+  Queue queue;
 };
 
 struct ComputePipelineResourceUsage
 {
   uint64_t consumer;
+  Queue queue;
 };
 
 struct BufferResourceUsage
 {
   BufferView view;
   uint64_t consumer;
+  Queue queue;
 };
 
 struct TextureResourceUsage
 {
   TextureView view;
   uint64_t consumer;
+  Queue queue;
 };
 
 struct SamplerResourceUsage
 {
   Sampler sampler;
   uint64_t consumer;
+  Queue queue;
 };
 
 // struct ResourceMetadata
@@ -446,54 +281,61 @@ struct SamplerResourceUsage
 //   std::vector<BindingsLayoutResourceUsage> layoutUsages;
 // };
 
-struct ScratchBufferResourceMetadata
+// struct ScratchBufferResourceMetadata
+// {
+//   BufferInfo bufferInfo;
+//   uint64_t firstUsedAt;
+//   uint64_t lastUsedAt;
+//   //std::vector<BufferResourceUsage> usages;
+// };
+
+struct ShaderResourceMetadata
 {
-  BufferInfo bufferInfo;
-  uint64_t firstUsedAt;
-  uint64_t lastUsedAt;
-  std::vector<BufferResourceUsage> bufferUsages;
+  ShaderInfo info;
 };
 
 struct BufferResourceMetadata
 {
   BufferInfo bufferInfo;
-  std::vector<BufferResourceUsage> bufferUsages;
+  uint64_t firstUsedAt;
+  uint64_t lastUsedAt;
+  std::vector<BufferResourceUsage> usages;
 };
 
 struct TextureResourceMetadata
 {
   TextureInfo textureInfo;
-  std::vector<TextureResourceUsage> textureUsages;
+  std::vector<TextureResourceUsage> usages;
 };
 
 struct SamplerResourceMetadata
 {
   SamplerInfo samplerInfo;
-  std::vector<SamplerResourceUsage> samplerUsages;
+  std::vector<SamplerResourceUsage> usages;
 };
 
 struct BindingsLayoutResourceMetadata
 {
   BindingsLayoutInfo layoutsInfo;
-  std::vector<BindingsLayoutResourceUsage> layoutUsages;
+  std::vector<BindingsLayoutResourceUsage> usages;
 };
 
 struct BindingGroupsResourceMetadata
 {
   BindingGroupsInfo groupsInfo;
-  std::vector<BindingGroupsResourceUsage> layoutUsages;
+  std::vector<BindingGroupsResourceUsage> usages;
 };
 
 struct GraphicsPipelineResourceMetadata
 {
   GraphicsPipelineInfo pipelineInfo;
-  std::vector<GraphicsPipelineResourceUsage> layoutUsages;
+  std::vector<GraphicsPipelineResourceUsage> usages;
 };
 
 struct ComputePipelineResourceMetadata
 {
   ComputePipelineInfo pipelineInfo;
-  std::vector<ComputePipelineResourceUsage> layoutUsages;
+  std::vector<ComputePipelineResourceUsage> usages;
 };
 
 struct OutputResource
@@ -504,7 +346,6 @@ struct OutputResource
   TextureInfo textureInfo;
   SamplerInfo samplerInfo;
   BindingsLayoutInfo bindingsLayoutsInfo;
-
   ResourceLayout layout;
   AccessPattern access;
 };
@@ -530,8 +371,8 @@ struct Semaphore
 {
   Queue signalQueue;
   Queue waitQueue;
-  uint32_t signalTask;
-  uint32_t waitTask;
+  uint64_t signalTask;
+  uint64_t waitTask;
   bool operator==(const Semaphore &other) const noexcept
   {
     return signalQueue == other.signalQueue && waitQueue == other.waitQueue && signalTask == other.signalTask && waitTask == other.waitTask;
@@ -616,29 +457,9 @@ class RHIResources
 
 private:
   RenderGraph *renderGraph;
-
-  // std::atomic<uint64_t> scratchBuffersAllocated;
-  // std::atomic<uint64_t> buffersAllocated;
-  // std::atomic<uint64_t> texturesAllocated;
-  // std::atomic<uint64_t> samplersAllocated;
-  // std::atomic<uint64_t> bindingLayoutsAllocated;
-  // std::atomic<uint64_t> bindingGroupsAllocated;
-  // std::atomic<uint64_t> graphicsPipelinesAllocated;
-  // std::atomic<uint64_t> computePipelinesAllocated;
-
-  // lib::ConcurrentHashMap<std::string, uint64_t> scratchBufferSymbols;
-  // lib::ConcurrentHashMap<std::string, uint64_t> bufferSymbols;
-  // lib::ConcurrentHashMap<std::string, uint64_t> textureSymbols;
-  // lib::ConcurrentHashMap<std::string, uint64_t> samplerSymbols;
-  // lib::ConcurrentHashMap<std::string, uint64_t> bindingLayoutSymbols;
-  // lib::ConcurrentHashMap<std::string, uint64_t> bindingGroupsSymbols;
-  // lib::ConcurrentHashMap<std::string, uint64_t> graphicsPipelineSymbols;
-  // lib::ConcurrentHashMap<std::string, uint64_t> computePipelineSymbols;
-
+  lib::ConcurrentHashMap<std::string, ShaderResourceMetadata> shadersMetadatas;
   lib::ConcurrentHashMap<std::string, BufferAllocation> scratchMap;
   lib::ConcurrentHashMap<BufferUsage, BufferResourceMetadata> scratchBuffers;
-
-  lib::ConcurrentHashMap<std::string, ScratchBufferResourceMetadata> scratchBuffersRequestsMetadatas;
   lib::ConcurrentHashMap<std::string, BufferResourceMetadata> bufferMetadatas;
   lib::ConcurrentHashMap<std::string, TextureResourceMetadata> textureMetadatas;
   lib::ConcurrentHashMap<std::string, SamplerResourceMetadata> samplerMetadatas;
@@ -650,7 +471,6 @@ private:
 public:
   RHIResources(RenderGraph *renderGraph);
 
-  const Buffer getScratchBuffer(BufferInfo &info);
   const BindingGroups getBindingGroups(const std::string &name);
   const GraphicsPipeline getGraphicsPipeline(const std::string &name);
   const ComputePipeline getComputePipeline(const std::string &name);
@@ -658,9 +478,7 @@ public:
   const BindingsLayout getBindingsLayout(const std::string &name);
   const Sampler getSampler(const std::string &name);
   const Buffer getBuffer(const std::string &name);
-  const Buffer getScratchBuffer(const std::string &name);
   const Texture getTexture(const std::string &name);
-  // const TextureView getNextSwapChainTexture(const SwapChain &swapChain) const;
 };
 
 class RenderGraph
@@ -673,24 +491,26 @@ private:
     uint64_t level;
     uint64_t priority;
 
-    std::vector<uint32_t> signalSemaphores;
-    std::vector<uint32_t> waitSemaphores;
+    std::vector<uint64_t> signalSemaphores;
+    std::vector<uint64_t> waitSemaphores;
 
     Queue queue;
     std::vector<Command> commands;
+
+    std::vector<TextureBarrier> textureTransitions;
+    std::vector<BufferBarrier> bufferTransitions;
   };
 
   struct RenderGraphPass
   {
     std::string name;
-    std::function<bool(const RenderGraph &)> shouldExecute;
-    std::function<void(RHIResources &, RHICommandBuffer &)> record;
+    RHICommandBuffer cmd;
   };
 
   friend class Task;
   bool compiled;
   uint64_t executions;
-  RHI *renderingHardwareInterface;
+  RHI *rhi;
 
   lib::ConcurrentQueue<RenderGraphPass> passes;
 
@@ -702,15 +522,15 @@ private:
   std::vector<Semaphore> semaphores;
 
   // TODO: remove from here
-  std::vector<TextureBarrier> textureTransitions;
-  std::vector<BufferBarrier> bufferTransitions;
+  // std::vector<TextureBarrier> textureTransitions;
+  // std::vector<BufferBarrier> bufferTransitions;
 
   // std::vector<BufferAllocation> bufferAllocations;
   // std::vector<TextureAllocation> textureAllocations;
   // std::vector<SamplerAllocation> samplerAllocations;
   // std::vector<BindingsLayoutAllocation> bindingsLayoutsAllocations;
 
-  void registerConsumer(const std::string &name, const InputResource &res, uint32_t taskId);
+  void registerConsumer(const std::string &name, const InputResource &res, uint32_t taskId, Queue queue);
 
   uint32_t levelDFS(uint32_t id, std::vector<bool> &visited, uint32_t level);
 
@@ -732,6 +552,11 @@ private:
   // void outputCommands(RHIProgram &program);
 
 public:
+  struct Frame
+  {
+    std::vector<GPUFuture> futures;
+  };
+
   inline static bool ExecuteAlways(const RenderGraph &renderGraph)
   {
     return true;
@@ -744,10 +569,12 @@ public:
 
   RenderGraph(RHI *rhi);
 
-  void enqueuePass(std::string name, std::function<bool(const RenderGraph &)> shouldExecute, std::function<void(RHIResources &, RHICommandBuffer &)> handler);
+  void enqueuePass(std::string name, RHICommandBuffer &);
   void compile();
+  void run(Frame &outFrame);
+  void waitFrame(Frame &frame);
 
-  const Buffer createScratchBuffer(const BufferInfo &info);
+  // const Buffer createScratchBuffer(const BufferInfo &info);
 
   const Buffer createBuffer(const BufferInfo &info);
   const Texture createTexture(const TextureInfo &info);
@@ -757,13 +584,32 @@ public:
   const GraphicsPipeline createGraphicsPipeline(const GraphicsPipelineInfo &info);
   const ComputePipeline createComputePipeline(const ComputePipelineInfo &info);
 
-  void deleteBuffer(const std::string &name);
-  void deleteTexture(const std::string &name);
-  void deleteSampler(const std::string &name);
-  void deleteBindingsLayout(const std::string &name);
-  void deleteBindingGroups(const std::string &name);
-  void deleteGraphicsPipeline(const std::string &name);
-  void deleteComputePipeline(const std::string &name);
+  void deleteBuffer(const Buffer &name);
+  void deleteTexture(const Texture &name);
+  void deleteSampler(const Sampler &name);
+  void deleteBindingsLayout(const BindingsLayout &name);
+  void deleteBindingGroups(const BindingGroups &name);
+  void deleteGraphicsPipeline(const GraphicsPipeline &name);
+  void deleteComputePipeline(const ComputePipeline &name);
+
+  // const Buffer getScratchBuffer(BufferInfo &info);
+  const BindingGroups getBindingGroups(const std::string &name);
+  const GraphicsPipeline getGraphicsPipeline(const std::string &name);
+  const ComputePipeline getComputePipeline(const std::string &name);
+
+  const BindingsLayout getBindingsLayout(const std::string &name);
+  const Sampler getSampler(const std::string &name);
+  const Buffer getBuffer(const std::string &name);
+  const Texture getTexture(const std::string &name);
+
+  const Shader createShader(const ShaderInfo data);
+  void deleteShader(Shader handle);
+
+  void addSwapChainImages(SwapChain);
+  void removeSwapChainImages(SwapChain);
+
+  void bufferRead(const Buffer &buffer, const uint64_t offset, const uint64_t size, std::function<void(const void *)>);
+  void bufferWrite(const Buffer &buffer, const uint64_t offset, const uint64_t size, void *data);
 };
 
 }; // namespace rendering

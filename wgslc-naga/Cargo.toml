@@ -1,0 +1,18 @@
+[package]
+name = "wgslc-naga"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Naga: The shader translation library.
+# We enable 'wgsl-in' (parser) and 'spv-out' (SPIR-V writer).
+naga = { version = "28.0", features = ["wgsl-in", "spv-out"] }
+
+# Clap: For parsing command line arguments.
+clap = { version = "4.4", features = ["derive"] }
+
+# Anyhow: For easy error handling.
+anyhow = "1.0"
+
+# Bytemuck: To cast Vec<u32> (SPIR-V) to bytes for writing to disk.
+bytemuck = "1.14"
