@@ -2944,6 +2944,7 @@ void RenderGraph::bufferRead(const Buffer &buffer, const uint64_t offset, const 
 
 void RenderGraph::bufferWrite(const Buffer &buffer, const uint64_t offset, const uint64_t size, void *data)
 {
+  // TODO: check buffer usage
   rhi->bufferWrite(buffer, offset, size, data);
 }
 

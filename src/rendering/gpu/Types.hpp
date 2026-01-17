@@ -1080,3 +1080,13 @@ inline bool operator&(rendering::ImageUsage a, rendering::ImageUsage b)
 {
   return (static_cast<uint64_t>(a) & static_cast<uint64_t>(b)) != 0;
 }
+inline rendering::DeviceFeatures operator|(rendering::DeviceFeatures a, rendering::DeviceFeatures b)
+{
+  return static_cast<rendering::DeviceFeatures>(
+      static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
+}
+
+inline bool operator&(rendering::DeviceFeatures a, rendering::DeviceFeatures b)
+{
+  return (static_cast<uint64_t>(a) & static_cast<uint64_t>(b)) != 0;
+}

@@ -16,9 +16,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/datastructures/ConcurrentEpochGarbageCollect
 include(${CMAKE_CURRENT_SOURCE_DIR}/async/JobTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/async/AsyncTests.cmake)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/rhi/EventLoopTests.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/rhi/BufferAllocatorTests.cmake)
-
 include(${CMAKE_CURRENT_SOURCE_DIR}/rendering/RenderGraphTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/rendering/ComputeAddTests.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/rendering/TriangleExample.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/rendering/SortTests.cmake)

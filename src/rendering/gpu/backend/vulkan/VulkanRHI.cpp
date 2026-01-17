@@ -579,6 +579,38 @@ std::vector<VulkanPhysicalDevice> getMatchingDevices(VkInstance instance, const 
 
     featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Atomic32_AllOps);
 
+    bool hasSubgroupCompute = (subgroupProps.supportedStages & VK_SHADER_STAGE_COMPUTE_BIT) && (subgroupProps.supportedOperations & VK_SUBGROUP_FEATURE_BASIC_BIT);
+
+    if (hasSubgroupCompute)
+    {
+      featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Subgroup_Basic);
+    }
+
+    if (subgroupProps.supportedOperations & VK_SUBGROUP_FEATURE_VOTE_BIT)
+    {
+      featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Subgroup_Vote);
+    }
+
+    if (subgroupProps.supportedOperations & VK_SUBGROUP_FEATURE_ARITHMETIC_BIT)
+    {
+      featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Subgroup_Arithmetic);
+    }
+
+    if (subgroupProps.supportedOperations & VK_SUBGROUP_FEATURE_BALLOT_BIT)
+    {
+      featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Subgroup_Ballot);
+    }
+
+    if (subgroupProps.supportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_BIT)
+    {
+      featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Subgroup_Shuffle);
+    }
+
+    if (subgroupProps.supportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT)
+    {
+      featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Subgroup_ShuffleRelative);
+    }
+    
     if (atomic64Features.shaderBufferInt64Atomics)
     {
       featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Atomic64_MinMax);
@@ -2730,7 +2762,7 @@ VulkanCommandPool VulkanRHI::allocateCommandPool(uint32_t queueFamilyIndex)
   {
     throw std::runtime_error("Failed to create command pool");
   }
-  
+
   VulkanCommandPool pool;
   pool.commandPool = commandPool;
   return pool;
@@ -2850,7 +2882,7 @@ void VulkanRHI::releaseCommandBuffer(std::vector<CommandBuffer> &buffers)
       break;
     }
 
-    //releaseCommandPool(commandbuffer->commandPool);
+    // releaseCommandPool(commandbuffer->commandPool);
 
     commandBuffers.remove(buff);
   }
