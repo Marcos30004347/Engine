@@ -3039,10 +3039,10 @@ void VulkanRHI::cmdBindGraphicsPipeline(CommandBuffer handle, GraphicsPipeline p
 
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
 
-  if (commandBuffer->hascomputePipeline || commandBuffer->hasGraphicsPipeline)
-  {
-    throw std::runtime_error("pipeline already binded to command buffer");
-  }
+  // if (commandBuffer->hascomputePipeline || commandBuffer->hasGraphicsPipeline)
+  // {
+  //   throw std::runtime_error("pipeline already binded to command buffer");
+  // }
 
   commandBuffer->hasGraphicsPipeline = true;
   commandBuffer->boundGraphicsPipeline = pipelineHandle; // reinterpret_cast<VulkanGraphicsPipeline *>(pipelineHandle.get());
@@ -3058,10 +3058,10 @@ void VulkanRHI::cmdBindComputePipeline(CommandBuffer handle, ComputePipeline pip
 
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.pipeline);
 
-  if (commandBuffer->hascomputePipeline || commandBuffer->hasGraphicsPipeline)
-  {
-    throw std::runtime_error("pipeline already binded to command buffer");
-  }
+  // if (commandBuffer->hascomputePipeline || commandBuffer->hasGraphicsPipeline)
+  // {
+  //   throw std::runtime_error("pipeline already binded to command buffer");
+  // }
 
   commandBuffer->hascomputePipeline = true;
   commandBuffer->boundComputePipeline = pipelineHandle; // reinterpret_cast<VulkanComputePipeline *>(pipelineHandle);

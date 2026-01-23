@@ -1,9 +1,0 @@
-/Users/marcosvinicius/workspace/Engine/wgslc-naga/target/release/deps/jobserver-db7c97bf017f1cf8.d: /Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/lib.rs /Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/error.rs /Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/unix.rs
-
-/Users/marcosvinicius/workspace/Engine/wgslc-naga/target/release/deps/libjobserver-db7c97bf017f1cf8.rlib: /Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/lib.rs /Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/error.rs /Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/unix.rs
-
-/Users/marcosvinicius/workspace/Engine/wgslc-naga/target/release/deps/libjobserver-db7c97bf017f1cf8.rmeta: /Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/lib.rs /Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/error.rs /Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/unix.rs
-
-/Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/lib.rs:
-/Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/error.rs:
-/Users/marcosvinicius/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jobserver-0.1.34/src/unix.rs:

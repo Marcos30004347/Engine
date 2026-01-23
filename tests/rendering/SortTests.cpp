@@ -23,7 +23,7 @@ inline static uint32_t scatterBlocksCount(uint32_t n)
   return (n + scatter_block_kvs - 1) / scatter_block_kvs;
 }
 
-inline static uint32_t HistogramBlocksCount(uint32_t n)
+inline static uint32_t histogramBlocksCount(uint32_t n)
 {
   uint64_t size = scatterBlocksCount(n) * scatter_block_kvs;
   return (size + histo_block_kvs - 1) / histo_block_kvs;
@@ -31,7 +31,7 @@ inline static uint32_t HistogramBlocksCount(uint32_t n)
 
 inline static uint32_t keysBufferSize(uint32_t n)
 {
-  return HistogramBlocksCount(n) * histo_block_kvs;
+  return histogramBlocksCount(n) * histo_block_kvs;
 }
 
 // inline static Params GetInfo(uint32_t len)
@@ -78,7 +78,7 @@ int main()
   auto surfaces = std::vector<VkSurfaceKHR>();
   rhi->init(surfaces);
 
-  std::string sortShader = os::io::readRelativeFile("assets/shaders/spirv/radixsort.spirv.debug");
+  std::string sortShader = os::io::readRelativeFile("assets/shaders/spirv/radixsort.spirv");
 
   RenderGraph *renderGraph = new RenderGraph(rhi);
 
@@ -129,7 +129,13 @@ int main()
       BufferInfo{
         .name = "Histogram.buffer",
         .size = internal_size,
-        .usage = BufferUsage::BufferUsage_Storage,
+        .usage = BufferUsage::BufferUsage_Storage | BufferUsage::BufferUsage_CopySrc,
+      });
+  Buffer debug = renderGraph->createBuffer(
+      BufferInfo{
+        .name = "Debug.buffer",
+        .size = std::max(internal_size, padded_size),
+        .usage = BufferUsage::BufferUsage_CopyDst | BufferUsage::BufferUsage_Pull,
       });
 
   Params params = GetInfo(count);
@@ -309,10 +315,13 @@ int main()
 
   commandBuffer.cmdBindComputePipeline(radixSortZeroHistogramPipeline);
   commandBuffer.cmdBindBindingGroups(radixSortBindingGroup, nullptr, 0);
-  commandBuffer.cmdDispatch(HistogramBlocksCount(count), 1, 1);
+  commandBuffer.cmdDispatch(histogramBlocksCount(count), 1, 1);
   commandBuffer.cmdBindComputePipeline(radixSortCalculateHistogramPipeline);
   commandBuffer.cmdBindBindingGroups(radixSortBindingGroup, nullptr, 0);
-  commandBuffer.cmdDispatch(HistogramBlocksCount(count), 1, 1);
+  commandBuffer.cmdDispatch(histogramBlocksCount(count), 1, 1);
+  commandBuffer.cmdBindComputePipeline(radixSortPrefixHistogramPipeline);
+  commandBuffer.cmdBindBindingGroups(radixSortBindingGroup, nullptr, 0);
+  commandBuffer.cmdDispatch(sizeof(uint32_t), 1, 1);
 
   for (uint32_t i = 0; i < sizeof(uint32_t) / 2; i++)
   {
@@ -324,6 +333,20 @@ int main()
     commandBuffer.cmdDispatch(scatterBlocksCount(count), 1, 1);
   }
 
+  commandBuffer.cmdCopyBuffer(
+      BufferView{
+        .buffer = keys,
+        .offset = 0,
+        .size = count * sizeof(uint32_t),
+        .access = AccessPattern::SHADER_READ,
+      },
+      BufferView{
+        .buffer = debug,
+        .offset = 0,
+        .size = count * sizeof(uint32_t),
+        .access = AccessPattern::SHADER_WRITE,
+      });
+
   renderGraph->enqueuePass("RadixSort", commandBuffer);
   renderGraph->compile();
 
@@ -331,6 +354,20 @@ int main()
 
   renderGraph->run(frame);
   renderGraph->waitFrame(frame);
+
+  renderGraph->bufferRead(
+      debug,
+      0,
+      count * sizeof(uint32_t),
+      [count](const void *data)
+      {
+        uint32_t *values = (uint32_t *)data;
+        for (uint32_t i = 0; i < count; i++)
+        {
+          os::print("%u ", values[i]);
+        }
+      });
+  os::print("\n");
 
   //   renderGraph->deleteComputePipeline(radixSortPipeline);
   //   renderGraph->deleteBindingGroups(radixSortBindingGroup);
@@ -342,5 +379,6 @@ int main()
   renderGraph->deleteShader(radixSortShader);
 
   os::Logger::shutdown();
+
   return 0;
 }

@@ -4,3 +4,4 @@ build/
 .vs/
 .*/
 ./wgslc-naga/target
+wgslc-naga/target/

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-naga = { version = "28.0", features = ["wgsl-in", "spv-out"] }
+naga = { version = "28.0", features = ["wgsl-in", "spv-out", "hlsl-out"] }
 clap = { version = "4.4", features = ["derive"] }
 anyhow = "1.0"
 bytemuck = "1.14"

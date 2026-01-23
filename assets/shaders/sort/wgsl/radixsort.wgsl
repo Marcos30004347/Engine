@@ -29,7 +29,7 @@
 // This value is replaced in the RadixSortEncoder when loading the shader
 // The shader can fail if subgroup size changes over time.
 
-// enable subgroups;
+//enable subgroups;
 
 const histogram_wg_size = 256u;
 const rs_radix_log2 = 8u;
@@ -100,7 +100,8 @@ fn zero_histograms(@builtin(global_invocation_id) gid: vec3<u32>, @builtin(num_w
     let line_size = nwg.x * histogram_wg_size;
 
     for (var cur_index = gid.x; cur_index < n; cur_index += line_size) {
-		//if cur_index >= n {
+		// TODO: uncomment this???
+        //if cur_index >= n {
 		//	return;
 		//}
     // cur_index is within range of histogram or cur_index is within padding
