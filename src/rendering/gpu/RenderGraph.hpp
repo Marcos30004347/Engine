@@ -27,6 +27,10 @@ enum CommandType
   BindComputePipeline,
   BindVertexBuffer,
   BindIndexBuffer,
+
+  StartTimer,
+  StopTimer,
+
   // Note, add new dispatch commands in between those enums
   Draw, // Dispatch Begin
   DrawIndexed,
@@ -115,6 +119,16 @@ struct DispatchArgs
 // {
 //   SwapChain swapChain;
 // };
+struct StartTimerArgs
+{
+  Timer timer;
+  PipelineStage stage;
+};
+struct StopTimerArgs
+{
+  Timer timer;
+  PipelineStage stage;
+};
 
 struct Command
 {
@@ -132,6 +146,9 @@ struct Command
     DrawIndexedArgs *drawIndexed;
     DrawIndexedIndirectArgs *drawIndexedIndirect;
     DispatchArgs *dispatch;
+    StartTimerArgs *startTimer;
+    StopTimerArgs *stopTimer;
+
     // GetNextSwapChainImageArgs *getNextSwapChainImageArgs;
   } args;
 };
@@ -243,6 +260,7 @@ struct BufferResourceUsage
   BufferView view;
   uint64_t consumer;
   Queue queue;
+  AccessPattern access;
 };
 
 struct TextureResourceUsage
@@ -250,6 +268,7 @@ struct TextureResourceUsage
   TextureView view;
   uint64_t consumer;
   Queue queue;
+  AccessPattern access;
 };
 
 struct SamplerResourceUsage
@@ -447,6 +466,8 @@ public:
   void cmdDrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1U, uint32_t firstIndex = 0U, uint32_t vertexOffset = 0U, uint32_t firstInstance = 0U);
   void cmdDrawIndexedIndirect(BufferView indirectBuffer, uint32_t offset, uint32_t drawCount, uint32_t stride);
   void cmdDispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
+  void cmdStartTimer(const Timer timer, PipelineStage stage);
+  void cmdStopTimer(const Timer timer, PipelineStage stage);
 };
 
 class RenderGraph;
@@ -490,6 +511,8 @@ private:
     uint64_t id;
     uint64_t level;
     uint64_t priority;
+    uint64_t dispatchId;
+    uint64_t commandBufferIndex;
 
     std::vector<uint64_t> signalSemaphores;
     std::vector<uint64_t> waitSemaphores;
@@ -521,6 +544,7 @@ private:
   RHIResources resources;
   std::vector<Semaphore> semaphores;
 
+  uint64_t commandBuffersCount[Queue::QueuesCount];
   // TODO: remove from here
   // std::vector<TextureBarrier> textureTransitions;
   // std::vector<BufferBarrier> bufferTransitions;
@@ -540,7 +564,7 @@ private:
   void analyseTaskLevels();
 
   void analyseDependencyGraph();
-  void analyseCommands(RHICommandBuffer &recorder);
+  // void analyseCommands(RHICommandBuffer &recorder);
 
   void analysePasses();
   void analyseAllocations();
@@ -549,6 +573,7 @@ private:
   void analyseStateTransition();
   void analyseTaskInputs();
   void analyseSemaphores();
+  void analyseCommandBuffers();
   // void outputCommands(RHIProgram &program);
 
 public:
@@ -575,7 +600,7 @@ public:
   void waitFrame(Frame &frame);
 
   // const Buffer createScratchBuffer(const BufferInfo &info);
-
+  const Timer createTimer(const TimerInfo &info);
   const Buffer createBuffer(const BufferInfo &info);
   const Texture createTexture(const TextureInfo &info);
   const Sampler createSampler(const SamplerInfo &info);
@@ -584,6 +609,7 @@ public:
   const GraphicsPipeline createGraphicsPipeline(const GraphicsPipelineInfo &info);
   const ComputePipeline createComputePipeline(const ComputePipelineInfo &info);
 
+  void deleteTimer(const Timer &timer);
   void deleteBuffer(const Buffer &name);
   void deleteTexture(const Texture &name);
   void deleteSampler(const Sampler &name);
@@ -610,6 +636,7 @@ public:
 
   void bufferRead(const Buffer &buffer, const uint64_t offset, const uint64_t size, std::function<void(const void *)>);
   void bufferWrite(const Buffer &buffer, const uint64_t offset, const uint64_t size, void *data);
+  double readTimer(const Timer &timer);
 };
 
 }; // namespace rendering

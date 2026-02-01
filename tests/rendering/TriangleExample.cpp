@@ -32,8 +32,8 @@ int main()
 
   rhi->init(surfaces);
 
-  std::string vertexShaderSrc = os::io::readRelativeFile("assets/shaders/spirv/vertex.spv");
-  std::string fragmentShaderSrc = os::io::readRelativeFile("assets/shaders/spirv/fragment.spv");
+  std::string vertexShaderSrc = os::io::readRelativeFile("assets/shaders/triangle/spirv/vertex.spv");
+  std::string fragmentShaderSrc = os::io::readRelativeFile("assets/shaders/triangle/spirv/fragment.spv");
 
   RenderGraph *renderGraph = new RenderGraph(rhi);
 

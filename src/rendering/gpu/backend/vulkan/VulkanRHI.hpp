@@ -136,7 +136,7 @@ struct VulkanSwapChain
   uint32_t height;
 
   VkQueue presentQueue;
-  std::vector<VulkanTexture*> swapChainImages;
+  std::vector<VulkanTexture *> swapChainImages;
   std::vector<VulkanTextureView *> swapChainImageViews;
   std::vector<VkSemaphore> achireSemaphores;
   std::vector<VkSemaphore> presentSemaphores;
@@ -193,6 +193,12 @@ struct VulkanCommandBuffer
   GraphicsPipeline boundGraphicsPipeline;
   ComputePipeline boundComputePipeline;
   std::vector<VulkanCommandBufferRenderPass> renderPasses;
+};
+
+struct VulkanTimer
+{
+  TimerInfo info;
+  VkQueryPool queryPool;
 };
 
 class VulkanRHI : public RHI
@@ -258,15 +264,16 @@ private:
   void initializeInstance(VulkanVersion version);
   bool checkValidationLayerSupport();
 
-  lib::ConcurrentShardedQueue<VkFence> fences;
-  lib::ConcurrentShardedQueue<VkSemaphore> semaphores;
+  // lib::ConcurrentShardedQueue<VkFence> fences;
+  // lib::ConcurrentShardedQueue<VkSemaphore> semaphores;
 
   VkFence getFence();
   VkSemaphore getSemaphore();
 
-  VkRenderPass createRenderPass(const ColorAttatchment *attachments, uint32_t attatchmentsCount, DepthAttatchment* depth);
+  VkRenderPass createRenderPass(const ColorAttatchment *attachments, uint32_t attatchmentsCount, DepthAttatchment *depth);
   VulkanQueueFamilyIndices findQueueFamilyIndices();
 
+  lib::ConcurrentHashMap<std::string, VulkanTimer *> vkTimers;
   lib::ConcurrentHashMap<std::string, VulkanBuffer *> vkBuffers;
   lib::ConcurrentHashMap<std::string, VulkanTexture *> vkTextures;
   lib::ConcurrentHashMap<std::string, VulkanSampler *> vkSamplers;
@@ -336,6 +343,9 @@ protected:
   void cmdDraw(CommandBuffer, uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0) override;
   void cmdDrawIndexed(CommandBuffer, uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0) override;
   void cmdDrawIndexedIndirect(CommandBuffer, Buffer indirectBuffer, size_t offset, uint32_t drawCount, uint32_t stride) override;
+
+  void cmdStartTimer(CommandBuffer, const Timer &, PipelineStage stage) override;
+  void cmdStopTimer(CommandBuffer, const Timer &, PipelineStage stage) override;
   // void cmdCopyBuffer(
   //     CommandBuffer cmdHandle,
   //     Buffer srcHandle,
@@ -423,6 +433,10 @@ public:
 
   const Shader createShader(const ShaderInfo data) override;
   void deleteShader(Shader handle) override;
+
+  const Timer createTimer(const TimerInfo) override;
+  void deleteTimer(const Timer &timer) override;
+  double readTimer(const Timer &timer) override;
 };
 
 } // namespace vulkan

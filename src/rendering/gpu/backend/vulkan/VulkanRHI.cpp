@@ -5,6 +5,9 @@
 #include <set>
 #include <string>
 #include <vulkan/vulkan_format_traits.hpp>
+
+// #define VULKAN_RHI_LOGS
+
 namespace rendering
 {
 namespace backend
@@ -610,7 +613,7 @@ std::vector<VulkanPhysicalDevice> getMatchingDevices(VkInstance instance, const 
     {
       featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Subgroup_ShuffleRelative);
     }
-    
+
     if (atomic64Features.shaderBufferInt64Atomics)
     {
       featureFlags = (DeviceFeatures)(featureFlags | DeviceFeatures_Atomic64_MinMax);
@@ -2284,8 +2287,14 @@ void VulkanRHI::bufferWrite(const Buffer &buffer, const uint64_t offset, const u
 {
   void *ptr;
   const VulkanBuffer &heap = getVulkanBuffer(buffer.name);
-  vkMapMemory(device, heap.memory, offset, size, 0, &ptr);
-  memcpy((void *)((uint64_t)ptr + offset), data, size);
+  auto result = vkMapMemory(device, heap.memory, offset, size, 0, &ptr);
+  if (result != VK_SUCCESS)
+  {
+    os::Logger::errorf("Failed to map buffer memory for buffer '%s': VkResult = %d", buffer.name.c_str(), result);
+    return;
+  }
+
+  memcpy(ptr, data, size);
   vkUnmapMemory(device, heap.memory);
 }
 
@@ -3421,7 +3430,7 @@ static VkAccessFlags toVulkanAccess(AccessPattern access)
   return flags;
 }
 
-static VkPipelineStageFlags toVulkanStage(PipelineStage stage)
+static VkPipelineStageFlagBits toVulkanStage(PipelineStage stage)
 {
   switch (stage)
   {
@@ -3531,57 +3540,6 @@ static VkMemoryBarrier createMemoryBarrier(AccessPattern src_access, AccessPatte
   return barrier;
 }
 
-void VulkanRHI::cmdBufferBarrier(
-    CommandBuffer cmd,
-    Buffer b,
-    PipelineStage src_stage,
-    PipelineStage dst_stage,
-    AccessPattern src_access,
-    AccessPattern dst_access,
-    uint32_t offset,
-    uint32_t size,
-    Queue src_queue_family,
-    Queue dst_queue_family)
-{
-  auto commandBuffer = commandBuffers[cmd];
-  auto buffer = getVulkanBuffer(b.name);
-  uint32_t queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
-  uint32_t queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
-  switch (src_queue_family)
-  {
-  case Queue::Compute:
-    queueFamilySrc = indices.computeFamily;
-    break;
-  case Queue::Graphics:
-    queueFamilySrc = indices.graphicsFamily;
-    break;
-  case Queue::Transfer:
-    queueFamilySrc = indices.transferFamily;
-    break;
-  default:
-    queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
-    break;
-  }
-  switch (dst_queue_family)
-  {
-  case Queue::Compute:
-    queueFamilyDst = indices.computeFamily;
-    break;
-  case Queue::Graphics:
-    queueFamilyDst = indices.graphicsFamily;
-    break;
-  case Queue::Transfer:
-    queueFamilyDst = indices.transferFamily;
-    break;
-  default:
-    queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
-    break;
-  }
-  VkBufferMemoryBarrier barrier = createBufferBarrier(buffer.buffer, src_stage, dst_stage, src_access, dst_access, offset, size, queueFamilySrc, queueFamilyDst);
-
-  vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), 0, 0, nullptr, 1, &barrier, 0, nullptr);
-}
-
 inline bool hasFlag(ImageAspectFlags value, ImageAspectFlags flag)
 {
   return (static_cast<uint32_t>(value) & static_cast<uint32_t>(flag)) != 0;
@@ -3597,98 +3555,6 @@ inline VkImageAspectFlags imageAspectFlagsToVkImageAspectFlags(ImageAspectFlags 
   if (hasFlag(flags, ImageAspectFlags::Stencil))
     vkFlags |= VK_IMAGE_ASPECT_STENCIL_BIT;
   return vkFlags;
-}
-
-void VulkanRHI::cmdImageBarrier(
-    CommandBuffer cmd,
-    Texture image,
-    PipelineStage src_stage,
-    PipelineStage dst_stage,
-    AccessPattern src_access,
-    AccessPattern dst_access,
-    ResourceLayout old_layout,
-    ResourceLayout new_layout,
-    ImageAspectFlags aspect_mask,
-    uint32_t base_mip_level,
-    uint32_t level_count,
-    uint32_t base_array_layer,
-    uint32_t layer_count,
-    Queue src_queue_family,
-    Queue dst_queue_family)
-{
-  auto commandBuffer = commandBuffers[cmd];
-
-  auto vkImage = getVulkanTexture(image.name);
-
-  uint32_t queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
-  uint32_t queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
-  switch (src_queue_family)
-  {
-  case Queue::Compute:
-    queueFamilySrc = indices.computeFamily;
-    break;
-  case Queue::Graphics:
-    queueFamilySrc = indices.graphicsFamily;
-    break;
-  case Queue::Transfer:
-    queueFamilySrc = indices.transferFamily;
-    break;
-  default:
-    queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
-    break;
-  }
-  switch (dst_queue_family)
-  {
-  case Queue::Compute:
-    queueFamilyDst = indices.computeFamily;
-    break;
-  case Queue::Graphics:
-    queueFamilyDst = indices.graphicsFamily;
-    break;
-  case Queue::Transfer:
-    queueFamilyDst = indices.transferFamily;
-    break;
-  default:
-    queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
-    break;
-  }
-  VkImageMemoryBarrier barrier = createImageBarrier(
-      vkImage.image,
-      src_stage,
-      dst_stage,
-      src_access,
-      dst_access,
-      old_layout,
-      new_layout,
-      imageAspectFlagsToVkImageAspectFlags(aspect_mask),
-      base_mip_level,
-      level_count,
-      base_array_layer,
-      layer_count,
-      queueFamilySrc,
-      queueFamilyDst);
-
-  vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), 0, 0, nullptr, 0, nullptr, 1, &barrier);
-}
-
-void VulkanRHI::cmdMemoryBarrier(CommandBuffer cmd, PipelineStage src_stage, PipelineStage dst_stage, AccessPattern src_access, AccessPattern dst_access)
-{
-  auto commandBuffer = commandBuffers[cmd];
-  VkMemoryBarrier barrier = createMemoryBarrier(src_access, dst_access);
-  vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), 0, 1, &barrier, 0, nullptr, 0, nullptr);
-}
-
-void VulkanRHI::cmdPipelineBarrier(CommandBuffer cmd, PipelineStage src_stage, PipelineStage dst_stage, AccessPattern src_access, AccessPattern dst_access)
-{
-  auto commandBuffer = commandBuffers[cmd];
-
-  VkMemoryBarrier barrier{};
-
-  barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-  barrier.srcAccessMask = toVulkanAccess(src_access);
-  barrier.dstAccessMask = toVulkanAccess(dst_access);
-
-  vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), 0, 1, &barrier, 0, nullptr, 0, nullptr);
 }
 
 static VkFence createFence(VkDevice device, bool signaled = false)
@@ -3707,14 +3573,14 @@ VkFence VulkanRHI::getFence()
 {
   VkFence data;
 
-  if (fences.dequeue(data))
-  {
-    vkResetFences(device, 1, &data);
-  }
-  else
-  {
-    data = createFence(device, false);
-  }
+  // if (fences.dequeue(data))
+  // {
+  //   vkResetFences(device, 1, &data);
+  // }
+  // else
+  // {
+  data = createFence(device, false);
+  // }
 
   return data;
 }
@@ -3722,26 +3588,26 @@ VkFence VulkanRHI::getFence()
 VkSemaphore VulkanRHI::getSemaphore()
 {
   VkSemaphore data;
-  if (semaphores.dequeue(data))
+  // if (semaphores.dequeue(data))
+  // {
+  // }
+  // else
+  // {
+  VkSemaphoreCreateInfo semaphoreInfo{};
+  semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &data) != VK_SUCCESS)
   {
+    throw std::runtime_error("failed to create semaphore for image views!");
   }
-  else
-  {
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &data) != VK_SUCCESS)
-    {
-      throw std::runtime_error("failed to create semaphore for image views!");
-    }
-  }
+  // }
 
   return data;
 }
 
 void VulkanRHI::cleanupSubmitCallback(VulkanRHI::VulkanAsyncHandler &future)
 {
-  future.device->fences.enqueue(future.fence);
-  future.device->semaphores.enqueue(future.semaphore);
+  // future.device->fences.enqueue(future.fence);
+  // future.device->semaphores.enqueue(future.semaphore);
   future.device->releaseCommandBuffer(future.commandBuffers);
 }
 
@@ -3864,6 +3730,7 @@ GPUFuture VulkanRHI::submit(Queue queueType, CommandBuffer *cmds, uint32_t count
       }
     }
   }
+
   VkSemaphore semaphore = getSemaphore();
   VkFence fence = getFence();
 
@@ -4071,6 +3938,514 @@ void VulkanRHI::deleteShader(Shader handle)
   auto vkShader = getVulkanShader(handle.name);
   vkShaders.remove(handle.name);
   vkDestroyShaderModule(device, vkShader.shaderModule, nullptr);
+}
+
+const Timer VulkanRHI::createTimer(const TimerInfo info)
+{
+  if ((this->features & DeviceFeatures_Timestamp) == 0)
+  {
+    throw std::runtime_error("Timestamp not available");
+  }
+
+  auto timer = new VulkanTimer();
+
+  timer->info = info;
+  timer->queryPool = VK_NULL_HANDLE;
+  if (vkTimers.contains(info.name))
+  {
+    throw std::runtime_error("A Timer is already created with the same name");
+  }
+  vkTimers.insert(info.name, timer);
+
+  VkQueryPoolCreateInfo qpci{};
+
+  qpci.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+  qpci.queryType = VK_QUERY_TYPE_TIMESTAMP;
+  qpci.queryCount = 2;
+
+  vkCreateQueryPool(device, &qpci, nullptr, &timer->queryPool);
+
+  return Timer{
+    .name = info.name,
+  };
+}
+
+void VulkanRHI::deleteTimer(const Timer &timer)
+{
+  auto it = vkTimers.find(timer.name);
+  if (it == vkTimers.end())
+    return;
+
+  VulkanTimer *vkTimer = it.value();
+
+  if (vkTimer->queryPool != VK_NULL_HANDLE)
+  {
+    vkDestroyQueryPool(device, vkTimer->queryPool, nullptr);
+    vkTimer->queryPool = VK_NULL_HANDLE;
+  }
+
+  delete vkTimer;
+
+  vkTimers.remove(timer.name);
+}
+void VulkanRHI::cmdStartTimer(CommandBuffer handle, const Timer &timer, PipelineStage stage)
+{
+  auto cmd = commandBuffers[handle];
+  auto vkTimer = vkTimers[timer.name];
+  vkCmdResetQueryPool(cmd->commandBuffer, vkTimer.value()->queryPool, 0, 2);
+  vkCmdWriteTimestamp(cmd->commandBuffer, toVulkanStage(stage), vkTimer.value()->queryPool, 0);
+}
+
+void VulkanRHI::cmdStopTimer(CommandBuffer handle, const Timer &timer, PipelineStage stage)
+{
+  auto cmd = commandBuffers[handle];
+  auto vkTimer = vkTimers[timer.name];
+  vkCmdWriteTimestamp(cmd->commandBuffer, toVulkanStage(stage), vkTimer.value()->queryPool, 1);
+}
+
+double VulkanRHI::readTimer(const Timer &timer)
+{
+  auto vkTimer = vkTimers[timer.name];
+
+  uint64_t timestamps[2] = {};
+
+  vkGetQueryPoolResults(device, vkTimer.value()->queryPool, 0, 2, sizeof(timestamps), timestamps, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+
+  VkPhysicalDeviceProperties props{};
+  vkGetPhysicalDeviceProperties(physicalDevice, &props);
+
+  const double timeNs = static_cast<double>(timestamps[1] - timestamps[0]) * static_cast<double>(props.limits.timestampPeriod);
+
+  switch (vkTimer.value()->info.unit)
+  {
+  case TimerUnit::Nanoseconds:
+    return timeNs;
+
+  case TimerUnit::Miliseconds:
+    return timeNs * 1e-6;
+
+  case TimerUnit::Seconds:
+    return timeNs * 1e-9;
+  }
+
+  return 0.0;
+}
+
+#ifdef VULKAN_RHI_LOGS
+
+// Helper function to convert VkAccessFlags to string
+static std::string vkAccessFlagsToString(VkAccessFlags flags)
+{
+  if (flags == 0)
+    return "0";
+
+  std::vector<std::string> accessFlags;
+
+  if (flags & VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT)
+    accessFlags.push_back("VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT");
+  if (flags & VK_ACCESS_INDEX_READ_BIT)
+    accessFlags.push_back("VK_ACCESS_INDEX_READ_BIT");
+  if (flags & VK_ACCESS_UNIFORM_READ_BIT)
+    accessFlags.push_back("VK_ACCESS_UNIFORM_READ_BIT");
+  if (flags & VK_ACCESS_SHADER_READ_BIT)
+    accessFlags.push_back("VK_ACCESS_SHADER_READ_BIT");
+  if (flags & VK_ACCESS_SHADER_WRITE_BIT)
+    accessFlags.push_back("VK_ACCESS_SHADER_WRITE_BIT");
+  if (flags & VK_ACCESS_COLOR_ATTACHMENT_READ_BIT)
+    accessFlags.push_back("VK_ACCESS_COLOR_ATTACHMENT_READ_BIT");
+  if (flags & VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+    accessFlags.push_back("VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT");
+  if (flags & VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT)
+    accessFlags.push_back("VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT");
+  if (flags & VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT)
+    accessFlags.push_back("VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT");
+  if (flags & VK_ACCESS_TRANSFER_READ_BIT)
+    accessFlags.push_back("VK_ACCESS_TRANSFER_READ_BIT");
+  if (flags & VK_ACCESS_TRANSFER_WRITE_BIT)
+    accessFlags.push_back("VK_ACCESS_TRANSFER_WRITE_BIT");
+  if (flags & VK_ACCESS_INDIRECT_COMMAND_READ_BIT)
+    accessFlags.push_back("VK_ACCESS_INDIRECT_COMMAND_READ_BIT");
+  if (flags & VK_ACCESS_MEMORY_READ_BIT)
+    accessFlags.push_back("VK_ACCESS_MEMORY_READ_BIT");
+  if (flags & VK_ACCESS_MEMORY_WRITE_BIT)
+    accessFlags.push_back("VK_ACCESS_MEMORY_WRITE_BIT");
+
+  if (accessFlags.empty())
+    return "0";
+
+  std::string result;
+  for (size_t i = 0; i < accessFlags.size(); ++i)
+  {
+    result += accessFlags[i];
+    if (i < accessFlags.size() - 1)
+      result += " | ";
+  }
+  return result;
+}
+
+// Helper function to convert VkPipelineStageFlags to string
+static std::string vkPipelineStageFlagsToString(VkPipelineStageFlags flags)
+{
+  if (flags == 0)
+    return "0";
+
+  std::vector<std::string> stageFlags;
+
+  if (flags & VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT");
+  if (flags & VK_PIPELINE_STAGE_VERTEX_INPUT_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_VERTEX_INPUT_BIT");
+  if (flags & VK_PIPELINE_STAGE_VERTEX_SHADER_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_VERTEX_SHADER_BIT");
+  if (flags & VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT");
+  if (flags & VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT");
+  if (flags & VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT");
+  if (flags & VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT");
+  if (flags & VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT");
+  if (flags & VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT");
+  if (flags & VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT");
+  if (flags & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT");
+  if (flags & VK_PIPELINE_STAGE_TRANSFER_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_TRANSFER_BIT");
+  if (flags & VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT");
+  if (flags & VK_PIPELINE_STAGE_HOST_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_HOST_BIT");
+  if (flags & VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT");
+  if (flags & VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
+    stageFlags.push_back("VK_PIPELINE_STAGE_ALL_COMMANDS_BIT");
+
+  if (stageFlags.empty())
+    return "0";
+
+  std::string result;
+  for (size_t i = 0; i < stageFlags.size(); ++i)
+  {
+    result += stageFlags[i];
+    if (i < stageFlags.size() - 1)
+      result += " | ";
+  }
+  return result;
+}
+
+// Helper function to convert VkImageLayout to string
+static const char *vkImageLayoutToString(VkImageLayout layout)
+{
+  switch (layout)
+  {
+  case VK_IMAGE_LAYOUT_UNDEFINED:
+    return "VK_IMAGE_LAYOUT_UNDEFINED";
+  case VK_IMAGE_LAYOUT_GENERAL:
+    return "VK_IMAGE_LAYOUT_GENERAL";
+  case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+    return "VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL";
+  case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+    return "VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL";
+  case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+    return "VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL";
+  case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+    return "VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL";
+  case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+    return "VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL";
+  case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+    return "VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL";
+  case VK_IMAGE_LAYOUT_PREINITIALIZED:
+    return "VK_IMAGE_LAYOUT_PREINITIALIZED";
+  case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+    return "VK_IMAGE_LAYOUT_PRESENT_SRC_KHR";
+  default:
+    return "VK_IMAGE_LAYOUT_UNKNOWN";
+  }
+}
+
+// Helper function to convert VkImageAspectFlags to string
+static std::string vkImageAspectFlagsToString(VkImageAspectFlags flags)
+{
+  if (flags == 0)
+    return "0";
+
+  std::vector<std::string> aspectFlags;
+
+  if (flags & VK_IMAGE_ASPECT_COLOR_BIT)
+    aspectFlags.push_back("VK_IMAGE_ASPECT_COLOR_BIT");
+  if (flags & VK_IMAGE_ASPECT_DEPTH_BIT)
+    aspectFlags.push_back("VK_IMAGE_ASPECT_DEPTH_BIT");
+  if (flags & VK_IMAGE_ASPECT_STENCIL_BIT)
+    aspectFlags.push_back("VK_IMAGE_ASPECT_STENCIL_BIT");
+  if (flags & VK_IMAGE_ASPECT_METADATA_BIT)
+    aspectFlags.push_back("VK_IMAGE_ASPECT_METADATA_BIT");
+
+  if (aspectFlags.empty())
+    return "0";
+
+  std::string result;
+  for (size_t i = 0; i < aspectFlags.size(); ++i)
+  {
+    result += aspectFlags[i];
+    if (i < aspectFlags.size() - 1)
+      result += " | ";
+  }
+  return result;
+}
+
+#endif // VULKAN_RHI_LOGS
+
+// Modified barrier functions with logging
+
+void VulkanRHI::cmdBufferBarrier(
+    CommandBuffer cmd,
+    Buffer b,
+    PipelineStage src_stage,
+    PipelineStage dst_stage,
+    AccessPattern src_access,
+    AccessPattern dst_access,
+    uint32_t offset,
+    uint32_t size,
+    Queue src_queue_family,
+    Queue dst_queue_family)
+{
+  auto commandBuffer = commandBuffers[cmd];
+  auto buffer = getVulkanBuffer(b.name);
+  uint32_t queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
+  uint32_t queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
+
+  switch (src_queue_family)
+  {
+  case Queue::Compute:
+    queueFamilySrc = indices.computeFamily;
+    break;
+  case Queue::Graphics:
+    queueFamilySrc = indices.graphicsFamily;
+    break;
+  case Queue::Transfer:
+    queueFamilySrc = indices.transferFamily;
+    break;
+  default:
+    queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
+    break;
+  }
+
+  switch (dst_queue_family)
+  {
+  case Queue::Compute:
+    queueFamilyDst = indices.computeFamily;
+    break;
+  case Queue::Graphics:
+    queueFamilyDst = indices.graphicsFamily;
+    break;
+  case Queue::Transfer:
+    queueFamilyDst = indices.transferFamily;
+    break;
+  default:
+    queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
+    break;
+  }
+
+  VkBufferMemoryBarrier barrier = createBufferBarrier(buffer.buffer, src_stage, dst_stage, src_access, dst_access, offset, size, queueFamilySrc, queueFamilyDst);
+
+#ifdef VULKAN_RHI_LOGS
+  VkPipelineStageFlags vkSrcStage = toVulkanStage(src_stage);
+  VkPipelineStageFlags vkDstStage = toVulkanStage(dst_stage);
+  VkAccessFlags vkSrcAccess = toVulkanAccess(src_access);
+  VkAccessFlags vkDstAccess = toVulkanAccess(dst_access);
+
+  os::Logger::logf(
+      "[VulkanRHI][Barrier][Buffer] vkCmdPipelineBarrier '%s'\n"
+      "  srcStage: %s\n"
+      "  dstStage: %s\n"
+      "  srcAccess: %s\n"
+      "  dstAccess: %s\n"
+      "  offset: %u, size: %s\n"
+      "  srcQueueFamily: %u, dstQueueFamily: %u",
+      b.name.c_str(),
+      vkPipelineStageFlagsToString(vkSrcStage).c_str(),
+      vkPipelineStageFlagsToString(vkDstStage).c_str(),
+      vkAccessFlagsToString(vkSrcAccess).c_str(),
+      vkAccessFlagsToString(vkDstAccess).c_str(),
+      offset,
+      size == VK_WHOLE_SIZE ? "VK_WHOLE_SIZE" : std::to_string(size).c_str(),
+      queueFamilySrc,
+      queueFamilyDst);
+#endif
+
+  vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 1, &barrier, 0, nullptr);
+}
+
+void VulkanRHI::cmdImageBarrier(
+    CommandBuffer cmd,
+    Texture image,
+    PipelineStage src_stage,
+    PipelineStage dst_stage,
+    AccessPattern src_access,
+    AccessPattern dst_access,
+    ResourceLayout old_layout,
+    ResourceLayout new_layout,
+    ImageAspectFlags aspect_mask,
+    uint32_t base_mip_level,
+    uint32_t level_count,
+    uint32_t base_array_layer,
+    uint32_t layer_count,
+    Queue src_queue_family,
+    Queue dst_queue_family)
+{
+  auto commandBuffer = commandBuffers[cmd];
+  auto vkImage = getVulkanTexture(image.name);
+
+  uint32_t queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
+  uint32_t queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
+
+  switch (src_queue_family)
+  {
+  case Queue::Compute:
+    queueFamilySrc = indices.computeFamily;
+    break;
+  case Queue::Graphics:
+    queueFamilySrc = indices.graphicsFamily;
+    break;
+  case Queue::Transfer:
+    queueFamilySrc = indices.transferFamily;
+    break;
+  default:
+    queueFamilySrc = VK_QUEUE_FAMILY_IGNORED;
+    break;
+  }
+
+  switch (dst_queue_family)
+  {
+  case Queue::Compute:
+    queueFamilyDst = indices.computeFamily;
+    break;
+  case Queue::Graphics:
+    queueFamilyDst = indices.graphicsFamily;
+    break;
+  case Queue::Transfer:
+    queueFamilyDst = indices.transferFamily;
+    break;
+  default:
+    queueFamilyDst = VK_QUEUE_FAMILY_IGNORED;
+    break;
+  }
+
+  VkImageAspectFlags vkAspectMask = imageAspectFlagsToVkImageAspectFlags(aspect_mask);
+
+  VkImageMemoryBarrier barrier = createImageBarrier(
+      vkImage.image,
+      src_stage,
+      dst_stage,
+      src_access,
+      dst_access,
+      old_layout,
+      new_layout,
+      vkAspectMask,
+      base_mip_level,
+      level_count,
+      base_array_layer,
+      layer_count,
+      queueFamilySrc,
+      queueFamilyDst);
+
+#ifdef VULKAN_RHI_LOGS
+  VkPipelineStageFlags vkSrcStage = toVulkanStage(src_stage);
+  VkPipelineStageFlags vkDstStage = toVulkanStage(dst_stage);
+  VkAccessFlags vkSrcAccess = toVulkanAccess(src_access);
+  VkAccessFlags vkDstAccess = toVulkanAccess(dst_access);
+  VkImageLayout vkOldLayout = toVulkanLayout(old_layout);
+  VkImageLayout vkNewLayout = toVulkanLayout(new_layout);
+
+  os::Logger::logf(
+      "[VulkanRHI][Barrier][Image] vkCmdPipelineBarrier '%s'\n"
+      "  srcStage: %s\n"
+      "  dstStage: %s\n"
+      "  srcAccess: %s\n"
+      "  dstAccess: %s\n"
+      "  oldLayout: %s\n"
+      "  newLayout: %s\n"
+      "  aspectMask: %s\n"
+      "  baseMipLevel: %u, levelCount: %s\n"
+      "  baseArrayLayer: %u, layerCount: %s\n"
+      "  srcQueueFamily: %u, dstQueueFamily: %u",
+      image.name.c_str(),
+      vkPipelineStageFlagsToString(vkSrcStage).c_str(),
+      vkPipelineStageFlagsToString(vkDstStage).c_str(),
+      vkAccessFlagsToString(vkSrcAccess).c_str(),
+      vkAccessFlagsToString(vkDstAccess).c_str(),
+      vkImageLayoutToString(vkOldLayout),
+      vkImageLayoutToString(vkNewLayout),
+      vkImageAspectFlagsToString(vkAspectMask).c_str(),
+      base_mip_level,
+      level_count == VK_REMAINING_MIP_LEVELS ? "VK_REMAINING_MIP_LEVELS" : std::to_string(level_count).c_str(),
+      base_array_layer,
+      layer_count == VK_REMAINING_ARRAY_LAYERS ? "VK_REMAINING_ARRAY_LAYERS" : std::to_string(layer_count).c_str(),
+      queueFamilySrc,
+      queueFamilyDst);
+#endif
+
+  vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
+}
+
+void VulkanRHI::cmdMemoryBarrier(CommandBuffer cmd, PipelineStage src_stage, PipelineStage dst_stage, AccessPattern src_access, AccessPattern dst_access)
+{
+  auto commandBuffer = commandBuffers[cmd];
+  VkMemoryBarrier barrier = createMemoryBarrier(src_access, dst_access);
+
+#ifdef VULKAN_RHI_LOGS
+  VkPipelineStageFlags vkSrcStage = toVulkanStage(src_stage);
+  VkPipelineStageFlags vkDstStage = toVulkanStage(dst_stage);
+  VkAccessFlags vkSrcAccess = toVulkanAccess(src_access);
+  VkAccessFlags vkDstAccess = toVulkanAccess(dst_access);
+
+  os::Logger::logf(
+      "[VulkanRHI][Barrier][Memory] vkCmdPipelineBarrier\n"
+      "  srcStage: %s\n"
+      "  dstStage: %s\n"
+      "  srcAccess: %s\n"
+      "  dstAccess: %s",
+      vkPipelineStageFlagsToString(vkSrcStage).c_str(),
+      vkPipelineStageFlagsToString(vkDstStage).c_str(),
+      vkAccessFlagsToString(vkSrcAccess).c_str(),
+      vkAccessFlagsToString(vkDstAccess).c_str());
+#endif
+
+  vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), VK_DEPENDENCY_BY_REGION_BIT, 1, &barrier, 0, nullptr, 0, nullptr);
+}
+
+void VulkanRHI::cmdPipelineBarrier(CommandBuffer cmd, PipelineStage src_stage, PipelineStage dst_stage, AccessPattern src_access, AccessPattern dst_access)
+{
+  auto commandBuffer = commandBuffers[cmd];
+
+  VkMemoryBarrier barrier{};
+  barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+  barrier.srcAccessMask = toVulkanAccess(src_access);
+  barrier.dstAccessMask = toVulkanAccess(dst_access);
+
+#ifdef VULKAN_RHI_LOGS
+  VkPipelineStageFlags vkSrcStage = toVulkanStage(src_stage);
+  VkPipelineStageFlags vkDstStage = toVulkanStage(dst_stage);
+  VkAccessFlags vkSrcAccess = barrier.srcAccessMask;
+  VkAccessFlags vkDstAccess = barrier.dstAccessMask;
+
+  os::Logger::logf(
+      "[VulkanRHI][Barrier][Pipeline] vkCmdPipelineBarrier\n"
+      "  srcStage: %s\n"
+      "  dstStage: %s\n"
+      "  srcAccess: %s\n"
+      "  dstAccess: %s",
+      vkPipelineStageFlagsToString(vkSrcStage).c_str(),
+      vkPipelineStageFlagsToString(vkDstStage).c_str(),
+      vkAccessFlagsToString(vkSrcAccess).c_str(),
+      vkAccessFlagsToString(vkDstAccess).c_str());
+#endif
+
+  vkCmdPipelineBarrier(commandBuffer->commandBuffer, toVulkanStage(src_stage), toVulkanStage(dst_stage), VK_DEPENDENCY_BY_REGION_BIT, 1, &barrier, 0, nullptr, 0, nullptr);
 }
 
 } // namespace vulkan

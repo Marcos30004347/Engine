@@ -22,6 +22,24 @@ enum class CommandBuffer : uint32_t
 {
 };
 
+enum TimerUnit
+{
+  Nanoseconds,
+  Miliseconds,
+  Seconds,
+};
+
+struct TimerInfo
+{
+  std::string name;
+  TimerUnit unit;
+};
+
+struct Timer
+{
+  std::string name;
+};
+
 enum Queue
 {
   None = 0,
@@ -170,23 +188,23 @@ enum class ImageAspectFlags : uint32_t
 
 enum BufferUsage
 {
-  BufferUsage_None       = 0,
+  BufferUsage_None = 0,
 
   // Shader / pipeline usage
-  BufferUsage_Uniform    = 1 << 0,
-  BufferUsage_Storage    = 1 << 1,
-  BufferUsage_Vertex     = 1 << 4,
-  BufferUsage_Index      = 1 << 7,
-  BufferUsage_Indirect   = 1 << 5,
-  BufferUsage_Timestamp  = 1 << 6,
+  BufferUsage_Uniform = 1 << 0,
+  BufferUsage_Storage = 1 << 1,
+  BufferUsage_Vertex = 1 << 4,
+  BufferUsage_Index = 1 << 7,
+  BufferUsage_Indirect = 1 << 5,
+  BufferUsage_Timestamp = 1 << 6,
 
   // CPU mapping intent
-  BufferUsage_Push       = 1 << 2, // MAP_WRITE
-  BufferUsage_Pull       = 1 << 3, // MAP_READ
+  BufferUsage_Push = 1 << 2, // MAP_WRITE
+  BufferUsage_Pull = 1 << 3, // MAP_READ
 
-  // Explicit copy intent 
-  BufferUsage_CopySrc    = 1 << 8,
-  BufferUsage_CopyDst    = 1 << 9,
+  // Explicit copy intent
+  BufferUsage_CopySrc = 1 << 8,
+  BufferUsage_CopyDst = 1 << 9,
 };
 
 enum class SamplerAddressMode
@@ -1046,11 +1064,9 @@ template <> struct std::hash<rendering::BufferView>
   }
 };
 
-
 inline rendering::AccessPattern operator|(rendering::AccessPattern a, rendering::AccessPattern b)
 {
-  return static_cast<rendering::AccessPattern>(
-      static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
+  return static_cast<rendering::AccessPattern>(static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
 }
 
 inline bool operator&(rendering::AccessPattern a, rendering::AccessPattern b)
@@ -1060,8 +1076,7 @@ inline bool operator&(rendering::AccessPattern a, rendering::AccessPattern b)
 
 inline rendering::BufferUsage operator|(rendering::BufferUsage a, rendering::BufferUsage b)
 {
-  return static_cast<rendering::BufferUsage>(
-      static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
+  return static_cast<rendering::BufferUsage>(static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
 }
 
 inline bool operator&(rendering::BufferUsage a, rendering::BufferUsage b)
@@ -1069,11 +1084,9 @@ inline bool operator&(rendering::BufferUsage a, rendering::BufferUsage b)
   return (static_cast<uint64_t>(a) & static_cast<uint64_t>(b)) != 0;
 }
 
-
 inline rendering::ImageUsage operator|(rendering::ImageUsage a, rendering::ImageUsage b)
 {
-  return static_cast<rendering::ImageUsage>(
-      static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
+  return static_cast<rendering::ImageUsage>(static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
 }
 
 inline bool operator&(rendering::ImageUsage a, rendering::ImageUsage b)
@@ -1082,8 +1095,7 @@ inline bool operator&(rendering::ImageUsage a, rendering::ImageUsage b)
 }
 inline rendering::DeviceFeatures operator|(rendering::DeviceFeatures a, rendering::DeviceFeatures b)
 {
-  return static_cast<rendering::DeviceFeatures>(
-      static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
+  return static_cast<rendering::DeviceFeatures>(static_cast<uint64_t>(a) | static_cast<uint64_t>(b));
 }
 
 inline bool operator&(rendering::DeviceFeatures a, rendering::DeviceFeatures b)

@@ -82,6 +82,11 @@ protected:
 public:
   virtual ~RHI() = default;
 
+  inline DeviceProperties GetProperties()
+  {
+    return properties;
+  }
+
   virtual void bufferRead(const Buffer &buffer, const uint64_t offset, const uint64_t size, std::function<void(const void *)>) = 0;
   virtual void bufferWrite(const Buffer &buffer, const uint64_t offset, const uint64_t size, void *data) = 0;
 
@@ -112,6 +117,8 @@ public:
   virtual void cmdDraw(CommandBuffer, uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0) = 0;
   virtual void cmdDrawIndexed(CommandBuffer, uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0) = 0;
   virtual void cmdDrawIndexedIndirect(CommandBuffer, Buffer indirectBuffer, size_t offset, uint32_t drawCount, uint32_t stride) = 0;
+  virtual void cmdStartTimer(CommandBuffer, const Timer &, PipelineStage stage) = 0;
+  virtual void cmdStopTimer(CommandBuffer, const Timer &, PipelineStage stage) = 0;
 
   virtual void cmdDispatch(CommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) = 0;
   virtual void cmdImageBarrier(
@@ -149,6 +156,9 @@ public:
   virtual void blockUntil(GPUFuture &) = 0;
   virtual bool isCompleted(GPUFuture &) = 0;
 
+  virtual const Timer createTimer(const TimerInfo) = 0;
+  virtual void deleteTimer(const Timer &timer) = 0;
+  virtual double readTimer(const Timer &timer) = 0;
   virtual const Buffer createBuffer(const BufferInfo &info) = 0;
   virtual const Texture createTexture(const TextureInfo &info) = 0;
   virtual const Sampler createSampler(const SamplerInfo &info) = 0;

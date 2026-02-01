@@ -34,7 +34,7 @@ int main()
 
   RenderGraph *renderGraph = new RenderGraph(rhi);
 
-  uint32_t count = 1024;
+  uint32_t count = 1024 * 1024;
 
   uint32_t data[count];
 
@@ -147,10 +147,21 @@ int main()
       });
 
   RHICommandBuffer commandBuffer;
+  auto timer = renderGraph->createTimer(
+      TimerInfo{
+        .name = "timer",
+        .unit = TimerUnit::Miliseconds,
+      });
+  commandBuffer.cmdStartTimer(timer, PipelineStage::COMPUTE_SHADER);
+  uint32_t totalDispatches = 8;
+  for (uint32_t submissions = 0; submissions < totalDispatches; submissions++)
+  {
+    commandBuffer.cmdBindComputePipeline(addPipeline);
+    commandBuffer.cmdBindBindingGroups(addShaderBindingGroup, nullptr, 0);
+    commandBuffer.cmdDispatch(count / 64, 1, 1);
+  }
+  commandBuffer.cmdStopTimer(timer, PipelineStage::COMPUTE_SHADER);
 
-  commandBuffer.cmdBindComputePipeline(addPipeline);
-  commandBuffer.cmdBindBindingGroups(addShaderBindingGroup, nullptr, 0);
-  commandBuffer.cmdDispatch(count / 64, 1, 1);
   commandBuffer.cmdCopyBuffer(
       BufferView{
         .buffer = valuesBuffer,
@@ -181,9 +192,12 @@ int main()
         uint32_t *values = (uint32_t *)(data);
         for (uint32_t i = 0; i < count; i++)
         {
-          assert(i + uniform.value == values[i]);
+          assert(i + totalDispatches * uniform.value == values[i]);
         }
       });
+
+  auto benchmark = renderGraph->readTimer(timer);
+  os::Logger::warningf("GPU took %fms", benchmark);
 
   renderGraph->deleteComputePipeline(addPipeline);
   renderGraph->deleteBindingGroups(addShaderBindingGroup);
@@ -193,6 +207,7 @@ int main()
   renderGraph->deleteBuffer(pullBuffer);
 
   renderGraph->deleteShader(addShader);
+  renderGraph->deleteTimer(timer);
 
   os::Logger::shutdown();
   return 0;

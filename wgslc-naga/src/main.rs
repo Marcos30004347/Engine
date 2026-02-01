@@ -1,14 +1,14 @@
 use anyhow::{Context, Result};
 use clap::Parser;
-use naga::back::spv;
 use naga::back::hlsl;
+use naga::back::spv;
 use naga::front::wgsl;
 use naga::valid::{Capabilities, ShaderStages, ValidationFlags, Validator};
+use naga::AddressSpace;
 use spirv_tools::opt::{create, Optimizer};
 use spirv_tools::TargetEnv;
 use std::fs;
 use std::path::PathBuf;
-use naga::AddressSpace;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -64,7 +64,9 @@ fn dump_bindings(module: &naga::Module) {
     println!("--- Resource Bindings (WGSL → Vulkan) ---");
 
     for (_, var) in module.global_variables.iter() {
-        let Some(binding) = &var.binding else { continue };
+        let Some(binding) = &var.binding else {
+            continue;
+        };
 
         let kind = match var.space {
             AddressSpace::Uniform => "uniform-buffer",
@@ -82,41 +84,37 @@ fn dump_bindings(module: &naga::Module) {
 
 fn generate_hlsl_binding_map(module: &naga::Module) -> hlsl::BindingMap {
     let mut binding_map = hlsl::BindingMap::default();
-    
+
     for (_, var) in module.global_variables.iter() {
-        let Some(binding) = &var.binding else { continue };
-        
+        let Some(binding) = &var.binding else {
+            continue;
+        };
+
         let hlsl_binding = match var.space {
-            AddressSpace::Uniform => {
-                hlsl::BindTarget {
-                    space: binding.group as u8,
-                    register: binding.binding,
-                    binding_array_size: None,
-                    dynamic_storage_buffer_offsets_index: None,
-                    restrict_indexing: false,
-                }
-            }
-            AddressSpace::Storage { .. } => {
-                hlsl::BindTarget {
-                    space: binding.group as u8,
-                    register: binding.binding,
-                    binding_array_size: None,
-                    dynamic_storage_buffer_offsets_index: None,
-                    restrict_indexing: false,
-                }
-            }
-            AddressSpace::Handle => {
-                hlsl::BindTarget {
-                    space: binding.group as u8,
-                    register: binding.binding,
-                    binding_array_size: None,
-                    dynamic_storage_buffer_offsets_index: None,
-                    restrict_indexing: false,
-                }
-            }
+            AddressSpace::Uniform => hlsl::BindTarget {
+                space: binding.group as u8,
+                register: binding.binding,
+                binding_array_size: None,
+                dynamic_storage_buffer_offsets_index: None,
+                restrict_indexing: false,
+            },
+            AddressSpace::Storage { .. } => hlsl::BindTarget {
+                space: binding.group as u8,
+                register: binding.binding,
+                binding_array_size: None,
+                dynamic_storage_buffer_offsets_index: None,
+                restrict_indexing: false,
+            },
+            AddressSpace::Handle => hlsl::BindTarget {
+                space: binding.group as u8,
+                register: binding.binding,
+                binding_array_size: None,
+                dynamic_storage_buffer_offsets_index: None,
+                restrict_indexing: false,
+            },
             _ => continue,
         };
-        
+
         binding_map.insert(
             naga::ResourceBinding {
                 group: binding.group,
@@ -125,26 +123,30 @@ fn generate_hlsl_binding_map(module: &naga::Module) -> hlsl::BindingMap {
             hlsl_binding,
         );
     }
-    
+
     binding_map
 }
 
 fn add_hlsl_metadata(hlsl_code: &str, module: &naga::Module, entry_point_name: &str) -> String {
-    let entry_point = module.entry_points.iter()
+    let entry_point = module
+        .entry_points
+        .iter()
         .find(|ep| ep.name == entry_point_name)
         .expect("Entry point not found");
-    
+
     let workgroup_size = entry_point.workgroup_size;
-    
+
     let mut output = String::new();
-    
+
     output.push_str("// Generated from WGSL\n");
     output.push_str(&format!("// Entry point: {}\n", entry_point_name));
-    output.push_str(&format!("// Workgroup size: [{}, {}, {}]\n", 
-        workgroup_size[0], workgroup_size[1], workgroup_size[2]));
+    output.push_str(&format!(
+        "// Workgroup size: [{}, {}, {}]\n",
+        workgroup_size[0], workgroup_size[1], workgroup_size[2]
+    ));
     output.push_str("//\n");
     output.push_str("// Resource Bindings:\n");
-    
+
     for (_, var) in module.global_variables.iter() {
         if let Some(binding) = &var.binding {
             let reg_type = match var.space {
@@ -159,28 +161,32 @@ fn add_hlsl_metadata(hlsl_code: &str, module: &naga::Module, entry_point_name: &
                 AddressSpace::Handle => "texture/sampler (t/s register)",
                 _ => continue,
             };
-            
+
             if let Some(name) = &var.name {
-                output.push_str(&format!("//   {} : space{}, binding{} ({})\n", 
-                    name, binding.group, binding.binding, reg_type));
+                output.push_str(&format!(
+                    "//   {} : space{}, binding{} ({})\n",
+                    name, binding.group, binding.binding, reg_type
+                ));
             }
         }
     }
     output.push_str("//\n\n");
-    
+
     output.push_str(hlsl_code);
-    
+
     let entry_pattern = format!("void {}(", entry_point_name);
     if let Some(pos) = output.rfind(&entry_pattern) {
         // Check if [numthreads] is already present
         let prefix = &output[..pos];
         if !prefix.ends_with("]") && !prefix.contains("[numthreads(") {
-            let numthreads = format!("[numthreads({}, {}, {})]\n", 
-                workgroup_size[0], workgroup_size[1], workgroup_size[2]);
+            let numthreads = format!(
+                "[numthreads({}, {}, {})]\n",
+                workgroup_size[0], workgroup_size[1], workgroup_size[2]
+            );
             output.insert_str(pos, &numthreads);
         }
     }
-    
+
     output
 }
 
@@ -197,11 +203,6 @@ fn main() -> Result<()> {
     })?;
 
     let mut allowed_caps = Capabilities::empty();
-    allowed_caps |= Capabilities::MULTIVIEW
-        | Capabilities::SUBGROUP
-        | Capabilities::SUBGROUP_BARRIER
-        | Capabilities::CLIP_DISTANCE
-        | Capabilities::CULL_DISTANCE;
 
     if args.int64 {
         allowed_caps |= Capabilities::SHADER_INT64;
@@ -218,12 +219,17 @@ fn main() -> Result<()> {
     if args.texture_int64_atomic {
         allowed_caps |= Capabilities::TEXTURE_INT64_ATOMIC;
     }
+    allowed_caps |= Capabilities::MULTIVIEW
+        | Capabilities::SUBGROUP
+        | Capabilities::SUBGROUP_BARRIER
+        | Capabilities::CLIP_DISTANCE
+        | Capabilities::CULL_DISTANCE;
 
     let mut validation_flags = ValidationFlags::all();
     validation_flags.remove(ValidationFlags::CONTROL_FLOW_UNIFORMITY);
     let mut validator = Validator::new(validation_flags, allowed_caps);
 
-    validator.subgroup_stages(ShaderStages::COMPUTE);
+    validator.subgroup_stages(ShaderStages::COMPUTE | ShaderStages::FRAGMENT);
     validator.subgroup_operations(naga::valid::SubgroupOperationSet::all());
 
     let module_info = validator
@@ -258,8 +264,7 @@ fn main() -> Result<()> {
             };
 
             let mut hlsl_output = String::new();
-            let mut writer =
-                hlsl::Writer::new(&mut hlsl_output, &hlsl_options, &pipeline_options);
+            let mut writer = hlsl::Writer::new(&mut hlsl_output, &hlsl_options, &pipeline_options);
 
             writer
                 .write(&module, &module_info, None)
@@ -309,19 +314,18 @@ fn main() -> Result<()> {
         optimizer
             .register_pass(Passes::LoopPeeling)
             .register_pass(Passes::LoopUnswitch)
-            .register_pass(Passes::LoopInvariantCodeMotion)
+            // .register_pass(Passes::LoopInvariantCodeMotion)
             .register_pass(Passes::IfConversion)
-            .register_pass(Passes::Simplification)
-            .register_pass(Passes::CombineAccessChains)
-            .register_pass(Passes::ConvertRelaxedToHalf)
+            // .register_pass(Passes::CombineAccessChains)
+            // .register_pass(Passes::ConvertRelaxedToHalf)
             .register_pass(Passes::DeadBranchElim)
             .register_pass(Passes::MergeReturn)
             .register_pass(Passes::InlineExhaustive)
-            .register_pass(Passes::LocalAccessChainConvert)
-            .register_pass(Passes::StrengthReduction)
+            // .register_pass(Passes::LocalAccessChainConvert);
+            // .register_pass(Passes::StrengthReduction)
+            .register_pass(Passes::Simplification)
             .register_pass(Passes::CodeSinking)
             .register_pass(Passes::AggressiveDCE);
-
         let spv_optimized = match optimizer.optimize(
             &spv_words_debug,
             &mut |msg| eprintln!("[optimizer] {:?}", msg),

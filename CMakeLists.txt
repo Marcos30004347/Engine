@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 
+include(cmake/WGSL2SpirV.cmake)
+
 project(Engine)
 
 
 # option(ENABLE_PROFILING "Enable CPU profiling with gperftools" ON)
 
 #if(NOT CMAKE_BUILD_TYPE)
-    # set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set default build type to Debug" FORCE)
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer -g -O0")
-    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer -g -O0")
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set default build type to Debug" FORCE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer -g -O0")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer -g -O0")
 #endif()
 
     # set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set default build type to Debug" FORCE)
@@ -25,16 +27,16 @@ project(Engine)
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -g -O0")
 
 #Comment this for debug builds
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Set default build type to Release" FORCE)
-endif()
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG -flto -fvisibility=hidden")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -DNDEBUG -flto -fvisibility=hidden")
-elseif(MSVC)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ox /DNDEBUG /GL")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Ox /DNDEBUG /GL")
-endif()
+# if(NOT CMAKE_BUILD_TYPE)
+#   set(CMAKE_BUILD_TYPE Release CACHE STRING "Set default build type to Release" FORCE)
+# endif()
+# if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+#     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG -flto -fvisibility=hidden")
+#     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -DNDEBUG -flto -fvisibility=hidden")
+# elseif(MSVC)
+#     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ox /DNDEBUG /GL")
+#     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Ox /DNDEBUG /GL")
+# endif()
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -140,10 +142,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_compile_definitions(Engine PRIVATE VULKAN_DEVICE_LOG)
 endif()
 
-
-
-add_subdirectory(samples)
-
 enable_testing()
-
 add_subdirectory(tests)
+

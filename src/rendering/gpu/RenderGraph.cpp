@@ -488,36 +488,36 @@ RenderGraph::RenderGraph(RHI *renderingHardwareInterface) : rhi(renderingHardwar
   compiled = false;
 }
 
-void RenderGraph::analyseCommands(RHICommandBuffer &recorder)
-{
-  for (auto &commands : recorder.recorded)
-  {
-    std::unordered_map<CommandType, uint32_t> dispatchCount;
+// void RenderGraph::analyseCommands(RHICommandBuffer &recorder)
+// {
+//   for (auto &commands : recorder.recorded)
+//   {
+//     std::unordered_map<CommandType, uint32_t> dispatchCount;
 
-    for (auto &cmd : commands.commands)
-    {
+//     for (auto &cmd : commands.commands)
+//     {
 
-      dispatchCount[cmd.type] += 1;
+//       dispatchCount[cmd.type] += 1;
 
-      switch (cmd.type)
-      {
-      case CommandType::CopyBuffer:
-        break;
-      default:
-        if (dispatchCount[cmd.type] > 1)
-        {
-          RENDER_GRAPH_FATAL("Command being called multiple times before dispatch");
-        }
-        break;
-      }
+//       switch (cmd.type)
+//       {
+//       case CommandType::CopyBuffer:
+//         break;
+//       default:
+//         if (dispatchCount[cmd.type] > 1)
+//         {
+//           RENDER_GRAPH_FATAL("Command being called multiple times before dispatch");
+//         }
+//         break;
+//       }
 
-      if (cmd.type >= Draw && cmd.type <= Dispatch)
-      {
-        dispatchCount.clear();
-      }
-    }
-  }
-}
+//       if (cmd.type >= Draw && cmd.type <= Dispatch)
+//       {
+//         dispatchCount.clear();
+//       }
+//     }
+//   }
+// }
 
 Queue inferQueue(const std::vector<Command> &commands)
 {
@@ -525,7 +525,17 @@ Queue inferQueue(const std::vector<Command> &commands)
   {
     return Queue::None;
   }
-  switch (commands.back().type)
+  auto type = commands.back().type;
+
+  for (int i = commands.size() - 1; i >= 0; i--)
+  {
+    type = commands[i].type;
+    if (type != BindBindingGroups && type != StartTimer && type != StopTimer)
+    {
+      break;
+    }
+  }
+  switch (type)
   {
   case BeginRenderPass:
   case EndRenderPass:
@@ -541,11 +551,9 @@ Queue inferQueue(const std::vector<Command> &commands)
     return Queue::Compute;
   case CopyBuffer:
     return Queue::Transfer;
-  case BindBindingGroups:
-    return Queue::None; // sticky state
 
   default:
-    RENDER_GRAPH_FATAL("[RenderGraph] Invalid command type %u", commands.back().type);
+    RENDER_GRAPH_FATAL("[RenderGraph] Invalid command type %u on sequence of size %u", type, commands.size());
   }
 
   return Queue::None;
@@ -563,55 +571,52 @@ static bool isDrawCommand(CommandType type)
 
 std::vector<RHICommandBuffer::CommandSequence> splitCommands(RHICommandBuffer::CommandSequence &cmds)
 {
+  // TODO: improve
   std::vector<RHICommandBuffer::CommandSequence> result;
-  Queue lastQueue = Queue::None;
+  // Queue lastQueue = Queue::None;
+  result.emplace_back();
 
   for (auto &command : cmds.commands)
   {
     Queue currentQueue = Queue::None;
+    result.back().commands.push_back(command);
 
     switch (command.type)
     {
-    case BeginRenderPass:
-    case EndRenderPass:
-    case BindGraphicsPipeline:
-    case BindVertexBuffer:
-    case BindIndexBuffer:
+    case StartTimer:
+    case StopTimer:
+      break;
     case Draw:
     case DrawIndexed:
     case DrawIndexedIndirect:
-      currentQueue = Queue::Graphics;
-      break;
     case Dispatch:
-    case BindComputePipeline:
-      currentQueue = Queue::Compute;
-      break;
-
     case CopyBuffer:
-      currentQueue = Queue::Transfer;
+      result.emplace_back();
       break;
-
+    case BindComputePipeline:
+    case BindGraphicsPipeline:
     case BindBindingGroups:
-      currentQueue = Queue::None; // sticky state
+    case BeginRenderPass:
+    case EndRenderPass:
+    case BindVertexBuffer:
+    case BindIndexBuffer:
       break;
-
     default:
       RENDER_GRAPH_FATAL("[RenderGraph] Invalid command type %u", command.type);
     }
 
-    if (currentQueue != lastQueue && currentQueue != Queue::None)
-    {
-      result.emplace_back();
-      lastQueue = currentQueue;
-    }
-
-    if (result.empty())
-    {
-      result.emplace_back();
-      lastQueue = currentQueue;
-    }
-
-    result.back().commands.push_back(command);
+    // if (result.empty())
+    // {
+    //   lastQueue = currentQueue;
+    // }
+    // if (currentQueue != lastQueue && currentQueue != Queue::None)
+    // {
+    //   if (result.back().commands.size() > 0 && result.back().commands.back().type != StartTimer && result.back().commands.back().type != StopTimer)
+    //   {
+    //     result.emplace_back();
+    //   }
+    //   lastQueue = currentQueue;
+    // }
   }
 
   for (size_t seqIndex = 0; seqIndex < result.size(); ++seqIndex)
@@ -717,9 +722,10 @@ void RenderGraph::analysePasses()
   while (passes.dequeue(pass))
   {
     RHICommandBuffer recorder = pass.cmd;
-    analyseCommands(recorder);
+    // analyseCommands(recorder);
 
     uint32_t index = 0;
+    uint32_t dispatchId = nodes.size();
 
     for (auto &recordedCommands : pass.cmd.recorded)
     {
@@ -736,7 +742,8 @@ void RenderGraph::analysePasses()
         auto node = RenderGraphNode();
 
         node.name = pass.name + "[" + std::to_string(index++) + "]";
-
+        node.dispatchId = dispatchId;
+        node.commandBufferIndex = -1;
         node.id = id;
         node.level = 0;
         node.priority = id;
@@ -1031,6 +1038,8 @@ void RenderGraph::analysePasses()
           case Draw:
           case DrawIndexed:
           case Dispatch:
+          case StartTimer:
+          case StopTimer:
             break;
           default:
             RENDER_GRAPH_FATAL("Unsuported command");
@@ -1125,7 +1134,7 @@ void RenderGraph::analyseTaskLevels()
       uint32_t currentLevel = nodes[id].level;
       for (auto &edge : edges[id])
       {
-        uint64_t increment = edge.type == EdgeType::ResourceShare ? 0 : 1;
+        uint64_t increment = 1; // edge.type == EdgeType::ResourceShare ? 0 : 1;
         nodes[edge.taskId].level = std::max(nodes[edge.taskId].level, currentLevel + increment);
       }
     }
@@ -1152,7 +1161,6 @@ void RenderGraph::analyseTaskLevels()
       case BindBindingGroups:
       {
         const auto &groupsMeta = resources.bindingGroupsMetadata[cmd.args.bindGroups->groups.name]->groupsInfo.groups;
-
         for (const auto &group : groupsMeta)
         {
           for (const auto &buffer : group.buffers)
@@ -1196,6 +1204,8 @@ void RenderGraph::analyseTaskLevels()
       case Draw:
       case DrawIndexed:
       case Dispatch:
+      case StartTimer:
+      case StopTimer:
         break;
 
       default:
@@ -1267,22 +1277,6 @@ void RenderGraph::analyseDependencyGraph()
   edges.clear();
   edges.resize(nodes.size());
 
-  // for (auto &node : nodes)
-  // {
-  //   // if (node.id == 0)
-  //   // {
-  //   //   continue;
-  //   // }
-  //   // Bootstrap to all other edges
-  //   // edges[0].push_back(
-  //   //     RenderGraphEdge{
-  //   //       .taskId = node.id,
-  //   //       .resourceId = "",
-  //   //       .resourceType = ResourceType::ResourceType_Initialization,
-  //   //       .type = EdgeType::Initialization,
-  //   //     });
-  // }
-
   for (auto [name, meta] : resources.bufferMetadatas)
   {
     std::sort(
@@ -1328,9 +1322,9 @@ void RenderGraph::analyseDependencyGraph()
               .toQueue = nodes[usage.consumer].queue,
               .fromNode = interval.tag.consumer,
             });
-
         if (interval.tag.consumer == usage.consumer)
         {
+
           continue;
         }
 
@@ -1338,7 +1332,7 @@ void RenderGraph::analyseDependencyGraph()
         {
           edges[interval.tag.consumer].emplace_back(
               RenderGraphEdge{
-                .type = interval.tag.access != usage.view.access ? EdgeType::ResourceDependency : EdgeType::ResourceShare,
+                .type = (interval.tag.access != usage.view.access || interval.tag.queue != usage.queue) ? EdgeType::ResourceDependency : EdgeType::ResourceShare,
                 .taskId = usage.consumer,
                 .resourceId = meta.bufferInfo.name,
                 .resourceType = ResourceType::ResourceType_BufferView,
@@ -1429,7 +1423,9 @@ void RenderGraph::analyseDependencyGraph()
         {
           edges[interval.tag.consumer].emplace_back(
               RenderGraphEdge{
-                .type = (interval.tag.access != currentTag.access || interval.tag.layout != currentTag.layout) ? EdgeType::ResourceDependency : EdgeType::ResourceShare,
+                .type = (interval.tag.access != currentTag.access || interval.tag.layout != currentTag.layout || interval.tag.queue != currentTag.queue)
+                            ? EdgeType::ResourceDependency
+                            : EdgeType::ResourceShare,
                 .taskId = usage.consumer,
                 .resourceId = meta.textureInfo.name,
                 .resourceType = ResourceType::ResourceType_TextureView,
@@ -1846,16 +1842,13 @@ void RenderGraph::analyseSemaphores()
     {
       uint32_t toTask = edge.taskId;
 
-      if (nodes[fromTask].queue != nodes[toTask].queue)
-      {
-        semaphoresSet.insert(
-            Semaphore{
-              .signalQueue = nodes[fromTask].queue,
-              .waitQueue = nodes[toTask].queue,
-              .signalTask = fromTask,
-              .waitTask = toTask,
-            });
-      }
+      semaphoresSet.insert(
+          Semaphore{
+            .signalQueue = nodes[fromTask].queue,
+            .waitQueue = nodes[toTask].queue,
+            .signalTask = fromTask,
+            .waitTask = toTask,
+          });
     }
 
     fromTask += 1;
@@ -1869,6 +1862,64 @@ void RenderGraph::analyseSemaphores()
     nodes[semaphore.signalTask].signalSemaphores.push_back(at);
     nodes[semaphore.waitTask].waitSemaphores.push_back(at);
     at++;
+  }
+}
+auto logQueue = [](Queue q)
+{
+  switch (q)
+  {
+  case Queue::None:
+    return "None";
+  case Queue::Graphics:
+    return "Graphics";
+  case Queue::Compute:
+    return "Compute";
+  case Queue::Transfer:
+    return "Transfer";
+  case Queue::Present:
+    return "Present";
+  default:
+    return "Unknown";
+  }
+  return "";
+};
+
+void RenderGraph::analyseCommandBuffers()
+{
+  for (auto &count : commandBuffersCount)
+  {
+    count = 0;
+  }
+
+  for (auto &currentNode : nodes)
+  {
+    bool canReuseCommandBuffer = true;
+
+    for (uint64_t wait : currentNode.waitSemaphores)
+    {
+      uint64_t from = semaphores[wait].signalTask;
+      if (nodes[from].queue != currentNode.queue || nodes[from].dispatchId != currentNode.dispatchId)
+      {
+        canReuseCommandBuffer = false;
+        break;
+      }
+    }
+#define RANDER_GRAPH_COMMAND_BUFFER_PER_NODE
+#ifdef RANDER_GRAPH_COMMAND_BUFFER_PER_NODE
+    if (commandBuffersCount[currentNode.queue] == 0)
+    {
+      commandBuffersCount[currentNode.queue] += 1;
+    }
+    else if (!canReuseCommandBuffer)
+    {
+      commandBuffersCount[currentNode.queue] += 1;
+    }
+
+    currentNode.commandBufferIndex = commandBuffersCount[currentNode.queue] - 1;
+#else
+    commandBuffersCount[currentNode.queue] += 1;
+    currentNode.commandBufferIndex = commandBuffersCount[currentNode.queue] - 1;
+#endif
   }
 }
 
@@ -1905,7 +1956,7 @@ void RenderGraph::compile()
   {
     meta.usages.clear();
   }
-  
+
   for (const auto &[name, meta] : resources.scratchBuffers)
   {
     meta.usages.clear();
@@ -1931,6 +1982,10 @@ void RenderGraph::compile()
   analyseSemaphores();
   lib::time::TimeSpan analyseSemaphoresEnd = lib::time::TimeSpan::now();
 
+  lib::time::TimeSpan analyseCommandBuffersStart = lib::time::TimeSpan::now();
+  analyseCommandBuffers();
+  lib::time::TimeSpan analyseCommandBuffersEnd = lib::time::TimeSpan::now();
+
   // lib::time::TimeSpan outputCommandsStart = lib::time::TimeSpan::now();
   // outputCommands(program);
   // lib::time::TimeSpan outputCommandsEnd = lib::time::TimeSpan::now();
@@ -1941,6 +1996,8 @@ void RenderGraph::compile()
   os::Logger::logf("[RenderGraph] analyseTaskLevels time = %fms", (analyseTaskLevelsEnd - analyseTaskLevelsStart).milliseconds());
   os::Logger::logf("[RenderGraph] analyseAllocations time = %fms", (analyseAllocationsEnd - analyseAllocationsStart).milliseconds());
   os::Logger::logf("[RenderGraph] analyseSemaphores time = %fms", (analyseSemaphoresEnd - analyseSemaphoresStart).milliseconds());
+  os::Logger::logf("[RenderGraph] analyseCommandBuffers time = %fms", (analyseCommandBuffersEnd - analyseCommandBuffersStart).milliseconds());
+
   // os::Logger::logf("[TimeScheduler] outputCommands time = %fns", (outputCommandsEnd - outputCommandsStart).nanoseconds());
 
   for (const auto &[name, meta] : resources.bufferMetadatas)
@@ -1996,9 +2053,20 @@ void RenderGraph::compile()
     }
   }
 
-
   compiled = true;
 }
+
+// AccessPattern removeReadAccesses(AccessPattern access)
+// {
+//   // TODO: fix
+//   return access;
+
+//   AccessPattern READ_ACCESS_MASK = AccessPattern::VERTEX_ATTRIBUTE_READ | AccessPattern::INDEX_READ | AccessPattern::UNIFORM_READ | AccessPattern::SHADER_READ |
+//                                    AccessPattern::COLOR_ATTACHMENT_READ | AccessPattern::DEPTH_STENCIL_ATTACHMENT_READ | AccessPattern::TRANSFER_READ |
+//                                    AccessPattern::INDIRECT_COMMAND_READ | AccessPattern::MEMORY_READ;
+
+//   return static_cast<AccessPattern>(static_cast<uint32_t>(access) & ~static_cast<uint32_t>(READ_ACCESS_MASK));
+// }
 
 void RenderGraph::run(Frame &frame)
 {
@@ -2021,103 +2089,157 @@ void RenderGraph::run(Frame &frame)
   os::Logger::logf("[RenderGraph] Max level = %u", maxLevel);
 
   frame.futures = std::vector<GPUFuture>(nodes.size());
-  std::vector<CommandBuffer> commandBuffers(nodes.size(), (CommandBuffer)0);
 
-  auto logQueue = [](Queue q)
+  std::vector<CommandBuffer> commandBuffers[Queue::QueuesCount];
+
+  if (commandBuffersCount[Queue::Compute] > 0)
   {
-    switch (q)
-    {
-    case Queue::None:
-      return "None";
-      break;
-    case Queue::Graphics:
-      return "Graphics";
-      break;
-    case Queue::Compute:
-      return "Compute";
-      break;
-    case Queue::Transfer:
-      return "Transfer";
-      break;
-    default:
-      return "Unknown";
-      break;
-    }
-    return "";
-  };
-
-  for (auto &node : nodes)
+    commandBuffers[Queue::Compute] = rhi->allocateCommandBuffers(Queue::Compute, commandBuffersCount[Queue::Compute]);
+  }
+  if (commandBuffersCount[Queue::Graphics] > 0)
   {
-    commandBuffers[node.id] = rhi->allocateCommandBuffers(node.queue, 1)[0];
-
-    os::Logger::logf("[RenderGraph] Allocated CommandBuffer for node %u (level=%u queue=%d)", node.id, node.level, logQueue(node.queue));
+    commandBuffers[Queue::Graphics] = rhi->allocateCommandBuffers(Queue::Graphics, commandBuffersCount[Queue::Graphics]);
+  }
+  if (commandBuffersCount[Queue::Transfer] > 0)
+  {
+    commandBuffers[Queue::Transfer] = rhi->allocateCommandBuffers(Queue::Transfer, commandBuffersCount[Queue::Transfer]);
+  }
+  if (commandBuffersCount[Queue::Present] > 0)
+  {
+    commandBuffers[Queue::Present] = rhi->allocateCommandBuffers(Queue::Present, commandBuffersCount[Queue::Present]);
   }
 
-  for (auto &node : nodes)
+  for (auto &cmd : commandBuffers[Queue::Compute])
   {
-    CommandBuffer commandBuffer = commandBuffers[node.id];
+    rhi->beginCommandBuffer(cmd);
+  }
+  for (auto &cmd : commandBuffers[Queue::Graphics])
+  {
+    rhi->beginCommandBuffer(cmd);
+  }
+  for (auto &cmd : commandBuffers[Queue::Transfer])
+  {
+    rhi->beginCommandBuffer(cmd);
+  }
+  for (auto &cmd : commandBuffers[Queue::Present])
+  {
+    rhi->beginCommandBuffer(cmd);
+  }
+  // for (auto &node : nodes)
+  // {
+  //   commandBuffers[node.id] = rhi->allocateCommandBuffers(node.queue, 1)[0];
+  //   rhi->beginCommandBuffer(commandBuffers[node.id]);
+  //   os::Logger::logf("[RenderGraph] Allocated CommandBuffer for node %u (level=%u queue=%d)", node.id, node.level, logQueue(node.queue));
+  // }
 
-    os::Logger::logf("[RenderGraph] * Recording %s (level=%u queue=%s, commandBuffer %u)", node.name.c_str(), node.level, logQueue(node.queue), (uint64_t)commandBuffer);
-    rhi->beginCommandBuffer(commandBuffer);
+  std::unordered_map<CommandBuffer, std::unordered_set<CommandBuffer>> commandBufferWaits;
+
+  for (auto &currentNode : nodes)
+  {
+    CommandBuffer &commandBuffer = commandBuffers[currentNode.queue][currentNode.commandBufferIndex];
+
+    for (auto &wait : currentNode.waitSemaphores)
+    {
+      auto &semaphore = semaphores[wait];
+      auto &from = nodes[semaphore.signalTask];
+
+      if (commandBuffer != commandBuffers[from.queue][from.commandBufferIndex])
+      {
+        commandBufferWaits[commandBuffer].insert(commandBuffers[from.queue][from.commandBufferIndex]);
+      }
+    }
+
+    os::Logger::logf(
+        "[RenderGraph] * Recording %s (level=%u queue=%s, commandBuffer %u)",
+        currentNode.name.c_str(),
+        currentNode.level,
+        logQueue(currentNode.queue),
+        currentNode.commandBufferIndex);
 
     /* ================= BUFFER BARRIERS ================= */
 
-    for (auto &transition : node.bufferTransitions)
+    for (auto &transition : currentNode.bufferTransitions)
     {
+
       auto buffer = getBuffer(transition.resourceId);
+      PipelineStage fromStage = PipelineStage::ALL_COMMANDS;
+      PipelineStage toStage = PipelineStage::ALL_COMMANDS;
+
+      if (transition.fromNode != -1)
+      {
+        auto &fromNode = nodes[transition.fromNode];
+        switch (fromNode.queue)
+        {
+        case Queue::Compute:
+          fromStage = PipelineStage::COMPUTE_SHADER;
+          break;
+        case Queue::Graphics:
+          fromStage = PipelineStage::ALL_GRAPHICS;
+          break;
+        case Queue::Transfer:
+          fromStage = PipelineStage::TRANSFER;
+          break;
+        default:
+          break;
+        }
+      }
+
+      switch (currentNode.queue)
+      {
+      case Queue::Compute:
+        toStage = PipelineStage::COMPUTE_SHADER;
+        break;
+      case Queue::Graphics:
+        toStage = PipelineStage::ALL_GRAPHICS;
+        break;
+      case Queue::Transfer:
+        toStage = PipelineStage::TRANSFER;
+        break;
+      default:
+        break;
+      }
+
+      // if(currentNode.queue)
 
       if (transition.toQueue != transition.fromQueue)
       {
         os::Logger::logf(
-            "[RenderGraph][Barrier][Buffer][QueueTransfer] '%s' fromNode=%u -> node=%u offset=%zu size=%zu fromAccess=%u toAccess=%u fromQueue=%s toQueue=%s",
+            "[RenderGraph][Barrier][Buffer][QueueTransfer] '%s' fromNode=%u -> node=%u offset=%zu size=%zu fromAccess=%u toAccess=%u fromQueue=%s toQueue=%s, fromNode %u",
             buffer.name.c_str(),
             transition.fromNode,
-            node.id,
+            currentNode.id,
             transition.offset,
             transition.size,
             (uint32_t)transition.fromAccess,
             (uint32_t)transition.toAccess,
             logQueue(transition.fromQueue),
-            logQueue(transition.toQueue));
+            logQueue(transition.toQueue),
+            transition.fromNode);
 
         if (transition.fromNode == -1)
         {
           rhi->cmdBufferBarrier(
-              commandBuffer,
-              buffer,
-              PipelineStage::ALL_COMMANDS,
-              PipelineStage::ALL_COMMANDS,
-              transition.fromAccess,
-              AccessPattern::NONE,
-              transition.offset,
-              transition.size,
-              Queue::None,
-              Queue::None);
+              commandBuffer, buffer, fromStage, toStage, transition.fromAccess, transition.toAccess, transition.offset, transition.size, Queue::None, Queue::None);
         }
         else
         {
+
+          auto &fromNode = nodes[transition.fromNode];
+
           rhi->cmdBufferBarrier(
-              commandBuffers[transition.fromNode],
+              commandBuffers[fromNode.queue][fromNode.commandBufferIndex],
               buffer,
-              PipelineStage::ALL_COMMANDS,
-              PipelineStage::ALL_COMMANDS,
+              fromStage,
+              toStage,
               transition.fromAccess,
               AccessPattern::NONE,
               transition.offset,
               transition.size,
               transition.fromQueue,
               transition.toQueue);
+
           rhi->cmdBufferBarrier(
-              commandBuffer,
-              buffer,
-              PipelineStage::ALL_COMMANDS,
-              PipelineStage::ALL_COMMANDS,
-              AccessPattern::NONE,
-              transition.toAccess,
-              transition.offset,
-              transition.size,
-              transition.fromQueue,
-              transition.toQueue);
+              commandBuffer, buffer, fromStage, toStage, AccessPattern::NONE, transition.toAccess, transition.offset, transition.size, transition.fromQueue, transition.toQueue);
         }
       }
       else
@@ -2132,24 +2254,50 @@ void RenderGraph::run(Frame &frame)
             logQueue(transition.fromQueue));
 
         rhi->cmdBufferBarrier(
-            commandBuffer,
-            buffer,
-            PipelineStage::ALL_COMMANDS,
-            PipelineStage::ALL_COMMANDS,
-            transition.fromAccess,
-            transition.toAccess,
-            transition.offset,
-            transition.size,
-            transition.fromQueue,
-            transition.toQueue);
+            commandBuffer, buffer, fromStage, toStage, transition.fromAccess, transition.toAccess, transition.offset, transition.size, transition.fromQueue, transition.toQueue);
       }
     }
 
     /* ================= IMAGE BARRIERS ================= */
 
-    for (auto &transition : node.textureTransitions)
+    for (auto &transition : currentNode.textureTransitions)
     {
+
       auto texture = getTexture(transition.resourceId);
+      PipelineStage fromStage = PipelineStage::ALL_COMMANDS;
+      PipelineStage toStage = PipelineStage::ALL_COMMANDS;
+      if (transition.fromNode != -1)
+      {
+        auto &fromNode = nodes[transition.fromNode];
+        switch (fromNode.queue)
+        {
+        case Queue::Compute:
+          fromStage = PipelineStage::COMPUTE_SHADER;
+          break;
+        case Queue::Graphics:
+          fromStage = PipelineStage::ALL_GRAPHICS;
+          break;
+        case Queue::Transfer:
+          fromStage = PipelineStage::TRANSFER;
+          break;
+        default:
+          break;
+        }
+      }
+      switch (currentNode.queue)
+      {
+      case Queue::Compute:
+        toStage = PipelineStage::COMPUTE_SHADER;
+        break;
+      case Queue::Graphics:
+        toStage = PipelineStage::ALL_GRAPHICS;
+        break;
+      case Queue::Transfer:
+        toStage = PipelineStage::TRANSFER;
+        break;
+      default:
+        break;
+      }
 
       if (transition.toQueue != transition.fromQueue)
       {
@@ -2157,7 +2305,7 @@ void RenderGraph::run(Frame &frame)
             "[RenderGraph][Barrier][Image][QueueTransfer] '%s' fromNode=%u -> node=%u layout %u -> %u access %u -> %u mips [%u..%u) layers [%u..%u) fromQueue=%s toQueue=%s",
             texture.name.c_str(),
             transition.fromNode,
-            node.id,
+            currentNode.id,
             (uint32_t)transition.fromLayout,
             (uint32_t)transition.toLayout,
             (uint32_t)transition.fromAccess,
@@ -2174,10 +2322,10 @@ void RenderGraph::run(Frame &frame)
           rhi->cmdImageBarrier(
               commandBuffer,
               texture,
-              PipelineStage::ALL_COMMANDS,
-              PipelineStage::ALL_COMMANDS,
+              fromStage,
+              toStage,
               transition.fromAccess,
-              AccessPattern::NONE,
+              transition.toAccess,
               transition.fromLayout,
               transition.toLayout,
               GetImageAspectFlags(resources.textureMetadatas[transition.resourceId]->textureInfo.format),
@@ -2190,12 +2338,13 @@ void RenderGraph::run(Frame &frame)
         }
         else
         {
+          auto &fromNode = nodes[transition.fromNode];
 
           rhi->cmdImageBarrier(
-              commandBuffers[transition.fromNode],
+              commandBuffers[fromNode.queue][fromNode.commandBufferIndex],
               texture,
-              PipelineStage::ALL_COMMANDS,
-              PipelineStage::ALL_COMMANDS,
+              fromStage,
+              toStage,
               transition.fromAccess,
               AccessPattern::NONE,
               transition.fromLayout,
@@ -2210,8 +2359,8 @@ void RenderGraph::run(Frame &frame)
           rhi->cmdImageBarrier(
               commandBuffer,
               texture,
-              PipelineStage::ALL_COMMANDS,
-              PipelineStage::ALL_COMMANDS,
+              fromStage,
+              toStage,
               AccessPattern::NONE,
               transition.toAccess,
               transition.fromLayout,
@@ -2243,8 +2392,8 @@ void RenderGraph::run(Frame &frame)
         rhi->cmdImageBarrier(
             commandBuffer,
             texture,
-            PipelineStage::ALL_COMMANDS,
-            PipelineStage::ALL_COMMANDS,
+            fromStage,
+            toStage,
             transition.fromAccess,
             transition.toAccess,
             transition.fromLayout,
@@ -2261,7 +2410,7 @@ void RenderGraph::run(Frame &frame)
 
     /* ================= COMMANDS ================= */
 
-    for (auto &cmd : node.commands)
+    for (auto &cmd : currentNode.commands)
     {
       switch (cmd.type)
       {
@@ -2485,34 +2634,99 @@ void RenderGraph::run(Frame &frame)
 
         rhi->cmdDispatch(commandBuffer, cmd.args.dispatch->x, cmd.args.dispatch->y, cmd.args.dispatch->z);
         break;
+
+      case StartTimer:
+        rhi->cmdStartTimer(commandBuffer, cmd.args.startTimer->timer, cmd.args.startTimer->stage);
+        break;
+      case StopTimer:
+        rhi->cmdStopTimer(commandBuffer, cmd.args.stopTimer->timer, cmd.args.stopTimer->stage);
+        break;
       }
     }
   }
 
-  for (auto commandBuffer : commandBuffers)
+  for (auto &cmd : commandBuffers[Queue::Compute])
   {
-    rhi->endCommandBuffer(commandBuffer);
+    rhi->endCommandBuffer(cmd);
   }
+  for (auto &cmd : commandBuffers[Queue::Graphics])
+  {
+    rhi->endCommandBuffer(cmd);
+  }
+  for (auto &cmd : commandBuffers[Queue::Transfer])
+  {
+    rhi->endCommandBuffer(cmd);
+  }
+
   auto submitStart = lib::time::TimeSpan::now();
 
-  /* ================= SUBMISSION ================= */
+  std::unordered_map<CommandBuffer, GPUFuture> futures;
 
-  for (auto &node : nodes)
+  std::vector<CommandBuffer> orderedBuffers;
+  uint64_t at[Queue::QueuesCount] = {};
+
+  for (auto queue = Queue::None; queue < Queue::QueuesCount; queue = Queue((uint64_t)queue + 1))
   {
-    std::vector<GPUFuture> waits;
+    at[queue] = 0;
+  }
 
-    for (auto semaphoreIndex : node.waitSemaphores)
+  while (true)
+  {
+    bool finished = true;
+
+    for (auto queue = Queue::None; queue < Queue::QueuesCount; queue = Queue((uint64_t)queue + 1))
     {
-      auto &sem = semaphores[semaphoreIndex];
-
-      os::Logger::logf("[RenderGraph][Submit] Node %u waits on %s", node.id, nodes[sem.signalTask].name.c_str());
-
-      waits.push_back(frame.futures[sem.signalTask]);
+      if (at[queue] != commandBuffers[queue].size())
+      {
+        finished = false;
+      }
     }
 
-    os::Logger::logf("[RenderGraph][Submit] Submitting node %u queue=%s waits=%zu", node.id, logQueue(node.queue), waits.size());
+    if (finished == true)
+    {
+      break;
+    }
 
-    frame.futures[node.id] = rhi->submit(node.queue, &commandBuffers[node.id], 1, waits.data(), waits.size());
+    std::vector<GPUFuture> waits;
+
+    CommandBuffer commandBuffer;
+
+    Queue queue;
+
+    for (queue = Queue::None; queue < Queue::QueuesCount; queue = Queue((uint64_t)queue + 1))
+    {
+      if (commandBuffers[queue].size() == 0 || at[queue] == commandBuffers[queue].size())
+      {
+        continue;
+      }
+
+      bool allDependenciesSubmitted = true;
+
+      waits.clear();
+
+      commandBuffer = commandBuffers[queue][at[queue]];
+
+      for (const auto &waitCommandBuffer : commandBufferWaits[commandBuffer])
+      {
+        allDependenciesSubmitted = futures.count(waitCommandBuffer) > 0;
+        if (!allDependenciesSubmitted)
+        {
+          break;
+        }
+        waits.push_back(futures[waitCommandBuffer]);
+      }
+
+      if (allDependenciesSubmitted)
+      {
+        at[queue] += 1;
+        break;
+      }
+    }
+
+    futures[commandBuffer] = rhi->submit(queue, &commandBuffer, 1, waits.data(), waits.size());
+    os::Logger::logf("[RenderGraph][Submit] Submitting commandBuffer %u queue=%s waits=%zu", (uint64_t)commandBuffer, logQueue(queue), waits.size());
+
+    frame.futures.push_back(futures[commandBuffer]);
   }
 
   auto runEnd = lib::time::TimeSpan::now();
@@ -2529,6 +2743,11 @@ void RenderGraph::waitFrame(Frame &frame)
       // TODO: yhield in job system
     }
   }
+}
+
+double RenderGraph::readTimer(const Timer &timer)
+{
+  return rhi->readTimer(timer);
 }
 
 static void validateBufferUsage(const BufferInfo &info)
@@ -3114,6 +3333,24 @@ void RHICommandBuffer::cmdBeginRenderPass(const RenderPassInfo &info)
   recorded.back().commands.push_back(std::move(cmd));
 }
 
+void RHICommandBuffer::cmdStartTimer(const Timer timer, PipelineStage stage)
+{
+  Command cmd{CommandType::StartTimer};
+  cmd.args.startTimer = new StartTimerArgs();
+  cmd.args.startTimer->timer = timer;
+  cmd.args.startTimer->stage = stage;
+
+  recorded.back().commands.push_back(std::move(cmd));
+}
+void RHICommandBuffer::cmdStopTimer(const Timer timer, PipelineStage stage)
+{
+  Command cmd{CommandType::StopTimer};
+  cmd.args.stopTimer = new StopTimerArgs();
+  cmd.args.stopTimer->timer = timer;
+  cmd.args.stopTimer->stage = stage;
+  recorded.back().commands.push_back(std::move(cmd));
+}
+
 void RHICommandBuffer::cmdEndRenderPass()
 {
   recorded.back().commands.push_back({CommandType::EndRenderPass});
@@ -3238,6 +3475,16 @@ void RenderGraph::removeSwapChainImages(SwapChain sc)
     auto name = "_SwapChainImage[" + std::to_string((uint64_t)sc) + "," + std::to_string(index) + "].texture";
     resources.textureMetadatas.remove(name);
   }
+}
+
+const Timer RenderGraph::createTimer(const TimerInfo &info)
+{
+  return rhi->createTimer(info);
+}
+
+void RenderGraph::deleteTimer(const Timer &timer)
+{
+  rhi->deleteTimer(timer);
 }
 
 } // namespace rendering
