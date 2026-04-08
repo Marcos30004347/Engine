@@ -1,0 +1,18 @@
+[submodule "thirdparty/METIS"]
+	path = thirdparty/METIS
+	url = https://github.com/Marcos30004347/METIS.git
+[submodule "thirdparty/SDL"]
+	path = thirdparty/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "thirdparty/imgui"]
+	path = thirdparty/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "thirdparty/libsimdpp"]
+	path = thirdparty/libsimdpp
+	url = https://github.com/p12tic/libsimdpp.git
+[submodule "thirdparty/lz4"]
+	path = thirdparty/lz4
+	url = https://github.com/lz4/lz4
+[submodule "thirdparty/tinygltf"]
+	path = thirdparty/tinygltf
+	url = https://github.com/syoyo/tinygltf
