@@ -1,15 +1,4 @@
 include(${CMAKE_SOURCE_DIR}/cmake/meshoptimizer.cmake)
-include(FetchContent)
-
-FetchContent_Declare(
-    metis
-    GIT_REPOSITORY https://github.com/Marcos30004347/METIS.git
-    GIT_TAG        main
-    SOURCE_DIR     ${CMAKE_SOURCE_DIR}/thirdparty/METIS
-    BINARY_DIR     ${CMAKE_BINARY_DIR}/thirdparty/METIS-build
-)
-
-FetchContent_MakeAvailable(metis)
 
 add_compile_definitions(
     IDXTYPEWIDTH=32

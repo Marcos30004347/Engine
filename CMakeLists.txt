@@ -47,6 +47,7 @@ if(ENGINE_COLLECT_FRAME_STATISTICS)
 endif()
 
 add_subdirectory(thirdparty/fcontext)
+add_subdirectory(thirdparty/METIS EXCLUDE_FROM_ALL)
 add_subdirectory(thirdparty/SDL)
 add_subdirectory(thirdparty/lz4)
 add_subdirectory(thirdparty/miniz)

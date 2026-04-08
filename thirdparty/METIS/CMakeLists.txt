@@ -1,0 +1,62 @@
+cmake_minimum_required(VERSION 3.20...4.1)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT DEFINED ENV{CMAKE_BUILD_TYPE})
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release")
+endif()
+
+project(metis
+LANGUAGES C
+VERSION 5.2.1.3
+)
+# based on upstream e0f1b88b8efcb24ffa0ec55eabb78fbe61e58ae7
+
+enable_testing()
+
+include(GNUInstallDirs)
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND metis_IS_TOP_LEVEL)
+  set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/local" CACHE PATH "install prefix" FORCE)
+endif()
+
+option(BUILD_TESTING "Build METIS self-tests")
+
+message(STATUS "${PROJECT_NAME} ${PROJECT_VERSION} CMake ${CMAKE_VERSION} install prefix ${CMAKE_INSTALL_PREFIX}")
+
+add_subdirectory(GKlib)
+
+set(CMAKE_C_STANDARD 99)
+
+add_compile_definitions(
+"REALTYPEWIDTH=$<IF:$<BOOL:${REALTYPEWIDTH}>,${REALTYPEWIDTH},32>"
+"IDXTYPEWIDTH=$<IF:$<BOOL:${IDXTYPEWIDTH}>,${IDXTYPEWIDTH},32>"
+)
+include(conf/gkbuild.cmake)
+
+install(FILES include/metis.h TYPE INCLUDE)
+
+# Build libmetis.
+add_library(metis)
+target_include_directories(metis PUBLIC
+"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libmetis;${CMAKE_CURRENT_SOURCE_DIR}/include>"
+$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries(metis
+PUBLIC GKlib::GKlib $<$<BOOL:${UNIX}>:m>
+)
+
+add_library(metis::metis INTERFACE IMPORTED GLOBAL)
+target_link_libraries(metis::metis INTERFACE metis)
+
+install(TARGETS metis EXPORT ${PROJECT_NAME}-targets)
+
+add_subdirectory(libmetis)
+add_subdirectory(programs)
+
+# add_test(NAME GraphCheck
+# COMMAND $<TARGET_FILE:graphchk> ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/tiny_01.graph)
+
+if(metis_IS_TOP_LEVEL)
+  include(cmake/install.cmake)
+endif()
+
+file(GENERATE OUTPUT .gitignore CONTENT "*")
