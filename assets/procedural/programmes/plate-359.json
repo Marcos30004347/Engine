@@ -1,0 +1,146 @@
+{
+  "page": 359,
+  "source": "The Builder's Practical Director, side elevation, section and chamber plan on PDF page 359",
+  "kind": "villa, chamber floor",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "detached",
+    "roof": "mansard with dormers",
+    "storeysInRoof": 1,
+    "features": [
+      {
+        "kind": "arched dormer",
+        "count": 2
+      },
+      {
+        "kind": "rusticated quoins",
+        "count": 1
+      },
+      {
+        "kind": "pedimented doorway",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Only the chamber floor is drawn on this plate. Two front bedrooms of 14 by 10'6 with a dressing room of 10 by 5'3 between them is exactly the first floor the small villa of Plates 43 and 44 is specified with on page 261, and the side elevation has the same mansard and arched dormers - so this is very probably its chamber plan. Recorded separately because that is an inference: the specification gives the back bedroom as 10'6 by 6'6 and this plate as 10'6 by 10'6.",
+  "sameHouseAs": 261,
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn beside the landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front left",
+          "raw": "BED ROOM",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front right",
+          "raw": "BED ROOM",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM",
+          "feet": [
+            10.5,
+            10.5
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "DRESSING ROOM",
+          "feet": [
+            10,
+            5.25
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen",
+          "raw": "LINEN CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the bedroom",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "wc",
+          "raw": "C.W.; a water closet, the letters transposed on the plate"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front left",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:front right",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:linen",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "bedroom:front left",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:front left",
+          "b": "closet:by the bedroom",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

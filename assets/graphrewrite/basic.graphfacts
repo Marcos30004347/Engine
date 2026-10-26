@@ -1,0 +1,5 @@
+# The corpus's starting world. This used to be a `fact` clause at the bottom of
+# basic.graphwrite; it lives here now so the same rules can run over any world.
+
+JennyHouse is house of Jenny
+Jenny at JennyHouse

@@ -1,0 +1,110 @@
+# Narration for matched company decision-graph rules.
+surge-0-0: [A/P/E] The crowd exceeds fixed capacity. Requests queue, viewers give up, and emergency capacity costs more than the quiet-week saving.
+surge-0-1: [{Api}] The crowd reaches {Endpoint} on a single-zone server. Its small serving capacity queues requests; emergency capacity and refunds consume the quiet-week saving.
+surge-0-2: [A/P/E] The crowd exceeds fixed capacity. Requests queue, viewers give up, and emergency capacity costs more than the quiet-week saving.
+surge-bounded-invoice: [P] Every request gets capacity, including the retry storm. The service stays up; the scaling invoice does not have a comfortable ceiling.
+surge-1-0: [P] Every request gets capacity, including the retry storm. The service stays up; the scaling invoice does not have a comfortable ceiling.
+surge-2-0: [A/P/E] Bounded scaling and edge delivery absorb the crowd. The load test's limits finally earn their keep.
+leak-3-0: [I] A deployment credential with broad permissions escapes. The attacker reads account data and starts a mining fleet. Response and credits consume the emergency fund.
+leak-4-0: [{Data}] A shared credential escapes from the public database holding {Record}. An attacker follows the same reachable backend path as {Endpoint} and copies customer data.
+leak-5-0: [O] Full request logs contain reusable credentials. A leaked log export becomes an account-access incident.
+leak-6-0: [E/S] Public object URLs expose the licensed catalogue without checking payment. The content is copied; partners demand takedowns and compensation.
+leak-7-0: [I/E/D/O] The attacker finds no usable credential or exposed data path. Private access and redaction contain this attempt.
+archive-8-0: [S] The live catalogue is in Deep Archive. The advertised release needs an asynchronous restore, not an instant GET. Retrieval work and credits swallow the storage saving.
+archive-9-0: [S] Fans reread the hot catalogue all weekend. Standard-IA retrieval fees overtake the lower storage price.
+archive-10-0: [E->S] The client requests an S3 object, but the content is on EBS. No compatible serving origin was configured.
+archive-11-0: [S] The active objects are available when requested. The catalogue opens without a restore queue.
+zone-12-0: [S/A/D] An AZ disruption takes the single-zone component with it. Other healthy services cannot complete the request path.
+zone-12-1: [{Api}] An AZ disruption takes the server running {Endpoint} with it. Healthy services elsewhere cannot complete this API path.
+zone-12-2: [{Data}] An AZ disruption takes the single-zone backend holding {Record} offline. {Endpoint} cannot complete its requests.
+zone-13-0: [S/A/D] Redundant components carry the AZ failure. A regional plan would address a different, larger failure.
+restore-14-0: [R] The primary Region is unavailable and backups are local. Rebuilding from offline sources takes more than a week.
+restore-15-0: [R] The copies exist, but recovery routing was never tested. An IAM permission blocks the runbook.
+restore-16-0: [R] The cross-Region recovery rehearsal pays off. The correct data and routing permissions are ready.
+bill-17-0: [O] Full payload logging grows with traffic and retains secrets. The log-ingestion invoice arrives before anyone checks the retention policy.
+bill-18-0: [P] Peak capacity runs through a quiet week. Reserved headroom cannot be used to pay salaries; the recurring bill still comes due.
+bill-19-0: [O] A retry loop goes unnoticed without service or billing alarms. Budget notifications would not cap spending, but would have raised the alarm earlier.
+bill-20-0: [O] A spending alert leads to a retry-loop fix before the bill grows. The alert itself is not a spending cap.
+jobs-21-0: [W] The forty-minute encode exceeds a standard Lambda invocation. The premiere arrives before its video does.
+jobs-22-0: [W] The long-running media job finishes in a service built for it. The API is free to handle short requests.
+database-23-0: [{Data}] A shared credential escapes. The public backend holding {Record} turns the mistake into a data breach affecting {Endpoint}.
+database-24-0: [D] The entitlement lookup remains private and available. A small worker mistake does not grant access to the customer table.
+partner-public-catalogue: The partner is upset, and brings a link instead of an accusation. [E -> S] The delivery path exposes licensed media without checking entitlement. Paying for a licence did not give us permission to distribute anonymous download links. Repair the delivery access policy before the next release.
+partner-archived-premiere: The partner is upset about the missed premiere. [E -> S] CloudFront requests a live title from Deep Archive, which needs an asynchronous restore. The cache cannot conjure a film that has not been restored. Move the live catalogue to an immediately accessible tier.
+partner-job-timeout: The partner is upset about an undelivered release. [{Api} -> {Worker}] A short API hands a long-running job to a standard Lambda invocation. Its execution limit interrupts the work. Keep the short API, but move long jobs to suitable workers.
+chapter-launch: launch
+chapter-develop: scope
+chapter-rival: rival
+chapter-slot-0: growth
+chapter-slot-1: rest
+chapter-slot-2: storage
+chapter-slot-3: recovery
+chapter-slot-4: drill
+chapter-slot-5: scaling
+chapter-slot-6: The team reviews the architecture against this week's workload.
+chapter-slot-7: database
+chapter-slot-8: retention
+chapter-slot-9: A new invoice arrives. The team follows each charge back to the design.
+chapter-slot-10: monitoring
+chapter-slot-11: promotion
+chapter-slot-12: Before the next release, the team walks through the API dependency graph.
+chapter-slot-13: api
+chapter-slot-14: encoding
+chapter-slot-15: delivery
+hire-backlog: The Monday board has more ready work than owners. Another colleague adds one weekly assignment slot; a human can also supervise agents. Open the hiring desk now, or keep the smaller payroll.
+development-overrun: The development window has closed with work still on the board. An extra week of contractor support and delayed-launch commitments costs $1,000. Assign the remaining dependencies or reduce avoidable infrastructure costs.
+week-development-0: A beta tester asks what happens if checkout succeeds but access to the content does not. The team draws the payment-to-entitlement path again, this time including failures.
+week-development-4: An agent proposes a service for every box on the whiteboard. The founder counts the boxes, then counts the weeks of runway. Several boxes become modules instead.
+week-development-1: A test account signs in successfully. An engineer deletes its permission and tries again. The second result matters more than the first.
+week-development-5: A developer demonstrates a database query that is elegant on ten records. The test dataset is increased. The design review becomes more interesting.
+week-development-2: The first end-to-end request crosses the gateway, compute and storage. Everybody celebrates until somebody asks how they would find a slow hop without a trace.
+week-development-6: A restore rehearsal uses an empty test environment. The backup is present, but the team also checks permissions, routing and the steps nobody wrote down.
+week-development-3: The prototype works on a quiet afternoon. A load-test plan appears beside it: short bursts, retries, and clients that forget to disconnect.
+week-development-7: The weekly invoice arrives before the first customer. The team separates necessary infrastructure from capacity that is merely waiting for a hypothetical crowd.
+week-launch: Opening night. You refresh the page more often than any customer does. Somewhere outside the office, someone presses play. The first subscribers make every architectural decision real.
+week-aliens-0-0: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 18 days of disruption. An untested or missing recovery path makes rebuilding slower. The aliens leave a one-star review: insufficient science fiction.
+week-aliens-0-1: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 18 days of disruption. The rehearsed routing works. The aliens leave a one-star review: insufficient science fiction.
+week-aliens-1-0: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 11 days of disruption. An untested or missing recovery path makes rebuilding slower. The aliens leave a one-star review: insufficient science fiction.
+week-aliens-1-1: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 8 days of disruption. The rehearsed routing works. The aliens leave a one-star review: insufficient science fiction.
+week-aliens-2-0: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 6 days of disruption. An untested or missing recovery path makes rebuilding slower. The aliens leave a one-star review: insufficient science fiction.
+week-aliens-2-1: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 3 days of disruption. The rehearsed routing works. The aliens leave a one-star review: insufficient science fiction.
+week-aliens-3-0: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 4 days of disruption. An untested or missing recovery path makes rebuilding slower. The aliens leave a one-star review: insufficient science fiction.
+week-aliens-3-1: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 1 days of disruption. The rehearsed routing works. The aliens leave a one-star review: insufficient science fiction.
+week-aliens-4-0: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 3 days of disruption. An untested or missing recovery path makes rebuilding slower. The aliens leave a one-star review: insufficient science fiction.
+week-aliens-4-1: A silver saucer lifts a datacenter into the sky. Its friends collect the rest of the Region. The status page reports unusual vertical movement. Your recovery configuration causes 0 days of disruption. The rehearsed routing works. The aliens leave a one-star review: insufficient science fiction.
+week-live-0: A crawler circles the service. The team traces its route through the architecture.
+week-live-1: A star shares the launch link. The graph on the whiteboard meets a very real crowd.
+week-live-2: An Availability Zone loses power just before the evening rush.
+week-live-3: The midnight deployment lands. A new workload reaches the worker service.
+week-live-4: A customer explains why they kept their subscription. The team adds the request to the backlog, then asks whether it needs a new service or one careful change to an existing API.
+week-live-5: Rain keeps everyone indoors. Rewatches climb, followed by the bandwidth invoice.
+week-live-6: Support is quiet. Instead of inventing another microservice, the team spends an afternoon improving a runbook that used to depend on one person remembering the steps.
+week-live-7: A routine release finishes without an alert. Someone notices that this has become ordinary since the last architecture fix. The absence of drama is a result worth recording.
+market-model-10: A new model arrives in the hiring market. The team compares its capabilities and monthly subscription.
+market-model-18: A new model arrives in the hiring market. The team compares its capabilities and monthly subscription.
+market-price: The provider changes its subscription price. Existing commitments stand; the new rate applies next week.
+intro-game: {C} is a small game startup with $85,000 and a multiplayer prototype on a whiteboard. Nobody is paying yet. Define the control APIs, persistent sessions and player data, then choose which AWS services deserve a place in the first release.
+monday-0: Monday begins with a diagram, a cold coffee and a surprising number on the AWS cost forecast. The team decides which assumption to test first.
+monday-1: Someone has annotated last week's system diagram in three colours. Green means understood. The other two colours start a longer conversation.
+monday-2: The office is quiet until an agent posts a pull request and a human asks who actually needs the feature. The architecture meeting begins there.
+monday-3: A blank sprint board sits beside the cloud console. There is enough money to build something useful, provided every service has a reason to exist.
+partner-origin-mismatch: The partner is upset about a release nobody can open. [E -> S] Clients request public S3 objects, but the media lives on an EBS volume. That volume needs a serving origin; an S3 URL cannot read it. Configure a compatible delivery origin before announcing the release.
+chapter-design: The team starts with API ownership and data boundaries, leaving service names for the next pass.
+chapter-refine: An active request path still has an undecided component. The team asks you to refine that box.
+topology-unverified: {Api} reaches {Data} on [{Backend}], but the endpoint was switched without reconciling copied records. Customers see missing history or entitlements. Reconcile this dataset at the design desk.
+topology-query-model: {Api} sends its old relational reporting workload to {Data} on DynamoDB [{Backend}]. The migration did not redesign the access patterns; repeated reads and application-side joins inflate latency and cost. Validate the data model or move this dataset to a SQL store.
+topology-connections: A burst through {Api} on Lambda [{Compute}] opens short-lived connections to SQL backend [{Backend}] for {Data}. Without pooling, connection pressure interrupts requests. Configure pooling for this backend or move this API to managed long-lived connections.
+topology-private: {Api} reaches {Data} through public shared-credential backend [{Backend}]. A leaked credential crosses that path and exposes customer records. Repair the database access policy.
+topology-quiet: The current API routes and dataset placements pass this week's topology rehearsal. No migration or connection-pool issue surfaced.
+intro-video: {C} is a small streaming startup with $85,000, a shared workspace and a shortlist of beta users. There is no product and no subscription revenue yet. Your first deliverable is a system design: APIs, data ownership and the AWS services that will run them. Build a small release, launch it, then find out which assumptions survive real traffic.
+chapter-review: The team puts the architecture graph beside the latest invoice. This week starts with a design review.
+review-public: The security review traces {Api} to {Data} on public backend [{Backend}]. Shared credentials turn this reachable path into a data-exposure risk. Decide how to isolate and authenticate the store.
+review-model: A query review for {Api} finds that {Data} moved before its access patterns were validated. The engine name changed; the application assumptions did not. Schedule reconciliation before calling the migration complete.
+review-copy: The cutover checklist for {Data} has no reconciliation sign-off. {Api} already reads the new backend [{Backend}]. Decide whether to reconcile records now.
+review-pooling: The team traces a burst through {Api}, Lambda [{Compute}], and SQL backend [{Backend}]. Short-lived connections can outgrow the database connection budget even while CPU looks quiet. Review the connection policy.
+review-idle: The invoice includes [{Node}], but the graph has no API or dataset using it. The migration moved the workload without retiring its old capacity. Decide whether this node should remain deployed.
+review-single-zone: The availability review follows {Api} to a single-zone server [{Compute}]. An AZ failure can remove this request path. Choose whether the savings justify the dependency.
+review-observation: No unresolved migration or connection issue dominates the review. The team asks a different question: would a slow API or runaway bill be noticed before a customer tells us?
+
+proposal-context: The conversation turns to the people using the product. A teammate writes a proposed approach in the planning notes. It is ready for your sign-off; you can still change it.
+proposal-technical: A teammate sketches an implementation on the architecture board and offers to take it forward. This is a proposed design, with assumptions that production will eventually test.

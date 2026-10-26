@@ -1,0 +1,5 @@
+add_executable(CityVoxelCityAssemblerTests
+    ${CMAKE_CURRENT_LIST_DIR}/CityVoxelCityAssemblerTests.cpp)
+target_link_libraries(CityVoxelCityAssemblerTests PRIVATE Engine)
+add_test(NAME CityVoxelCityAssemblerTests COMMAND CityVoxelCityAssemblerTests)
+set_tests_properties(CityVoxelCityAssemblerTests PROPERTIES LABELS "svraster.cityvoxel.instancing")

@@ -1,0 +1,5 @@
+add_executable(CityVoxelMeshVoxelizerTests
+    ${CMAKE_CURRENT_LIST_DIR}/CityVoxelMeshVoxelizerTests.cpp)
+target_link_libraries(CityVoxelMeshVoxelizerTests PRIVATE Engine)
+add_test(NAME CityVoxelMeshVoxelizerTests COMMAND CityVoxelMeshVoxelizerTests)
+set_tests_properties(CityVoxelMeshVoxelizerTests PROPERTIES LABELS "svraster.cityvoxel.mesh")

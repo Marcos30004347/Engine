@@ -1,0 +1,5 @@
+add_executable(CityVoxelAtlasAllocatorTests
+    ${CMAKE_CURRENT_LIST_DIR}/CityVoxelAtlasAllocatorTests.cpp)
+target_link_libraries(CityVoxelAtlasAllocatorTests PRIVATE Engine)
+add_test(NAME CityVoxelAtlasAllocatorTests COMMAND CityVoxelAtlasAllocatorTests)
+set_tests_properties(CityVoxelAtlasAllocatorTests PROPERTIES LABELS "svraster.cityvoxel.atlas")

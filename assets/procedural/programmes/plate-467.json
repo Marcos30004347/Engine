@@ -1,0 +1,235 @@
+{
+  "page": 467,
+  "source": "The Builder's Practical Director, Plates 116 and 117: front elevation and ground plan on PDF page 447, side elevation and chamber plan on PDF page 467, description on PDF page 514",
+  "kind": "seven-roomed villa",
+  "storeys": 2,
+  "basement": true,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "double-pile with breaks",
+    "roof": "hipped with pediments",
+    "features": [
+      {
+        "kind": "pediment",
+        "count": 2
+      },
+      {
+        "kind": "projecting chimney",
+        "count": 2
+      },
+      {
+        "kind": "rusticated ground",
+        "count": 1
+      },
+      {
+        "kind": "paired entrance",
+        "count": 1
+      },
+      {
+        "kind": "recessed centre",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "A mirrored pair drawn by E. L. Tarbuck; one half transcribed. The two entrances are paired in a recessed centre between two pedimented wings, so the pair reads as one villa with a linking bay. Seven rooms: three principal on the ground, three bedrooms and a dressing room over. The cellars are reached by a stair off the hall. 'The breaks and projecting chimneys produce a varied effect in the Elevations.' 600 pounds the pair.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "HALL"
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn at the head of the hall"
+        },
+        {
+          "use": "staircase",
+          "qualifier": "cellar",
+          "raw": "TO CELLARS"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            15,
+            12
+          ]
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            14.5,
+            12
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            15,
+            10
+          ]
+        },
+        {
+          "use": "lobby",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "lobby",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase:cellar",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "BED ROOM",
+          "feet": [
+            15,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "middle",
+          "raw": "BED ROOM",
+          "feet": [
+            14.5,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM",
+          "feet": [
+            15,
+            12
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "DRESSING RM"
+        },
+        {
+          "use": "closet",
+          "raw": "Closet"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "chamber",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "wc",
+          "qualifier": "chamber",
+          "raw": "W.C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:middle",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "lobby:chamber",
+          "link": "door"
+        },
+        {
+          "a": "lobby:chamber",
+          "b": "wc:chamber",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:front",
+          "b": "closet",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

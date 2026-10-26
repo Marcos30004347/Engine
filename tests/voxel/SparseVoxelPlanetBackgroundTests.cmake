@@ -1,0 +1,6 @@
+add_executable(SparseVoxelPlanetBackgroundTests
+  ${TEST_DIR}/SparseVoxelPlanetBackgroundTests.cpp)
+target_link_libraries(SparseVoxelPlanetBackgroundTests PRIVATE Engine)
+add_test(NAME SparseVoxelPlanetBackgroundTests
+  COMMAND SparseVoxelPlanetBackgroundTests)
+

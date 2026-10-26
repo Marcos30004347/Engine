@@ -1,0 +1,291 @@
+{
+  "page": 273,
+  "source": "The Builder's Practical Director, Plate 45: plate with front elevation, ground and chamber plans on PDF page 271, specification on PDF page 273",
+  "kind": "suburban residence",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "notes": "A mirrored pair with the two entrances at the outer ends, under a hipped roof with a pair of gables to the front each carrying a round window, so the pair reads as one house. The adjacencies here are read off the plate rather than inferred: the walls are drawn solid black and a doorway is a clean break in them, which is legible at this scale for every internal wall. Two consequences worth stating, because they are the difference between reading and guessing. The dining and drawing rooms do *not* communicate - the wall between them is drawn without a break, and both open off the hall instead. And the water closet is reached from the coal store rather than from the scullery, which no amount of thinking about how the plan ought to work would have produced. What the plate cannot give at this scale is the door swing, so whether a link is a door or an open wall still comes from the prose, and is a door where the prose is silent.",
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "double-pile with back addition",
+    "roof": "hipped with gables",
+    "features": [
+      {
+        "kind": "gable",
+        "count": 2
+      },
+      {
+        "kind": "round window",
+        "count": 2
+      },
+      {
+        "kind": "entrance lobby",
+        "count": 2
+      },
+      {
+        "kind": "dust bin",
+        "count": 1
+      },
+      {
+        "kind": "entrance steps",
+        "count": 2
+      }
+    ]
+  },
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "lobby",
+          "qualifier": "entrance",
+          "raw": "LOBBY, entered up steps from the street"
+        },
+        {
+          "use": "hall",
+          "raw": "HALL, one space with the lobby"
+        },
+        {
+          "use": "staircase",
+          "raw": "the stair, drawn in the head of the hall"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            15,
+            12
+          ]
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            12.5,
+            10.5
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN, with a DRESSER on its hall wall",
+          "feet": [
+            16,
+            10.5
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY, with a SINK",
+          "feet": [
+            8.5,
+            8
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "PANTRY"
+        },
+        {
+          "use": "closet",
+          "qualifier": "house-maid's",
+          "raw": "CLOSET, off the lobby"
+        },
+        {
+          "use": "store",
+          "qualifier": "coal",
+          "raw": "COALS"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        },
+        {
+          "use": "store",
+          "qualifier": "dust",
+          "raw": "DUST, outside the scullery"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "lobby:entrance",
+          "b": "hall",
+          "link": "open"
+        },
+        {
+          "a": "lobby:entrance",
+          "b": "closet:house-maid's",
+          "link": "door"
+        },
+        {
+          "a": "lobby:entrance",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "store:coal",
+          "link": "door"
+        },
+        {
+          "a": "store:coal",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "store:dust",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "BED ROOM, over the drawing room",
+          "feet": [
+            15,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM, over the dining room",
+          "feet": [
+            12.5,
+            10.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "BED ROOM",
+          "feet": [
+            11,
+            10.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "side",
+          "raw": "BED ROOM",
+          "feet": [
+            10.5,
+            8
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "DRESSING R M",
+          "feet": [
+            8,
+            5
+          ]
+        },
+        {
+          "use": "closet",
+          "raw": "a closet situated in the passage"
+        },
+        {
+          "use": "wc",
+          "qualifier": "chamber",
+          "raw": "a W. C. situated in the passage"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:side",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:chamber",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "adjacencySource": "openings",
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

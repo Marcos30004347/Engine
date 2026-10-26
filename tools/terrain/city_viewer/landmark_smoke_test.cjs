@@ -1,0 +1,34 @@
+// Native landmark rendering and dungeon graph interaction smoke test.
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const base=process.argv[2]||'http://127.0.0.1:8788';
+const output=process.argv[3]||'build/renders/citadel-estate';
+const viewerPath=process.argv[4]||'/castle-viewer/';
+const explorerPath=process.argv[5]||'/renders/citadel-estate/explore.html';
+const fs=require('node:fs');fs.mkdirSync(output,{recursive:true});
+(async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.BROWSER_EXECUTABLE||undefined,args:['--enable-webgl','--use-angle=metal']});try{
+ const page=await browser.newPage({viewport:{width:1500,height:1100}});const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ await page.goto(base+viewerPath);
+ await page.waitForFunction(()=>window.cityViewer?.ready || window.cityViewer?.error,{}, {timeout:90000});
+ const state=await page.evaluate(()=>window.cityViewer);assert.equal(state.ready,true,JSON.stringify(state));
+ await page.waitForTimeout(1200);await page.screenshot({path:output+'/flythrough.png'});
+ const tower=await page.locator('#landmark option').evaluateAll(options=>options.find(o=>o.textContent.startsWith('defence tower')).value);
+ await page.locator('#landmark').selectOption(tower);
+ await page.getByRole('button',{name:'Enter room',exact:true}).click();
+ await page.waitForTimeout(600);await page.screenshot({path:output+'/tower-interior.png'});
+ await page.goto(base+explorerPath);
+ await page.getByRole('button',{name:'Stairs → stair hall · L1'}).click();
+ await page.getByRole('button',{name:'Stairs → stair hall · L2'}).click();
+ await page.getByRole('button',{name:'Stairs → stair hall · L3'}).click();
+ await page.getByRole('button',{name:'Door → store · L3'}).click();
+ await page.getByRole('button',{name:'Door → vault · L3'}).click();
+ assert.match(await page.locator('#status').innerText(),/Vault reached/);
+ await page.getByRole('button',{name:'Door → store · L3'}).click();
+ await page.getByRole('button',{name:'Door → stair hall · L3'}).click();
+ await page.getByRole('button',{name:'Stairs → stair hall · L2'}).click();
+ await page.getByRole('button',{name:'Stairs → stair hall · L1'}).click();
+ await page.getByRole('button',{name:'Stairs → Keep entrance'}).click();
+ assert.match(await page.locator('#status').innerText(),/returned to the keep/);
+ await page.getByRole('button',{name:'Reveal map'}).click();await page.screenshot({path:output+'/exploration.png'});
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({viewer:state,dungeon:'deepest vault reached and returned',browserErrors:errors}));
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

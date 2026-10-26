@@ -1,0 +1,119 @@
+{
+  "page": 189,
+  "source": "The Builder's Practical Director, Workmen's Cottages, specification and dimensions table on PDF page 189",
+  "kind": "workman's cottage, upper flat",
+  "storeys": 1,
+  "basement": false,
+  "floorsDrawn": [
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "flats",
+    "plan": "row",
+    "features": [
+      {
+        "kind": "open entrance passage",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "The upper flat of the same pair. The prose gives every door: 'On the landing are placed the upper water-closets, and opposite to them are glass doors opening into and lighting the upper sculleries; these may be further lighted by other half glass doors, communicating with the living rooms. The upper living rooms also communicate each with a child's bed-room in the front of the cottages.' The child's bedroom 'may be used for pantries if preferred'.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 1,
+      "name": "upper flat",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "the landing at the head of the stairs"
+        },
+        {
+          "use": "staircase",
+          "raw": "stone or wood stairs at the end of the central passage"
+        },
+        {
+          "use": "living_room",
+          "raw": "Living-room",
+          "feet": [
+            11,
+            11
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "principal",
+          "raw": "Bed-room, over the lower one and of the same size",
+          "feet": [
+            11,
+            9
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "child's",
+          "raw": "Child's bed-room, in the front of the cottage",
+          "feet": [
+            7,
+            7
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery, lit by a glass door from the landing",
+          "feet": [
+            7,
+            9
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "Water-closet, on the landing",
+          "feet": [
+            4.5,
+            2.5
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        },
+        {
+          "a": "landing",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "bedroom:principal",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "bedroom:child's",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

@@ -1,0 +1,3815 @@
+{
+  "schemaVersion": 1,
+  "status": "design_catalogue_with_six_bounded_runtime_prototypes",
+  "units": {
+    "area": "square_metres",
+    "storeys": "count; ground level is 0",
+    "residents": "persons; capacity is not occupancy"
+  },
+  "rangeBasis": "Authored tuning ranges, not historical estimates or validated room-fit capacities.",
+  "defaultCulture": "late_medieval_english_inspired_fantasy; individual programs require era/culture approval in profile",
+  "sources": {
+    "H01": {
+      "title": "Medieval Merchant\u2019s House, Southampton",
+      "url": "https://www.english-heritage.org.uk/visit/places/medieval-merchants-house/",
+      "basis": "Home, shop and workplace in one medieval property."
+    },
+    "H02": {
+      "title": "Medieval Shop from Horsham",
+      "url": "https://www.wealddown.co.uk/buildings/medieval-shop-from-horsham/",
+      "basis": "Paired shops, possible upstairs residence and rear production/hearth space; reconstruction uncertainty recorded by museum."
+    },
+    "H03": {
+      "title": "People in Place, 1550\u20131720",
+      "url": "https://archives.history.ac.uk/people-in-place/pip.html",
+      "basis": "Early-modern comparison for lodgers, multiple households, apprentices and servants; not medieval demographic calibration."
+    },
+    "H04": {
+      "title": "Medieval hospitals and almshouses",
+      "url": "https://historicengland.org.uk/research/inclusive-heritage/disability-history/1050-1485/hospitals-and-almshouses/",
+      "basis": "Charitable residential care and shared infirmary spaces, distinct from ordinary worker housing."
+    },
+    "H05": {
+      "title": "Rievaulx Abbey teaching kit",
+      "url": "https://www.english-heritage.org.uk/siteassets/home/visit/places-to-visit/rievaulx-abbey/schools/accordion-items/rievaulx_abbey_teachers_kit.pdf",
+      "basis": "Institutional dormitory/refectory/service ranges; not evidence of general labourer barracks."
+    },
+    "H06": {
+      "title": "Goodrich Castle household",
+      "url": "https://www.english-heritage.org.uk/medievalhousehold",
+      "basis": "Castle households include officers and service workers as well as a ruling family."
+    },
+    "H07": {
+      "title": "Bayleaf farmstead",
+      "url": "https://www.wealddown.co.uk/buildings/bayleaf-farmstead-chiddingstone/",
+      "basis": "Hall, service rooms, upper private chamber and productive gardens; displayed setting circa 1540."
+    },
+    "H08": {
+      "title": "Warkworth significance",
+      "url": "https://www.english-heritage.org.uk/visit/places/warkworth-castle-and-hermitage/history/significance/",
+      "basis": "Long rear gardens preserve earlier town property divisions."
+    },
+    "H09": {
+      "title": "Merchant Adventurers\u2019 Hall undercroft",
+      "url": "https://merchantshallyork.org/blog-hall-highlights-the-undercroft/",
+      "basis": "Guild institution with a charitable accommodation component."
+    },
+    "H10": {
+      "title": "Medieval churches in York",
+      "url": "https://www.historyofyork.org.uk/tpl/uploads/1Church.pdf",
+      "basis": "Multiple parish churches, monastic institutions and chapels within one city."
+    },
+    "H11": {
+      "title": "Richmond Castle teaching resource",
+      "url": "https://www.english-heritage.org.uk/siteassets/home/visit/places-to-visit/richmond-castle/schools/accordion/ocr-gcse_history-around-us_richmond-castle.pdf",
+      "basis": "Defensible high ground and control of a river crossing."
+    },
+    "H12": {
+      "title": "Life in a castle",
+      "url": "https://www.english-heritage.org.uk/castles/life-in-a-castle/",
+      "basis": "Fortress as home and workplace as well as military installation."
+    },
+    "H13": {
+      "title": "Farm buildings at Weald & Downland",
+      "url": "https://www.wealddown.co.uk/discover/buildings/farm-buildings/",
+      "basis": "Functional farm-building categories; displayed structures span periods, so individual forms need dating."
+    },
+    "H14": {
+      "title": "Commerce and exchange buildings",
+      "url": "https://historicengland.org.uk/images-books/publications/dlsg-commerce-exchange-buildings/",
+      "basis": "Broad commerce/market/inn categories spanning periods; not validation of every proposed medieval subtype."
+    },
+    "H15": {
+      "title": "London is a shoemaking city",
+      "url": "https://www.londonmuseum.org.uk/collections/london-stories/london-shoemaking-city/",
+      "basis": "Shoemaking as an important medieval urban trade."
+    },
+    "H16": {
+      "title": "High Ousegate archaeological report",
+      "url": "https://research.yorkarchaeology.co.uk/wp-content/uploads/2023/11/AYW3-28-9-High-Ousegate-York.pdf",
+      "basis": "Excavated leatherworking evidence in Anglo-Scandinavian York; earlier comparison, not a universal city recipe."
+    },
+    "R01": {
+      "title": "Vanegas et al., Interactive Design of Urban Spaces (2009)",
+      "url": "https://www.cs.purdue.edu/urbx_lab/publication.html?id=vanegas09tog-interactive-design-of-urban-spaces-using",
+      "basis": "Coupling population/jobs with parcels/buildings; modern urban model, independent medieval adaptation proposed."
+    }
+  },
+  "forms": {
+    "cottage": {
+      "siteAreaM2": [
+        70,
+        240
+      ],
+      "storeys": [
+        1,
+        2
+      ],
+      "residentCapacity": [
+        1,
+        8
+      ],
+      "floors": {
+        "0": [
+          "living_hearth",
+          "work_corner",
+          "sleeping"
+        ],
+        "upper_optional": [
+          "sleeping"
+        ]
+      },
+      "access": [
+        "private_home",
+        "yard_service"
+      ]
+    },
+    "hall_house": {
+      "siteAreaM2": [
+        150,
+        600
+      ],
+      "storeys": [
+        1,
+        2
+      ],
+      "residentCapacity": [
+        3,
+        16
+      ],
+      "floors": {
+        "0": [
+          "open_hall",
+          "pantry",
+          "service_room"
+        ],
+        "upper_optional": [
+          "private_chamber"
+        ]
+      },
+      "access": [
+        "household_passage",
+        "yard_service"
+      ]
+    },
+    "shop_house": {
+      "siteAreaM2": [
+        80,
+        260
+      ],
+      "storeys": [
+        2,
+        3
+      ],
+      "residentCapacity": [
+        2,
+        12
+      ],
+      "floors": {
+        "0": [
+          "public_shop",
+          "workroom",
+          "stock",
+          "private_stair"
+        ],
+        "1": [
+          "family_living",
+          "sleeping"
+        ],
+        "upper_optional": [
+          "apprentice_sleeping"
+        ]
+      },
+      "access": [
+        "public_shop",
+        "private_home",
+        "rear_deliveries"
+      ]
+    },
+    "workshop_court": {
+      "siteAreaM2": [
+        180,
+        900
+      ],
+      "storeys": [
+        1,
+        2
+      ],
+      "residentCapacity": [
+        0,
+        10
+      ],
+      "floors": {
+        "0": [
+          "workshop",
+          "raw_store",
+          "service_yard"
+        ],
+        "upper_optional": [
+          "household_rooms"
+        ]
+      },
+      "access": [
+        "customer_front",
+        "service_cart",
+        "private_home_if_resident"
+      ]
+    },
+    "rental_house": {
+      "siteAreaM2": [
+        140,
+        500
+      ],
+      "storeys": [
+        2,
+        3
+      ],
+      "residentCapacity": [
+        6,
+        30
+      ],
+      "floors": {
+        "0": [
+          "shared_entry",
+          "shared_kitchen",
+          "rental_unit"
+        ],
+        "1": [
+          "rental_units"
+        ],
+        "upper_optional": [
+          "rental_units"
+        ]
+      },
+      "access": [
+        "shared_stair",
+        "independent_unit_doors",
+        "shared_yard"
+      ]
+    },
+    "dormitory": {
+      "siteAreaM2": [
+        450,
+        1800
+      ],
+      "storeys": [
+        1,
+        3
+      ],
+      "residentCapacity": [
+        16,
+        80
+      ],
+      "floors": {
+        "0": [
+          "common_room",
+          "kitchen",
+          "wash_space",
+          "circulation"
+        ],
+        "1_optional": [
+          "sleeping_bays"
+        ],
+        "sleeping_level": [
+          "sleeping_bays",
+          "staff_room"
+        ]
+      },
+      "access": [
+        "communal_entry",
+        "service_entry",
+        "sleeping_access"
+      ]
+    },
+    "manor": {
+      "siteAreaM2": [
+        700,
+        3500
+      ],
+      "storeys": [
+        1,
+        3
+      ],
+      "residentCapacity": [
+        8,
+        40
+      ],
+      "floors": {
+        "0": [
+          "hall",
+          "kitchen",
+          "pantry",
+          "service_range"
+        ],
+        "upper_optional": [
+          "private_chambers",
+          "servant_rooms"
+        ]
+      },
+      "access": [
+        "formal_entry",
+        "service_court",
+        "private_stair"
+      ]
+    },
+    "inn": {
+      "siteAreaM2": [
+        300,
+        1400
+      ],
+      "storeys": [
+        2,
+        3
+      ],
+      "residentCapacity": [
+        2,
+        12
+      ],
+      "floors": {
+        "0": [
+          "public_hall",
+          "kitchen",
+          "stock",
+          "stable_court"
+        ],
+        "1": [
+          "guest_rooms",
+          "keeper_rooms"
+        ]
+      },
+      "access": [
+        "public_entry",
+        "guest_stair",
+        "service_cart"
+      ]
+    },
+    "market": {
+      "siteAreaM2": [
+        250,
+        1800
+      ],
+      "storeys": [
+        0,
+        2
+      ],
+      "residentCapacity": [
+        0,
+        0
+      ],
+      "floors": {
+        "0": [
+          "stalls",
+          "public_aisles",
+          "weighing"
+        ],
+        "upper_optional": [
+          "meeting_room"
+        ]
+      },
+      "access": [
+        "public_market",
+        "deliveries"
+      ]
+    },
+    "store": {
+      "siteAreaM2": [
+        120,
+        1200
+      ],
+      "storeys": [
+        1,
+        3
+      ],
+      "residentCapacity": [
+        0,
+        0
+      ],
+      "floors": {
+        "0": [
+          "bulk_storage",
+          "loading"
+        ],
+        "upper_optional": [
+          "storage"
+        ]
+      },
+      "access": [
+        "cart_loading",
+        "staff_entry"
+      ]
+    },
+    "institution": {
+      "siteAreaM2": [
+        300,
+        2500
+      ],
+      "storeys": [
+        1,
+        3
+      ],
+      "residentCapacity": [
+        0,
+        20
+      ],
+      "floors": {
+        "0": [
+          "public_hall",
+          "office",
+          "service_rooms"
+        ],
+        "upper_optional": [
+          "staff_rooms",
+          "meeting_rooms"
+        ]
+      },
+      "access": [
+        "public_entry",
+        "restricted_staff",
+        "service_entry"
+      ]
+    },
+    "worship": {
+      "siteAreaM2": [
+        180,
+        2000
+      ],
+      "storeys": [
+        1,
+        1
+      ],
+      "residentCapacity": [
+        0,
+        0
+      ],
+      "floors": {
+        "0": [
+          "assembly",
+          "ritual_space",
+          "vestry"
+        ]
+      },
+      "access": [
+        "public_worship",
+        "clergy_entry",
+        "yard"
+      ]
+    },
+    "precinct": {
+      "siteAreaM2": [
+        2000,
+        16000
+      ],
+      "storeys": [
+        1,
+        4
+      ],
+      "residentCapacity": [
+        10,
+        160
+      ],
+      "floors": {
+        "0": [
+          "court",
+          "service_ranges",
+          "main_hall"
+        ],
+        "upper_optional": [
+          "private_or_institutional_rooms"
+        ]
+      },
+      "access": [
+        "public_gate",
+        "service_gate",
+        "restricted_inner_gate"
+      ]
+    },
+    "farmstead": {
+      "siteAreaM2": [
+        600,
+        4000
+      ],
+      "storeys": [
+        1,
+        2
+      ],
+      "residentCapacity": [
+        2,
+        16
+      ],
+      "floors": {
+        "0": [
+          "household_hall",
+          "produce_store",
+          "farm_service"
+        ],
+        "upper_optional": [
+          "sleeping"
+        ]
+      },
+      "access": [
+        "household_entry",
+        "farm_cart",
+        "field_access"
+      ]
+    },
+    "productive_land": {
+      "siteAreaM2": [
+        100,
+        10000
+      ],
+      "storeys": [
+        0,
+        0
+      ],
+      "residentCapacity": [
+        0,
+        0
+      ],
+      "floors": {},
+      "access": [
+        "cultivation_lane"
+      ]
+    },
+    "utility": {
+      "siteAreaM2": [
+        30,
+        600
+      ],
+      "storeys": [
+        0,
+        2
+      ],
+      "residentCapacity": [
+        0,
+        0
+      ],
+      "floors": {
+        "0": [
+          "service_space"
+        ]
+      },
+      "access": [
+        "maintenance",
+        "public_if_applicable"
+      ]
+    }
+  },
+  "programs": [
+    {
+      "id": "ordinary_house",
+      "label": "Ordinary household home",
+      "category": "Households and shared accommodation",
+      "form": "cottage",
+      "occupantRoles": [
+        "family",
+        "dependents"
+      ],
+      "workRoles": [],
+      "preferredDistricts": [
+        "residential",
+        "suburb"
+      ],
+      "requirements": [
+        "private household rooms",
+        "garden optional"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker",
+      "runtimePrototype": {
+        "generator": "WorldSettlementDirector/WorldDwellingPlan",
+        "floors": 1,
+        "minimumPlotArea": 50,
+        "scope": "bounded rectangular wing; capacity derived from solved rooms; remaining catalogue requirements are not all implemented"
+      }
+    },
+    {
+      "id": "labourer_cottage",
+      "label": "Labourer household cottage",
+      "category": "Households and shared accommodation",
+      "form": "cottage",
+      "occupantRoles": [
+        "family",
+        "manual_workers"
+      ],
+      "workRoles": [],
+      "preferredDistricts": [
+        "residential",
+        "suburb"
+      ],
+      "requirements": [
+        "affordable household unit",
+        "walkable job access"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "court_cottage",
+      "label": "Rear-court cottage",
+      "category": "Households and shared accommodation",
+      "form": "cottage",
+      "occupantRoles": [
+        "family",
+        "lodgers"
+      ],
+      "workRoles": [],
+      "preferredDistricts": [
+        "residential",
+        "craftsmen"
+      ],
+      "requirements": [
+        "legal shared passage",
+        "daylight court"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "burgage_home",
+      "label": "Burgage house with productive rear plot",
+      "category": "Households and shared accommodation",
+      "form": "hall_house",
+      "occupantRoles": [
+        "family",
+        "growers"
+      ],
+      "workRoles": [
+        "gardener"
+      ],
+      "preferredDistricts": [
+        "residential",
+        "suburb"
+      ],
+      "requirements": [
+        "deep garden holding",
+        "rear access protected"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H08"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "prosperous_house",
+      "label": "Prosperous hall house",
+      "category": "Households and shared accommodation",
+      "form": "hall_house",
+      "occupantRoles": [
+        "family",
+        "servants"
+      ],
+      "workRoles": [],
+      "preferredDistricts": [
+        "residential",
+        "merchant"
+      ],
+      "requirements": [
+        "double-height hall not counted as two full floors"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "row_house",
+      "label": "Attached household row unit",
+      "category": "Households and shared accommodation",
+      "form": "cottage",
+      "occupantRoles": [
+        "family"
+      ],
+      "workRoles": [],
+      "preferredDistricts": [
+        "residential",
+        "craftsmen"
+      ],
+      "requirements": [
+        "party-wall agreement",
+        "independent street door"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "rental_tenement",
+      "label": "House subdivided into rented units",
+      "category": "Households and shared accommodation",
+      "form": "rental_house",
+      "occupantRoles": [
+        "multiple_households",
+        "lodgers"
+      ],
+      "workRoles": [],
+      "preferredDistricts": [
+        "residential",
+        "merchant"
+      ],
+      "requirements": [
+        "separate tenancy IDs",
+        "shared service capacity"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H03"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "multiple_households",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "rooming_house",
+      "label": "House of rented rooms",
+      "category": "Households and shared accommodation",
+      "form": "rental_house",
+      "occupantRoles": [
+        "single_adults",
+        "couples",
+        "room_renters"
+      ],
+      "workRoles": [
+        "keeper"
+      ],
+      "preferredDistricts": [
+        "residential",
+        "suburb"
+      ],
+      "requirements": [
+        "per-room tenancy",
+        "common cooking space"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H03"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "multiple_households",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "worker_lodging_hall",
+      "label": "Large manual-worker lodging hall",
+      "category": "Households and shared accommodation",
+      "form": "dormitory",
+      "occupantRoles": [
+        "manual_workers",
+        "porters",
+        "seasonal_workers"
+      ],
+      "workRoles": [
+        "keeper",
+        "cook"
+      ],
+      "preferredDistricts": [
+        "suburb",
+        "harbor",
+        "craftsmen"
+      ],
+      "requirements": [
+        "explicit labour-housing policy",
+        "funded operator",
+        "shared kitchen and washing"
+      ],
+      "evidence": "explicit_game_adaptation",
+      "sources": [
+        "H03",
+        "H05"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "collective",
+      "residentCapacityOverride": [
+        24,
+        80
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker",
+      "runtimePrototype": {
+        "generator": "WorldSettlementDirector/WorldDwellingPlan",
+        "floors": 1,
+        "minimumPlotArea": 240,
+        "scope": "bounded rectangular wing; capacity derived from solved rooms; remaining catalogue requirements are not all implemented"
+      }
+    },
+    {
+      "id": "journeyman_lodge",
+      "label": "Journeymen lodging house",
+      "category": "Households and shared accommodation",
+      "form": "dormitory",
+      "occupantRoles": [
+        "journeymen",
+        "migrant_workers"
+      ],
+      "workRoles": [
+        "keeper"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "guild"
+      ],
+      "requirements": [
+        "guild or private operator",
+        "close to workshops"
+      ],
+      "evidence": "explicit_game_adaptation",
+      "sources": [
+        "H03",
+        "H05"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "collective",
+      "residentCapacityOverride": [
+        24,
+        80
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "apprentice_house",
+      "label": "Apprentice boarding house",
+      "category": "Households and shared accommodation",
+      "form": "rental_house",
+      "occupantRoles": [
+        "apprentices"
+      ],
+      "workRoles": [
+        "supervisor"
+      ],
+      "preferredDistricts": [
+        "guild",
+        "craftsmen"
+      ],
+      "requirements": [
+        "master/employer links",
+        "not default for all apprentices"
+      ],
+      "evidence": "explicit_game_adaptation",
+      "sources": [
+        "H03",
+        "H05"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "multiple_households",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "servant_range",
+      "label": "Resident servants\u2019 range",
+      "category": "Households and shared accommodation",
+      "form": "dormitory",
+      "occupantRoles": [
+        "servants"
+      ],
+      "workRoles": [
+        "household_staff"
+      ],
+      "preferredDistricts": [
+        "manor",
+        "citadel",
+        "castle"
+      ],
+      "requirements": [
+        "belongs to parent household compound",
+        "no duplicate resident count"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H05"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "collective",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "charitable_cottages",
+      "label": "Charitable almshouse court",
+      "category": "Households and shared accommodation",
+      "form": "rental_house",
+      "occupantRoles": [
+        "older_residents",
+        "people_needing_support"
+      ],
+      "workRoles": [
+        "warden"
+      ],
+      "preferredDistricts": [
+        "church",
+        "civic"
+      ],
+      "requirements": [
+        "funded charitable institution",
+        "accessible shared services"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H04"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "multiple_households",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "urban_manor",
+      "label": "Urban manor and service court",
+      "category": "Households and shared accommodation",
+      "form": "manor",
+      "occupantRoles": [
+        "patron_family",
+        "servants",
+        "retainers"
+      ],
+      "workRoles": [
+        "steward"
+      ],
+      "preferredDistricts": [
+        "manor",
+        "civic"
+      ],
+      "requirements": [
+        "large compound",
+        "private and service routes"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "general_shop_home",
+      "label": "General shop with home above",
+      "category": "Craft and commercial households",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "shopkeeper"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "residential"
+      ],
+      "requirements": [
+        "private stair bypasses shop",
+        "public street frontage"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker",
+      "runtimePrototype": {
+        "generator": "WorldSettlementDirector/WorldDwellingPlan",
+        "floors": 2,
+        "minimumPlotArea": 100,
+        "scope": "bounded rectangular wing; capacity derived from solved rooms; remaining catalogue requirements are not all implemented"
+      }
+    },
+    {
+      "id": "weaver_home",
+      "label": "Weaver\u2019s house",
+      "category": "Craft and commercial households",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "weaver"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "residential"
+      ],
+      "requirements": [
+        "loom bay and usable daylight",
+        "thread storage"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "spinner_home",
+      "label": "Spinner\u2019s household workshop",
+      "category": "Craft and commercial households",
+      "form": "cottage",
+      "occupantRoles": [
+        "family"
+      ],
+      "workRoles": [
+        "spinner"
+      ],
+      "preferredDistricts": [
+        "residential",
+        "craftsmen"
+      ],
+      "requirements": [
+        "domestic work corner",
+        "fiber storage"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "tailor_home",
+      "label": "Tailor\u2019s shop-house",
+      "category": "Craft and commercial households",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "tailor"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "craftsmen"
+      ],
+      "requirements": [
+        "fitting area",
+        "cloth storage"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "shoemaker_home",
+      "label": "Shoemaker\u2019s shop-house",
+      "category": "Craft and commercial households",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "shoemaker"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "craftsmen"
+      ],
+      "requirements": [
+        "cutting bench",
+        "separate from tanning process"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02",
+        "H15",
+        "H16"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "leather_goods_home",
+      "label": "Saddler and leather-goods house",
+      "category": "Craft and commercial households",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "saddler"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "merchant"
+      ],
+      "requirements": [
+        "finished leather store",
+        "cart customer access"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "carpenter_court",
+      "label": "Carpenter\u2019s household and yard",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "carpenter"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "suburb"
+      ],
+      "requirements": [
+        "timber handling yard",
+        "noise separation"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "cooper_court",
+      "label": "Cooper\u2019s workshop and home",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "cooper"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "harbor"
+      ],
+      "requirements": [
+        "barrel assembly yard",
+        "merchant supply link"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "wheelwright_court",
+      "label": "Wheelwright\u2019s court",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "wheelwright"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "suburb"
+      ],
+      "requirements": [
+        "wagon turning room",
+        "heavy delivery access"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "blacksmith_court",
+      "label": "Blacksmith and farrier court",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "smith",
+        "farrier"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "military",
+        "suburb"
+      ],
+      "requirements": [
+        "fire separation",
+        "forge ventilation",
+        "animal approach"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "armourer_court",
+      "label": "Armourer\u2019s workshop",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "armourer"
+      ],
+      "preferredDistricts": [
+        "military",
+        "craftsmen"
+      ],
+      "requirements": [
+        "patron or military demand",
+        "hot-work isolation"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "goldsmith_home",
+      "label": "Goldsmith\u2019s secure shop-house",
+      "category": "Craft and commercial households",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "goldsmith"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "guild"
+      ],
+      "requirements": [
+        "secure stock room",
+        "controlled work access"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "potter_court",
+      "label": "Potter\u2019s house and kiln yard",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "potter"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "suburb"
+      ],
+      "requirements": [
+        "kiln clearance",
+        "clay and water supply",
+        "drying yard"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "dyer_court",
+      "label": "Dyer\u2019s workshop court",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "dyer"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "suburb"
+      ],
+      "requirements": [
+        "process-water supply",
+        "effluent exclusion near drinking intake"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "fuller_mill",
+      "label": "Fulling mill compound",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family"
+      ],
+      "workRoles": [
+        "fuller",
+        "mill_worker"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "suburb"
+      ],
+      "requirements": [
+        "validated mill power and water rights",
+        "cloth drying space"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "tannery_court",
+      "label": "Tannery and worker facilities",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "caretaker_household"
+      ],
+      "workRoles": [
+        "tanner"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "suburb"
+      ],
+      "requirements": [
+        "process-water and waste route",
+        "odour separation",
+        "hide yards"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "roper_court",
+      "label": "Ropemaker\u2019s long yard",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family"
+      ],
+      "workRoles": [
+        "ropemaker"
+      ],
+      "preferredDistricts": [
+        "harbor",
+        "suburb"
+      ],
+      "requirements": [
+        "long clear work strip beyond ordinary plot template",
+        "fiber storage"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "stone_workyard",
+      "label": "Mason\u2019s lodge and workyard",
+      "category": "Craft and commercial households",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "caretaker_household"
+      ],
+      "workRoles": [
+        "mason",
+        "stonecutter"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "suburb"
+      ],
+      "requirements": [
+        "heavy loading",
+        "stone source or import supply",
+        "dust separation"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "scribe_home",
+      "label": "Scribe and stationer\u2019s house",
+      "category": "Craft and commercial households",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "scribe"
+      ],
+      "preferredDistricts": [
+        "civic",
+        "temple",
+        "merchant"
+      ],
+      "requirements": [
+        "dry document storage",
+        "quiet workroom"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "herbalist_home",
+      "label": "Herbalist\u2019s shop and home",
+      "category": "Craft and commercial households",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "herbalist"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "church"
+      ],
+      "requirements": [
+        "dry preparation room",
+        "optional medicinal garden"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "baker_home",
+      "label": "Baker\u2019s shop-house and oven",
+      "category": "Food, retail and hospitality",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "baker"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "craftsmen"
+      ],
+      "requirements": [
+        "oven in separated rear zone",
+        "flour supply",
+        "fire clearance"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "brew_house",
+      "label": "Brewer\u2019s household and yard",
+      "category": "Food, retail and hospitality",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "family",
+        "workers"
+      ],
+      "workRoles": [
+        "brewer"
+      ],
+      "preferredDistricts": [
+        "craftsmen",
+        "merchant"
+      ],
+      "requirements": [
+        "water and fuel supply",
+        "vessel storage",
+        "drainage"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "butcher_shop",
+      "label": "Butcher\u2019s retail shop-house",
+      "category": "Food, retail and hospitality",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "apprentices"
+      ],
+      "workRoles": [
+        "butcher"
+      ],
+      "preferredDistricts": [
+        "merchant"
+      ],
+      "requirements": [
+        "meat delivery and washable work zone",
+        "slaughter separately allocated"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "fishmonger_shop",
+      "label": "Fishmonger\u2019s shop-house",
+      "category": "Food, retail and hospitality",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family"
+      ],
+      "workRoles": [
+        "fishmonger"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "harbor"
+      ],
+      "requirements": [
+        "fast landing access",
+        "waste collection",
+        "wet work zone"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "alehouse",
+      "label": "Household alehouse",
+      "category": "Food, retail and hospitality",
+      "form": "hall_house",
+      "occupantRoles": [
+        "family"
+      ],
+      "workRoles": [
+        "ale_seller",
+        "cook"
+      ],
+      "preferredDistricts": [
+        "residential",
+        "merchant"
+      ],
+      "requirements": [
+        "public room separated from private sleeping"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "victualler_shop",
+      "label": "Cookshop and eating house",
+      "category": "Food, retail and hospitality",
+      "form": "shop_house",
+      "occupantRoles": [
+        "family",
+        "workers"
+      ],
+      "workRoles": [
+        "cook",
+        "victualler"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "harbor"
+      ],
+      "requirements": [
+        "public serving room",
+        "fire-safe kitchen zone"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H01",
+        "H02"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "merchant_house",
+      "label": "Merchant house and counting room",
+      "category": "Food, retail and hospitality",
+      "form": "manor",
+      "occupantRoles": [
+        "family",
+        "servants",
+        "apprentices"
+      ],
+      "workRoles": [
+        "merchant",
+        "clerk"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "harbor"
+      ],
+      "requirements": [
+        "counting room",
+        "secure store",
+        "loading access"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "inn_court",
+      "label": "Inn with guest rooms and stables",
+      "category": "Food, retail and hospitality",
+      "form": "inn",
+      "occupantRoles": [
+        "keeper_family",
+        "staff"
+      ],
+      "workRoles": [
+        "innkeeper",
+        "cook",
+        "stable_worker"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "suburb"
+      ],
+      "requirements": [
+        "guest beds separate from resident beds",
+        "cart court"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        6,
+        40
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "market_hall",
+      "label": "Covered market hall",
+      "category": "Food, retail and hospitality",
+      "form": "market",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "traders",
+        "market_officer"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "civic"
+      ],
+      "requirements": [
+        "stall demand",
+        "public circulation and delivery access"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "open_market",
+      "label": "Open market and seasonal fairground",
+      "category": "Food, retail and hospitality",
+      "form": "market",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "traders"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "civic",
+        "suburb"
+      ],
+      "requirements": [
+        "unroofed variant",
+        "temporary occupation does not add residents"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "storeysOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "warehouse",
+      "label": "General merchant warehouse",
+      "category": "Transport, storage and trade support",
+      "form": "store",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "warehouse_workers",
+        "porters"
+      ],
+      "preferredDistricts": [
+        "harbor",
+        "merchant"
+      ],
+      "requirements": [
+        "loading frontage",
+        "dry store",
+        "no implied sleeping capacity"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker",
+      "runtimePrototype": {
+        "generator": "WorldSettlementDirector/WorldDwellingPlan",
+        "floors": 1,
+        "minimumPlotArea": 100,
+        "scope": "bounded rectangular wing; capacity derived from solved rooms; remaining catalogue requirements are not all implemented"
+      }
+    },
+    {
+      "id": "grain_store",
+      "label": "Communal grain store",
+      "category": "Transport, storage and trade support",
+      "form": "store",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "storekeeper",
+        "porters"
+      ],
+      "preferredDistricts": [
+        "merchant",
+        "civic"
+      ],
+      "requirements": [
+        "dry ventilated storage",
+        "food ledger ownership"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "wool_store",
+      "label": "Wool and cloth store",
+      "category": "Transport, storage and trade support",
+      "form": "store",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "merchant_workers"
+      ],
+      "preferredDistricts": [
+        "harbor",
+        "merchant"
+      ],
+      "requirements": [
+        "dry bulk storage",
+        "fire separation"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "cart_stable",
+      "label": "Carrier\u2019s stable and cart yard",
+      "category": "Transport, storage and trade support",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "keeper_family"
+      ],
+      "workRoles": [
+        "carrier",
+        "stable_worker"
+      ],
+      "preferredDistricts": [
+        "suburb",
+        "merchant"
+      ],
+      "requirements": [
+        "animal and wagon space",
+        "feed supply"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "quay_office",
+      "label": "Quay office and toll room",
+      "category": "Transport, storage and trade support",
+      "form": "institution",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "toll_officer",
+        "clerk"
+      ],
+      "preferredDistricts": [
+        "harbor"
+      ],
+      "requirements": [
+        "validated navigable landing",
+        "public trade access"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "ferry_house",
+      "label": "Ferry keeper\u2019s household",
+      "category": "Transport, storage and trade support",
+      "form": "cottage",
+      "occupantRoles": [
+        "family"
+      ],
+      "workRoles": [
+        "ferryman"
+      ],
+      "preferredDistricts": [
+        "harbor",
+        "suburb"
+      ],
+      "requirements": [
+        "validated crossing connection",
+        "safe landing"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "boatyard",
+      "label": "Boatyard and repair shed",
+      "category": "Transport, storage and trade support",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "caretaker_household"
+      ],
+      "workRoles": [
+        "shipwright",
+        "labourer"
+      ],
+      "preferredDistricts": [
+        "harbor"
+      ],
+      "requirements": [
+        "launchable shore",
+        "large timber yard",
+        "water route"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "gate_tollhouse",
+      "label": "Gate tollhouse",
+      "category": "Transport, storage and trade support",
+      "form": "utility",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "toll_officer"
+      ],
+      "preferredDistricts": [
+        "suburb",
+        "military"
+      ],
+      "requirements": [
+        "gate circulation reservation",
+        "queue space without blocking gate"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "guildhall",
+      "label": "Guild hall and offices",
+      "category": "Civic, education and care",
+      "form": "institution",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "guild_officer",
+        "clerk"
+      ],
+      "preferredDistricts": [
+        "guild",
+        "merchant"
+      ],
+      "requirements": [
+        "member and enterprise demand",
+        "meeting and records rooms"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "guild_care_hall",
+      "label": "Guild hall with charitable undercroft",
+      "category": "Civic, education and care",
+      "form": "institution",
+      "occupantRoles": [
+        "care_residents"
+      ],
+      "workRoles": [
+        "warden",
+        "guild_officer"
+      ],
+      "preferredDistricts": [
+        "guild",
+        "civic"
+      ],
+      "requirements": [
+        "distinct care and meeting capacities",
+        "separate controlled routes"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H09",
+        "H04"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": [
+        8,
+        32
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "town_hall",
+      "label": "Town hall and assembly",
+      "category": "Civic, education and care",
+      "form": "institution",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "civic_officer",
+        "clerk"
+      ],
+      "preferredDistricts": [
+        "civic"
+      ],
+      "requirements": [
+        "government role",
+        "public square frontage"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker",
+      "runtimePrototype": {
+        "generator": "WorldSettlementDirector/WorldDwellingPlan",
+        "floors": 1,
+        "minimumPlotArea": 120,
+        "scope": "bounded rectangular wing; capacity derived from solved rooms; remaining catalogue requirements are not all implemented"
+      }
+    },
+    {
+      "id": "court_house",
+      "label": "Court and record rooms",
+      "category": "Civic, education and care",
+      "form": "institution",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "judge",
+        "clerk"
+      ],
+      "preferredDistricts": [
+        "civic"
+      ],
+      "requirements": [
+        "public waiting",
+        "secure records",
+        "restricted deliberation"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "school_house",
+      "label": "School with master\u2019s lodging",
+      "category": "Civic, education and care",
+      "form": "institution",
+      "occupantRoles": [
+        "teacher_household"
+      ],
+      "workRoles": [
+        "teacher"
+      ],
+      "preferredDistricts": [
+        "church",
+        "civic"
+      ],
+      "requirements": [
+        "pupil day capacity distinct from housing",
+        "light and quiet"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "scholar_hall",
+      "label": "Scholars\u2019 residential hall",
+      "category": "Civic, education and care",
+      "form": "dormitory",
+      "occupantRoles": [
+        "scholars",
+        "tutors"
+      ],
+      "workRoles": [
+        "steward",
+        "cook"
+      ],
+      "preferredDistricts": [
+        "temple",
+        "civic"
+      ],
+      "requirements": [
+        "education institution event",
+        "study and dining rooms"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H05"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "collective",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "hospital_hall",
+      "label": "Hospital and care hall",
+      "category": "Civic, education and care",
+      "form": "dormitory",
+      "occupantRoles": [
+        "long_stay_care_residents",
+        "care_staff"
+      ],
+      "workRoles": [
+        "carer",
+        "cook"
+      ],
+      "preferredDistricts": [
+        "church",
+        "civic"
+      ],
+      "requirements": [
+        "care demand",
+        "gardens",
+        "staff and patient routes"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H04"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "collective",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "pilgrim_hospice",
+      "label": "Pilgrim hospice",
+      "category": "Civic, education and care",
+      "form": "inn",
+      "occupantRoles": [
+        "resident_staff"
+      ],
+      "workRoles": [
+        "keeper",
+        "carer"
+      ],
+      "preferredDistricts": [
+        "church",
+        "temple",
+        "suburb"
+      ],
+      "requirements": [
+        "pilgrimage traffic",
+        "short-stay capacity separate"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H04"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        6,
+        40
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "public_bath",
+      "label": "Public bath and washhouse",
+      "category": "Civic, education and care",
+      "form": "utility",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "bath_attendant"
+      ],
+      "preferredDistricts": [
+        "civic",
+        "residential"
+      ],
+      "requirements": [
+        "culture-enabled",
+        "water heating and drainage budgets"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "communal_well",
+      "label": "Well or cistern court",
+      "category": "Civic, education and care",
+      "form": "utility",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "water_keeper"
+      ],
+      "preferredDistricts": [
+        "civic",
+        "residential",
+        "suburb"
+      ],
+      "requirements": [
+        "validated safe source",
+        "collection queue and maintenance"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "castle_precinct",
+      "label": "Castle household and defensive precinct",
+      "category": "Defense and administration",
+      "form": "precinct",
+      "occupantRoles": [
+        "ruler_household",
+        "retainers",
+        "garrison",
+        "servants"
+      ],
+      "workRoles": [
+        "officers",
+        "service_workers"
+      ],
+      "preferredDistricts": [
+        "castle"
+      ],
+      "requirements": [
+        "defensible buildable plateau",
+        "water and supply access",
+        "multiple ranges"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H06",
+        "H11",
+        "H12"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "citadel_precinct",
+      "label": "Urban citadel",
+      "category": "Defense and administration",
+      "form": "precinct",
+      "occupantRoles": [
+        "garrison",
+        "officers",
+        "service_staff"
+      ],
+      "workRoles": [
+        "soldiers",
+        "administrators"
+      ],
+      "preferredDistricts": [
+        "citadel"
+      ],
+      "requirements": [
+        "defensive prominence",
+        "protected approach",
+        "independent service capacity"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H06",
+        "H11",
+        "H12"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "keep",
+      "label": "Keep and lord\u2019s residence",
+      "category": "Defense and administration",
+      "form": "manor",
+      "occupantRoles": [
+        "lord_household",
+        "retainers"
+      ],
+      "workRoles": [
+        "guards",
+        "steward"
+      ],
+      "preferredDistricts": [
+        "castle",
+        "citadel"
+      ],
+      "requirements": [
+        "parent defensive compound",
+        "controlled vertical circulation"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H06",
+        "H11",
+        "H12"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "garrison_lodging",
+      "label": "Garrison lodging range",
+      "category": "Defense and administration",
+      "form": "dormitory",
+      "occupantRoles": [
+        "soldiers"
+      ],
+      "workRoles": [
+        "military_staff"
+      ],
+      "preferredDistricts": [
+        "military",
+        "castle",
+        "citadel"
+      ],
+      "requirements": [
+        "military demand",
+        "equipment store",
+        "mess and washing"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H05"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "collective",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "watch_house",
+      "label": "Watch house",
+      "category": "Defense and administration",
+      "form": "institution",
+      "occupantRoles": [
+        "duty_watch"
+      ],
+      "workRoles": [
+        "watch_members"
+      ],
+      "preferredDistricts": [
+        "military",
+        "civic"
+      ],
+      "requirements": [
+        "coverage of gates and streets",
+        "shift beds not duplicate permanent residents"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "arsenal",
+      "label": "Armoury and arsenal",
+      "category": "Defense and administration",
+      "form": "store",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "armourer",
+        "storekeeper"
+      ],
+      "preferredDistricts": [
+        "military",
+        "citadel"
+      ],
+      "requirements": [
+        "secure compound",
+        "special hazard stores separately zoned"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H14"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "training_yard",
+      "label": "Military training ground",
+      "category": "Defense and administration",
+      "form": "productive_land",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "soldiers",
+        "instructors"
+      ],
+      "preferredDistricts": [
+        "military"
+      ],
+      "requirements": [
+        "reserved unroofed space",
+        "equipment access",
+        "no food yield"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "prison_house",
+      "label": "Prison and keeper\u2019s lodging",
+      "category": "Defense and administration",
+      "form": "institution",
+      "occupantRoles": [
+        "detainees",
+        "keeper_household"
+      ],
+      "workRoles": [
+        "keeper",
+        "guards"
+      ],
+      "preferredDistricts": [
+        "prison",
+        "civic"
+      ],
+      "requirements": [
+        "justice institution demand",
+        "secure cells",
+        "separate keeper home"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": [
+        2,
+        40
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "parish_church",
+      "label": "Parish church and churchyard",
+      "category": "Faith and religious households",
+      "form": "worship",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "clergy",
+        "sexton"
+      ],
+      "preferredDistricts": [
+        "church",
+        "residential"
+      ],
+      "requirements": [
+        "resident catchment and travel coverage",
+        "community center preference"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H10"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "neighbourhood_chapel",
+      "label": "Neighbourhood chapel",
+      "category": "Faith and religious households",
+      "form": "worship",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "clergy"
+      ],
+      "preferredDistricts": [
+        "church",
+        "suburb"
+      ],
+      "requirements": [
+        "unserved neighbourhood demand",
+        "smaller service footprint"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H10"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "guild_chapel",
+      "label": "Guild chapel",
+      "category": "Faith and religious households",
+      "form": "worship",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "clergy"
+      ],
+      "preferredDistricts": [
+        "guild",
+        "church"
+      ],
+      "requirements": [
+        "guild patronage",
+        "may be a component of larger church"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H10"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "castle_chapel",
+      "label": "Castle chapel",
+      "category": "Faith and religious households",
+      "form": "worship",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "chaplain"
+      ],
+      "preferredDistricts": [
+        "castle",
+        "citadel"
+      ],
+      "requirements": [
+        "restricted household congregation",
+        "not public capacity unless accessible"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H10"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "cathedral_precinct",
+      "label": "Cathedral or great religious seat",
+      "category": "Faith and religious households",
+      "form": "precinct",
+      "occupantRoles": [
+        "clergy",
+        "servants"
+      ],
+      "workRoles": [
+        "clergy",
+        "craft_workers"
+      ],
+      "preferredDistricts": [
+        "temple",
+        "church"
+      ],
+      "requirements": [
+        "religious-seat event and patron budget",
+        "not population threshold alone"
+      ],
+      "evidence": "design_proposal",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "community_temple",
+      "label": "Community temple",
+      "category": "Faith and religious households",
+      "form": "worship",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "religious_officiants"
+      ],
+      "preferredDistricts": [
+        "temple",
+        "residential"
+      ],
+      "requirements": [
+        "culture-specific rites and catchment",
+        "do not assume English church plan"
+      ],
+      "evidence": "culture_authored",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker",
+      "runtimePrototype": {
+        "generator": "WorldSettlementDirector/WorldDwellingPlan",
+        "floors": 1,
+        "minimumPlotArea": 120,
+        "scope": "bounded rectangular wing; capacity derived from solved rooms; remaining catalogue requirements are not all implemented"
+      }
+    },
+    {
+      "id": "shrine_court",
+      "label": "Shrine and gathering court",
+      "category": "Faith and religious households",
+      "form": "utility",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "caretaker"
+      ],
+      "preferredDistricts": [
+        "temple",
+        "suburb"
+      ],
+      "requirements": [
+        "sacred-site or patron event",
+        "ritual access"
+      ],
+      "evidence": "culture_authored",
+      "sources": [],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "monastery",
+      "label": "Monastery or convent precinct",
+      "category": "Faith and religious households",
+      "form": "precinct",
+      "occupantRoles": [
+        "religious_community",
+        "lay_staff"
+      ],
+      "workRoles": [
+        "religious_workers",
+        "service_workers"
+      ],
+      "preferredDistricts": [
+        "temple",
+        "suburb"
+      ],
+      "requirements": [
+        "rule-specific plan",
+        "productive grounds",
+        "public/private division"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H05"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "clergy_house",
+      "label": "Clergy household or rectory",
+      "category": "Faith and religious households",
+      "form": "hall_house",
+      "occupantRoles": [
+        "clergy_household"
+      ],
+      "workRoles": [
+        "clergy"
+      ],
+      "preferredDistricts": [
+        "church",
+        "temple"
+      ],
+      "requirements": [
+        "affiliation to a religious institution",
+        "resident accounting"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "monastic_dormitory",
+      "label": "Monastic communal dormitory range",
+      "category": "Faith and religious households",
+      "form": "dormitory",
+      "occupantRoles": [
+        "religious_community"
+      ],
+      "workRoles": [
+        "monastic_staff"
+      ],
+      "preferredDistricts": [
+        "temple"
+      ],
+      "requirements": [
+        "institution-specific sleeping rule",
+        "cloister and service links"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H05"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "collective",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "farm_house",
+      "label": "Small farm household",
+      "category": "Agriculture and productive open land",
+      "form": "farmstead",
+      "occupantRoles": [
+        "family",
+        "farm_servants"
+      ],
+      "workRoles": [
+        "farmer"
+      ],
+      "preferredDistricts": [
+        "suburb",
+        "agriculture"
+      ],
+      "requirements": [
+        "productive holding link",
+        "cart access",
+        "external fields budget"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "urban_farmstead",
+      "label": "Retained farmstead inside a later wall",
+      "category": "Agriculture and productive open land",
+      "form": "farmstead",
+      "occupantRoles": [
+        "family",
+        "farm_workers"
+      ],
+      "workRoles": [
+        "farmer"
+      ],
+      "preferredDistricts": [
+        "agriculture",
+        "residential"
+      ],
+      "requirements": [
+        "historical retained holding",
+        "fertility and garden reservation"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "market_garden",
+      "label": "Intensive market garden",
+      "category": "Agriculture and productive open land",
+      "form": "productive_land",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "gardener"
+      ],
+      "preferredDistricts": [
+        "agriculture",
+        "suburb"
+      ],
+      "requirements": [
+        "soil fertility",
+        "irrigation access",
+        "fresh produce demand"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "kitchen_garden",
+      "label": "Household kitchen garden",
+      "category": "Agriculture and productive open land",
+      "form": "productive_land",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "household_grower"
+      ],
+      "preferredDistricts": [
+        "residential",
+        "agriculture"
+      ],
+      "requirements": [
+        "parent household",
+        "sunlight and water",
+        "modest yield only"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "orchard",
+      "label": "Orchard holding",
+      "category": "Agriculture and productive open land",
+      "form": "productive_land",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "orchard_worker"
+      ],
+      "preferredDistricts": [
+        "agriculture",
+        "manor",
+        "suburb"
+      ],
+      "requirements": [
+        "climate suitability",
+        "tree maturity delay",
+        "land reservation"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "medicinal_garden",
+      "label": "Medicinal herb garden",
+      "category": "Agriculture and productive open land",
+      "form": "productive_land",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "herbalist",
+        "gardener"
+      ],
+      "preferredDistricts": [
+        "temple",
+        "church",
+        "agriculture"
+      ],
+      "requirements": [
+        "parent healer or institution",
+        "dedicated non-grain output"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "dairy_court",
+      "label": "Dairy holding and livestock court",
+      "category": "Agriculture and productive open land",
+      "form": "farmstead",
+      "occupantRoles": [
+        "family",
+        "workers"
+      ],
+      "workRoles": [
+        "dairy_worker"
+      ],
+      "preferredDistricts": [
+        "agriculture",
+        "suburb"
+      ],
+      "requirements": [
+        "pasture and fodder links",
+        "animal waste route"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "barn",
+      "label": "Threshing barn and storage yard",
+      "category": "Agriculture and productive open land",
+      "form": "store",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "farm_workers"
+      ],
+      "preferredDistricts": [
+        "agriculture",
+        "suburb"
+      ],
+      "requirements": [
+        "parent holding",
+        "seasonal work space",
+        "dry storage"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "livestock_shelter",
+      "label": "Byre and livestock shelter",
+      "category": "Agriculture and productive open land",
+      "form": "utility",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "herder"
+      ],
+      "preferredDistricts": [
+        "agriculture",
+        "suburb"
+      ],
+      "requirements": [
+        "animal capacity not human beds",
+        "feed and manure accounting"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "watermill",
+      "label": "Grain watermill and miller household",
+      "category": "Agriculture and productive open land",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "miller_household"
+      ],
+      "workRoles": [
+        "miller"
+      ],
+      "preferredDistricts": [
+        "agriculture",
+        "craftsmen"
+      ],
+      "requirements": [
+        "validated water power and flood-safe platform",
+        "grain supply"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "windmill",
+      "label": "Windmill and service yard",
+      "category": "Agriculture and productive open land",
+      "form": "workshop_court",
+      "occupantRoles": [
+        "miller_household"
+      ],
+      "workRoles": [
+        "miller"
+      ],
+      "preferredDistricts": [
+        "agriculture",
+        "suburb"
+      ],
+      "requirements": [
+        "wind exposure and clearance",
+        "cart access",
+        "cultural availability"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "household_or_institution",
+      "residentCapacityOverride": null,
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    },
+    {
+      "id": "pasture_common",
+      "label": "Grazing common",
+      "category": "Agriculture and productive open land",
+      "form": "productive_land",
+      "occupantRoles": [
+        "none"
+      ],
+      "workRoles": [
+        "herder"
+      ],
+      "preferredDistricts": [
+        "agriculture",
+        "suburb"
+      ],
+      "requirements": [
+        "stocking budget",
+        "shared rights",
+        "retained paths"
+      ],
+      "evidence": "design_proposal",
+      "sources": [
+        "H07",
+        "H13"
+      ],
+      "status": "specified_not_runtime_implemented",
+      "occupancyModel": "none",
+      "residentCapacityOverride": [
+        0,
+        0
+      ],
+      "publicCapacityUnit": "visitors_per_session",
+      "transientBedsRange": [
+        0,
+        0
+      ],
+      "employmentCapacityStatus": "derive_from_realized_workspaces; not every occupant is a worker"
+    }
+  ]
+}

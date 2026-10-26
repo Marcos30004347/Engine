@@ -1,0 +1,519 @@
+{
+  "page": 163,
+  "source": "The Builder's Practical Director, Plates 62, 63 and 64: principal elevation and ground plan on PDF page 163, bed room floor and attic floor plans on PDF page 167, specification on PDF page 385",
+  "kind": "ornamental villa",
+  "storeys": 3,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1,
+    2
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "double-pile with service wing",
+    "roof": "parapet with dormers",
+    "storeysInRoof": 1,
+    "features": [
+      {
+        "kind": "turret",
+        "count": 2
+      },
+      {
+        "kind": "battlement",
+        "count": 1
+      },
+      {
+        "kind": "dormer",
+        "count": 5
+      },
+      {
+        "kind": "gothic window",
+        "count": 1
+      },
+      {
+        "kind": "ornamental chimney shaft",
+        "count": 4
+      },
+      {
+        "kind": "ridge cresting",
+        "count": 1
+      },
+      {
+        "kind": "prospect room",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "A mirrored pair; one half transcribed. Gothic: castellated parapet with corner turrets, pointed windows, gabled dormers, cresting along the ridge. 'Two semi-detached Villas, which may, however, with a little modification be erected continuously.' The specification gives the library as 14 by 12 and the plate as 14 by 13; the plate's is recorded. The attic has a prospect room of six feet six by six, and eight closets, and 'the Roof slopes into these Rooms, and they are lighted by Dormer Windows'. 3000 pounds the pair. The bed room and attic floors are dimensioned on page 167, at a stated scale of twelve feet to one inch, and they agree with the specification room for room. The bath room and the dressing room are both six feet square, which is what a bath room was.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "HALL",
+          "feet": [
+            23.5,
+            6.5
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn at the head of the hall"
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            15,
+            15.5
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            18,
+            13.5
+          ]
+        },
+        {
+          "use": "library",
+          "raw": "LIBRARY",
+          "feet": [
+            14,
+            13
+          ]
+        },
+        {
+          "use": "passage",
+          "raw": "PASSAGE"
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            12,
+            12
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            10,
+            10
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "Pantry"
+        },
+        {
+          "use": "closet",
+          "qualifier": "store",
+          "raw": "Store Closet"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "wine",
+          "raw": "WINE CELLAR"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "COAL CELLAR"
+        },
+        {
+          "use": "store",
+          "qualifier": "ashes",
+          "raw": "ASHES; 'Receptacle for Ashes'"
+        },
+        {
+          "use": "wc",
+          "raw": "WC"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "passage",
+          "link": "door"
+        },
+        {
+          "a": "dining_room",
+          "b": "drawing_room",
+          "link": "open"
+        },
+        {
+          "a": "passage",
+          "b": "library",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "cellar:wine",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "closet:store",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar:coal",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "store:ashes",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "bed room floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the drawing room",
+          "raw": "Bed Room",
+          "feet": [
+            18,
+            13.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the dining room",
+          "raw": "do.",
+          "feet": [
+            15.5,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the library",
+          "raw": "do.",
+          "feet": [
+            14,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "do.",
+          "feet": [
+            12,
+            12
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "Dressing Room",
+          "feet": [
+            6,
+            6
+          ]
+        },
+        {
+          "use": "bathroom",
+          "raw": "Bath Room",
+          "feet": [
+            6,
+            6
+          ]
+        },
+        {
+          "use": "wc",
+          "qualifier": "bed room floor",
+          "raw": "W. C."
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen",
+          "raw": "Linen Closet"
+        },
+        {
+          "use": "passage",
+          "qualifier": "bed room floor",
+          "raw": "PASSAGE"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:over the drawing room",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:over the drawing room",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        },
+        {
+          "a": "landing",
+          "b": "passage:bed room floor",
+          "link": "open"
+        },
+        {
+          "a": "passage:bed room floor",
+          "b": "bedroom:over the dining room",
+          "link": "door"
+        },
+        {
+          "a": "passage:bed room floor",
+          "b": "bedroom:over the library",
+          "link": "door"
+        },
+        {
+          "a": "passage:bed room floor",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:bed room floor",
+          "b": "bathroom",
+          "link": "door"
+        },
+        {
+          "a": "passage:bed room floor",
+          "b": "wc:bed room floor",
+          "link": "door"
+        },
+        {
+          "a": "passage:bed room floor",
+          "b": "closet:linen",
+          "link": "door"
+        },
+        {
+          "a": "passage:bed room floor",
+          "b": "dressing_room",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "attic",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "attic",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic long",
+          "raw": "Bed Room",
+          "feet": [
+            22,
+            9
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 2",
+          "raw": "do.",
+          "feet": [
+            14,
+            9
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 3",
+          "raw": "do.",
+          "feet": [
+            15,
+            9
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 4",
+          "raw": "do.",
+          "feet": [
+            14,
+            12
+          ]
+        },
+        {
+          "use": "prospect_room",
+          "raw": "Prospect Room",
+          "feet": [
+            6.5,
+            6
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 1",
+          "raw": "Eight Closets"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 3",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 4",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 5",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 6",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 7",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 8",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic long",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 2",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 3",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 4",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "prospect_room",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "closet:attic 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "closet:attic 2",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:attic long",
+          "b": "closet:attic 3",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:attic long",
+          "b": "closet:attic 4",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:attic 2",
+          "b": "closet:attic 5",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:attic 3",
+          "b": "closet:attic 6",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:attic 4",
+          "b": "closet:attic 7",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "closet:attic 8",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:attic",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

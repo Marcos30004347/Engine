@@ -1,0 +1,105 @@
+{
+  "page": 518,
+  "source": "The Builder's Practical Director, Plate 118, description on PDF page 518",
+  "kind": "warehouse or factory",
+  "storeys": 3,
+  "basement": true,
+  "dwelling": false,
+  "floorsDrawn": [
+    -1,
+    0
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "row",
+    "plan": "open floors on cast iron columns",
+    "frontageFeet": 62,
+    "depthFeet": 54,
+    "features": [
+      {
+        "kind": "cast iron column",
+        "count": 1
+      },
+      {
+        "kind": "iron circular staircase",
+        "count": 1
+      },
+      {
+        "kind": "cemented front",
+        "count": 1
+      },
+      {
+        "kind": "large window",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Not a dwelling, and here because a town has these in it. Internal dimensions 62 by 54 feet, three floors and a basement, storey heights 12, 14, 14 and 12. Only the ground floor is described room by room; the upper floors are open space on cast iron columns. The design argument is about elevation: 'We have avoided in the elevation that absurd practice of introducing a number of small separate windows giving a dwelling house appearance to Factories and Warehouses, and conveying the idea that the interior is divided into a number of separate apartments.' 3400 pounds.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "store",
+          "qualifier": "basement",
+          "raw": "the Basement, twelve feet high"
+        }
+      ],
+      "adjacencies": []
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "shop",
+          "raw": "a shop"
+        },
+        {
+          "use": "office",
+          "qualifier": "clerk's",
+          "raw": "Clerk's Private Office"
+        },
+        {
+          "use": "warehouse",
+          "raw": "the open space within, preserved by cast iron columns carrying girders"
+        },
+        {
+          "use": "staircase",
+          "raw": "an iron circular staircase, placed in the centre of the building"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "shop",
+          "b": "office:clerk's",
+          "link": "door"
+        },
+        {
+          "a": "shop",
+          "b": "warehouse",
+          "link": "open"
+        },
+        {
+          "a": "warehouse",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "staircase",
+          "b": "store:basement",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "low",
+    "adjacency": "medium"
+  }
+}

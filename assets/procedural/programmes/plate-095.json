@@ -1,0 +1,132 @@
+{
+  "page": 95,
+  "source": "The Builder's Practical Director, PDF page 95",
+  "kind": "semi-detached seven-roomed house",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "L",
+    "roof": "cross-gabled",
+    "storeysInRoof": 1,
+    "features": [
+      {
+        "kind": "gable",
+        "count": 4
+      },
+      {
+        "kind": "porch",
+        "count": 2
+      },
+      {
+        "kind": "gothic arch door",
+        "count": 2
+      },
+      {
+        "kind": "ornamental chimney stack",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "A mirrored pair; one half transcribed. Gabled attic storey over the ground floor carries the bedrooms - 'seven-roomed' - but only the ground plan is drawn. The pantry and stores dimensions are printed but not legible enough to record.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            15.5,
+            14
+          ]
+        },
+        {
+          "use": "parlour",
+          "raw": "PARLOR",
+          "feet": [
+            15,
+            14
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "PANTRY"
+        },
+        {
+          "use": "store",
+          "raw": "STORES"
+        },
+        {
+          "use": "hall",
+          "raw": "HALL"
+        },
+        {
+          "use": "porch",
+          "raw": "PORCH"
+        },
+        {
+          "use": "wc",
+          "raw": "WC"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "hall",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "parlour",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "store",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "wc",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "medium",
+    "adjacency": "medium"
+  }
+}

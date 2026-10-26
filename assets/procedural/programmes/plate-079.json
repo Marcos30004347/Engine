@@ -1,0 +1,540 @@
+{
+  "page": 79,
+  "source": "The Builder's Practical Director, Plates 55, 56, 57 and 58: basement plan and front elevation on PDF page 79, ground plan and section on PDF page 83, first floor plan, roof plan and plan of the rooms in the roof on PDF page 87, specification on PDF page 373",
+  "kind": "family residence",
+  "storeys": 3,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0,
+    1,
+    2
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile with flanking bays",
+    "roof": "hipped",
+    "storeysInRoof": 1,
+    "features": [
+      {
+        "kind": "portico",
+        "count": 1
+      },
+      {
+        "kind": "bay window",
+        "count": 2
+      },
+      {
+        "kind": "area",
+        "count": 2
+      },
+      {
+        "kind": "vault",
+        "count": 1
+      },
+      {
+        "kind": "entrance steps",
+        "count": 1
+      },
+      {
+        "kind": "dormer",
+        "count": 2
+      }
+    ]
+  },
+  "notes": "The two plates were transcribed separately with the guess that they were two floors of one house - the basement's spine passage is 35 by 10 and so is the ground floor's hall, and the area wells line up. The specification on page 373 settles it: the same kitchen, scullery, servants' hall, butler's room, larder and pantry and store room, at the same sizes. So the two records are now one, and the first floor and the two rooms in the roof come from the specification. The specification gives the drawing and dining rooms as 13 by 15 where the plate draws them 30 by 15; the plate is recorded, since a 13-foot room does not fill the space it is drawn in. 2600 pounds. Plate 57 on page 87 draws the first floor, the roof and the two rooms in it, and its dimensions are the specification's: six bedrooms, five of them fifteen feet square, a bath room of eleven by ten and a cistern over the stair.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            20,
+            15
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            15,
+            13
+          ]
+        },
+        {
+          "use": "cellar",
+          "qualifier": "wine",
+          "raw": "WINE CELLAR",
+          "feet": [
+            15,
+            7
+          ]
+        },
+        {
+          "use": "butlers_room",
+          "raw": "BUTLERS ROOM",
+          "feet": [
+            15,
+            10
+          ]
+        },
+        {
+          "use": "servants_hall",
+          "raw": "SERVANTS HALL",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "store",
+          "raw": "STORE ROOM",
+          "feet": [
+            10,
+            9
+          ]
+        },
+        {
+          "use": "store",
+          "qualifier": "coal",
+          "raw": "COALS",
+          "feet": [
+            10,
+            7.5
+          ]
+        },
+        {
+          "use": "store",
+          "qualifier": "wood",
+          "raw": "WOOD",
+          "feet": [
+            10,
+            7.5
+          ]
+        },
+        {
+          "use": "larder",
+          "qualifier": "and pantry",
+          "raw": "LARDER and PANTRY",
+          "feet": [
+            15,
+            12
+          ]
+        },
+        {
+          "use": "passage",
+          "qualifier": "spine",
+          "raw": "PASSAGE",
+          "feet": [
+            35,
+            10
+          ]
+        },
+        {
+          "use": "passage",
+          "qualifier": "cross",
+          "raw": "PASSAGE",
+          "feet": [
+            15,
+            3
+          ]
+        },
+        {
+          "use": "staircase",
+          "qualifier": "service",
+          "raw": "stair drawn off the spine passage"
+        },
+        {
+          "use": "wc",
+          "qualifier": "basement",
+          "raw": "W C"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "vault",
+          "raw": "VAULT"
+        },
+        {
+          "use": "area",
+          "raw": "AREA"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage:spine",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "staircase:service",
+          "link": "open"
+        },
+        {
+          "a": "passage:spine",
+          "b": "wc:basement",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "store",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "servants_hall",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "passage:cross",
+          "link": "open"
+        },
+        {
+          "a": "passage:spine",
+          "b": "area",
+          "link": "door"
+        },
+        {
+          "a": "passage:cross",
+          "b": "butlers_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:cross",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar:wine",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "store:coal",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "store:wood",
+          "link": "door"
+        },
+        {
+          "a": "area",
+          "b": "cellar:vault",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "HALL",
+          "feet": [
+            35,
+            10
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn in the hall"
+        },
+        {
+          "use": "lobby",
+          "raw": "LOBBY",
+          "feet": [
+            10,
+            10
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            30,
+            15
+          ]
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            30,
+            15
+          ]
+        },
+        {
+          "use": "library",
+          "raw": "LIBRARY",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "breakfast_room",
+          "raw": "BREAKFAST ROOM",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "W. C.",
+          "feet": [
+            14,
+            5
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "lobby",
+          "b": "hall",
+          "link": "open"
+        },
+        {
+          "a": "lobby",
+          "b": "library",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "breakfast_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "passage:spine",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "Five Bed Rooms",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "4",
+          "raw": "ditto",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "5",
+          "raw": "ditto",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "with linen closet",
+          "raw": "Bed Room with Linen Closet",
+          "feet": [
+            15,
+            10.5
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen",
+          "raw": "Linen Closet"
+        },
+        {
+          "use": "bathroom",
+          "raw": "Bath Room",
+          "feet": [
+            11,
+            10
+          ]
+        },
+        {
+          "use": "store",
+          "qualifier": "cistern",
+          "raw": "CISTERN"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:4",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:5",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:with linen closet",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bathroom",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:with linen closet",
+          "b": "closet:linen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        },
+        {
+          "a": "landing",
+          "b": "store:cistern",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "roof",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "roof",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "in the roof 1",
+          "raw": "ROOM, on the plan of rooms in roof"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "in the roof 2",
+          "raw": "ROOM, on the plan of rooms in roof"
+        },
+        {
+          "use": "passage",
+          "qualifier": "roof",
+          "raw": "Passage, on the plan of rooms in roof"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "staircase",
+          "b": "landing:roof",
+          "link": "open"
+        },
+        {
+          "a": "landing:roof",
+          "b": "passage:roof",
+          "link": "open"
+        },
+        {
+          "a": "passage:roof",
+          "b": "bedroom:in the roof 1",
+          "link": "door"
+        },
+        {
+          "a": "passage:roof",
+          "b": "bedroom:in the roof 2",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

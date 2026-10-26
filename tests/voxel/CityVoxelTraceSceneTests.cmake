@@ -1,0 +1,6 @@
+add_executable(CityVoxelTraceSceneTests
+    ${CMAKE_CURRENT_LIST_DIR}/CityVoxelTraceSceneTests.cpp)
+target_link_libraries(CityVoxelTraceSceneTests PRIVATE Engine)
+target_compile_features(CityVoxelTraceSceneTests PRIVATE cxx_std_17)
+add_test(NAME CityVoxelTraceSceneTests COMMAND CityVoxelTraceSceneTests)
+set_tests_properties(CityVoxelTraceSceneTests PROPERTIES LABELS "svraster.cityvoxel.phase8;svraster.cityvoxel.phase12")

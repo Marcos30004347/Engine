@@ -1,0 +1,4 @@
+add_executable(DwellingVoxelAssemblyTests ${CMAKE_CURRENT_LIST_DIR}/DwellingVoxelAssemblyTests.cpp)
+target_link_libraries(DwellingVoxelAssemblyTests PRIVATE Engine)
+add_test(NAME DwellingVoxelAssemblyTests COMMAND DwellingVoxelAssemblyTests)
+set_tests_properties(DwellingVoxelAssemblyTests PROPERTIES LABELS "world-gen;dwellings;voxel.phase2")

@@ -1,0 +1,140 @@
+{
+  "page": 189,
+  "source": "The Builder's Practical Director, Workmen's Cottages, specification and dimensions table on PDF page 189",
+  "kind": "workman's cottage, ground flat",
+  "storeys": 1,
+  "basement": false,
+  "floorsDrawn": [
+    0
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "flats",
+    "plan": "row",
+    "features": [
+      {
+        "kind": "open entrance passage",
+        "count": 1
+      },
+      {
+        "kind": "porch",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "A pair of flats in one cottage, one per floor; this is the lower. 'These dwellings are intended only for very small families, and such residences are required in all large manufacturing towns.' 300 to 350 pounds the pair, let at 3s a week each flat.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground flat",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "porch",
+          "raw": "Porch",
+          "feet": [
+            5,
+            3.5
+          ]
+        },
+        {
+          "use": "passage",
+          "qualifier": "central",
+          "raw": "Passage",
+          "feet": [
+            23,
+            3.5
+          ]
+        },
+        {
+          "use": "living_room",
+          "raw": "Living-room",
+          "feet": [
+            11,
+            11
+          ]
+        },
+        {
+          "use": "bedroom",
+          "raw": "Bed-room",
+          "feet": [
+            11,
+            9
+          ]
+        },
+        {
+          "use": "scullery",
+          "qualifier": "and wash-house",
+          "raw": "Scullery, fitted with wash-house, copper and sink",
+          "feet": [
+            7,
+            5
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "Pantry, adjoining the scullery",
+          "feet": [
+            5,
+            3.5
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "Water-closet, at the end of the passage",
+          "feet": [
+            4,
+            2.67
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "stone or wood stairs at the end of the central passage"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "passage:central",
+          "link": "open"
+        },
+        {
+          "a": "passage:central",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:central",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "passage:central",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "living_room",
+          "b": "bedroom",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "pantry",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

@@ -1,0 +1,354 @@
+{
+  "page": 303,
+  "source": "The Builder's Practical Director, 'Design for an isolated villa': front elevation and ground plan on PDF page 303, side elevation and chamber plan on PDF page 315",
+  "kind": "isolated villa",
+  "storeys": 3,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile on a corridor",
+    "roof": "mansard with dormers",
+    "storeysInRoof": 1,
+    "features": [
+      {
+        "kind": "arched dormer",
+        "count": 5
+      },
+      {
+        "kind": "rusticated quoins",
+        "count": 1
+      },
+      {
+        "kind": "bracketed cornice",
+        "count": 1
+      },
+      {
+        "kind": "arched window",
+        "count": 8
+      },
+      {
+        "kind": "pedimented doorway",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Planned on a corridor both floors: three principal rooms along the garden front over four bedrooms and a nursery, the kitchen offices behind and under the stair. Three separate lobbies on the ground floor and a fourth upstairs, which is what keeps the kitchen and the water closet off the corridor. The elevation shows arched dormers in a mansard over two full storeys.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "passage",
+          "qualifier": "entrance corridor",
+          "raw": "ENTRANCE CORRIDOR"
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn off the corridor"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "front",
+          "raw": "LOBBY, at the entrance"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "service",
+          "raw": "LOBBY, between the corridor and the coals"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "kitchen",
+          "raw": "LOBBY, between the kitchen and the larder"
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            18,
+            14
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            15,
+            14
+          ]
+        },
+        {
+          "use": "breakfast_room",
+          "raw": "BREAKFAST-PARLOR",
+          "feet": [
+            14,
+            11
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN, with a DRESSER",
+          "feet": [
+            15,
+            14
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            11,
+            10
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER, through a FLAP from the scullery"
+        },
+        {
+          "use": "store",
+          "qualifier": "coal",
+          "raw": "COALS"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "lobby:front",
+          "b": "passage:entrance corridor",
+          "link": "open"
+        },
+        {
+          "a": "passage:entrance corridor",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:entrance corridor",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:entrance corridor",
+          "b": "breakfast_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:entrance corridor",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:entrance corridor",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "passage:entrance corridor",
+          "b": "lobby:service",
+          "link": "door"
+        },
+        {
+          "a": "lobby:service",
+          "b": "store:coal",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "lobby:kitchen",
+          "link": "door"
+        },
+        {
+          "a": "lobby:kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "lobby:kitchen",
+          "b": "larder",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "passage",
+          "qualifier": "chamber corridor",
+          "raw": "CORRIDOR"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front left",
+          "raw": "BED ROOM",
+          "feet": [
+            14,
+            11
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back left",
+          "raw": "BED ROOM",
+          "feet": [
+            14,
+            11
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back middle",
+          "raw": "BED ROOM",
+          "feet": [
+            15.25,
+            14
+          ]
+        },
+        {
+          "use": "nursery",
+          "raw": "NURSERY",
+          "feet": [
+            15.25,
+            14
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "or bedroom",
+          "raw": "BED OR DRESSING-ROOM",
+          "feet": [
+            14,
+            11
+          ]
+        },
+        {
+          "use": "lobby",
+          "qualifier": "chamber",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "wc",
+          "qualifier": "chamber",
+          "raw": "W.C."
+        },
+        {
+          "use": "store",
+          "qualifier": "chamber",
+          "raw": "STORE"
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen",
+          "raw": "LINEN"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the linen",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the lobby",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the store",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the stair",
+          "raw": "CLOSET"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage:chamber corridor",
+          "b": "bedroom:front left",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber corridor",
+          "b": "bedroom:back left",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber corridor",
+          "b": "bedroom:back middle",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber corridor",
+          "b": "nursery",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber corridor",
+          "b": "dressing_room:or bedroom",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber corridor",
+          "b": "lobby:chamber",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber corridor",
+          "b": "closet:linen",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber corridor",
+          "b": "closet:by the linen",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber corridor",
+          "b": "closet:by the stair",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber corridor",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "lobby:chamber",
+          "b": "wc:chamber",
+          "link": "door"
+        },
+        {
+          "a": "lobby:chamber",
+          "b": "closet:by the lobby",
+          "link": "door"
+        },
+        {
+          "a": "lobby:chamber",
+          "b": "store:chamber",
+          "link": "door"
+        },
+        {
+          "a": "store:chamber",
+          "b": "closet:by the store",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

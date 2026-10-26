@@ -1,0 +1,6 @@
+add_executable(CityVoxelVirtualGeometryTests
+    ${CMAKE_CURRENT_LIST_DIR}/CityVoxelVirtualGeometryTests.cpp)
+target_link_libraries(CityVoxelVirtualGeometryTests PRIVATE Engine)
+target_compile_features(CityVoxelVirtualGeometryTests PRIVATE cxx_std_17)
+add_test(NAME CityVoxelVirtualGeometryTests COMMAND CityVoxelVirtualGeometryTests)
+set_tests_properties(CityVoxelVirtualGeometryTests PROPERTIES LABELS "svraster.cityvoxel.phase5")

@@ -1,0 +1,245 @@
+{
+  "page": 55,
+  "source": "The Builder's Practical Director, Plate 33, PDF page 55; dimensions cross-checked against the specification table on PDF page 53",
+  "kind": "fourth-rate house",
+  "storeys": 2,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "terrace",
+    "plan": "double-pile with back addition",
+    "roof": "parapet",
+    "features": [
+      {
+        "kind": "rusticated quoins",
+        "count": 1
+      },
+      {
+        "kind": "entrance steps",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "The whole house: cellar, ground and first floor plans on one plate, and page 53 lists the same rooms with the same dimensions. The two parlours are joined by folding doors - an open wall, not a door. The closet is in the specification table but not located on the plate; it is placed off the stair, where the table's position in the list puts it.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": -1,
+      "name": "cellar",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "cellar",
+          "raw": "CELLAR",
+          "feet": [
+            22.42,
+            15
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "staircase",
+          "b": "cellar",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            12,
+            15.5
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            12,
+            8
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "W C"
+        },
+        {
+          "use": "hall",
+          "qualifier": "lobby",
+          "raw": "HALL; 'Lobby or Hall' in the specification",
+          "feet": [
+            13,
+            3.5
+          ]
+        },
+        {
+          "use": "parlour",
+          "qualifier": "front",
+          "raw": "PARLOR",
+          "feet": [
+            11.17,
+            9.67
+          ]
+        },
+        {
+          "use": "parlour",
+          "qualifier": "best",
+          "raw": "PARLOR",
+          "feet": [
+            15,
+            12
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "staircase drawn in the hall",
+          "feet": [
+            11.17,
+            5
+          ]
+        },
+        {
+          "use": "closet",
+          "raw": "Closet, from the page 53 table",
+          "feet": [
+            4.5,
+            3
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall:lobby",
+          "b": "parlour:front",
+          "link": "door"
+        },
+        {
+          "a": "hall:lobby",
+          "b": "parlour:best",
+          "link": "door"
+        },
+        {
+          "a": "parlour:front",
+          "b": "parlour:best",
+          "link": "open"
+        },
+        {
+          "a": "hall:lobby",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "hall:lobby",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "closet",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "front left",
+          "raw": "BED ROOM",
+          "feet": [
+            12,
+            11.17
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front right",
+          "raw": "BED ROOM",
+          "feet": [
+            12,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back left",
+          "raw": "BED ROOM",
+          "feet": [
+            9.67,
+            11.17
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back right",
+          "raw": "BED ROOM",
+          "feet": [
+            12,
+            15
+          ]
+        },
+        {
+          "use": "landing",
+          "raw": "landing drawn between the four rooms"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front left",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:front right",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back left",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back right",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

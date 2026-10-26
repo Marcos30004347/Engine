@@ -1,0 +1,215 @@
+{
+  "page": 161,
+  "source": "The Builder's Practical Director, Plate 28, specification on PDF page 161",
+  "kind": "seven-room house on a freehold allotment",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "double-pile with back addition",
+    "frontageFeet": 22,
+    "plotFrontageFeet": 30,
+    "features": [
+      {
+        "kind": "chaise entrance",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Built in pairs on 30-foot allotments, 22 feet of frontage each with an 8-foot chaise entrance either side; 560 pounds the pair. 'These cottages may be built single by making the party-wall a flank wall.'",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "qualifier": "entrance",
+          "raw": "an entrance-hall and passage",
+          "feet": [
+            21,
+            5
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "the stairs"
+        },
+        {
+          "use": "parlour",
+          "qualifier": "front",
+          "raw": "Front parlor",
+          "feet": [
+            15,
+            13
+          ]
+        },
+        {
+          "use": "parlour",
+          "qualifier": "back",
+          "raw": "Back parlor",
+          "feet": [
+            14,
+            12
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "Kitchen",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "washhouse",
+          "raw": "Wash-house",
+          "feet": [
+            10,
+            9
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "Water-closet"
+        },
+        {
+          "use": "larder",
+          "raw": "larder"
+        },
+        {
+          "use": "cellar",
+          "raw": "cellar"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall:entrance",
+          "b": "parlour:front",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "parlour:back",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "washhouse",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "washhouse",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "cellar",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "upper floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "A front bedroom",
+          "feet": [
+            14,
+            13
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "A back bedroom",
+          "feet": [
+            14,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the passage",
+          "raw": "A small room over the passage",
+          "feet": [
+            8,
+            6
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "A bedroom over the kitchen",
+          "feet": [
+            15,
+            10
+          ]
+        },
+        {
+          "use": "landing",
+          "raw": "landing"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the passage",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

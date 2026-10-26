@@ -1,0 +1,221 @@
+{
+  "page": 161,
+  "source": "The Builder's Practical Director, Plate 27, specification on PDF page 161",
+  "kind": "semi-detached family cottage residence, the larger",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "semi-detached",
+    "plan": "double-pile",
+    "roof": "gabled",
+    "storeysInRoof": 1
+  },
+  "notes": "The larger of a semi-detached pair; 'also well adapted for small genteel farm houses'. The upper floor is five bedrooms, counted but not dimensioned in the specification. A ground-floor room is offered as either a bedroom or a second parlour, which is recorded as printed. 800 pounds for the pair.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "qualifier": "entrance",
+          "raw": "An entrance-hall and passage"
+        },
+        {
+          "use": "staircase",
+          "raw": "the stairs"
+        },
+        {
+          "use": "cellar",
+          "raw": "a cellar under the stairs"
+        },
+        {
+          "use": "living_room",
+          "raw": "A living room",
+          "feet": [
+            16.5,
+            13
+          ]
+        },
+        {
+          "use": "parlour",
+          "raw": "A parlor",
+          "feet": [
+            13,
+            11
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "or additional parlour",
+          "raw": "A bedroom or additional Parlour",
+          "feet": [
+            12.5,
+            9.5
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "A Kitchen",
+          "feet": [
+            16.5,
+            10
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "A scullery",
+          "feet": [
+            16.5,
+            8
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "coal cellar"
+        },
+        {
+          "use": "wc",
+          "raw": "water-closet"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall:entrance",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "parlour",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "bedroom:or additional parlour",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "cellar",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "upper floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "five bed-rooms, very roomy, ten feet six inches in height, partly formed in the roof"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "4",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "5",
+          "raw": "ditto"
+        },
+        {
+          "use": "landing",
+          "raw": "landing"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:4",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:5",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

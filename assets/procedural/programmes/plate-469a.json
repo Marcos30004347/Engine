@@ -1,0 +1,239 @@
+{
+  "page": 469,
+  "source": "The Builder's Practical Director, Plates 84 and 85, description on PDF page 469",
+  "kind": "semi-detached family residence",
+  "storeys": 3,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1,
+    2
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "semi-detached",
+    "plan": "double-pile with back addition",
+    "features": [
+      {
+        "kind": "grouped window",
+        "count": 3
+      },
+      {
+        "kind": "red brick facing",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "A room list with no dimensions: 'each of the two upper floors four rooms of a convenient size'. The doors are the ordinary arrangement of such a house and are not stated, hence the low adjacency confidence. 4700 pounds the pair. 'The windows in the principal front are grouped in three divisions, producing a pleasing central effect.'",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "entrance hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "staircase"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing Room"
+        },
+        {
+          "use": "dining_room",
+          "raw": "Dining Room"
+        },
+        {
+          "use": "kitchen",
+          "raw": "Kitchen"
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery"
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "Coal Cellar"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 1",
+          "raw": "four rooms of a convenient size"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 4",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:first 1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:first 2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:first 3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:first 4",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "second floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "second",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 1",
+          "raw": "four rooms of a convenient size"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 4",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 2",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 3",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 4",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:second",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "low",
+    "adjacency": "low"
+  }
+}

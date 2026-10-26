@@ -1,0 +1,8 @@
+-- The end --
+184914 living at the close of 52 weeks.
+Simulation (GPU): 52 ticks in 91.343 s; 1756.602 ms per tick on average, 2768.3 ms for the slowest.
+Programme: 21424 instruction ticks in 26.977 s; 1259.18 us per instruction tick, 412.0 per simulation tick; 28170 GPU submits in all, 66.6 s of it waiting on the device.
+Where it went: match 30%, rewrite 68%, clauses on the CPU 1%.
+Frames (one GPU frame = one tick of the programme runner): 24933; 2.672 ms wall per frame on average, 141.9 ms the slowest; match frames 19080 at 1.252 ms.
+Page traffic: 34570 page uploads in 0.09 s between frames (664.8 per week).
+Narration: 7.89 s on its own thread.

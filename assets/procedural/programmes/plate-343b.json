@@ -1,0 +1,115 @@
+{
+  "page": 343,
+  "source": "The Builder's Practical Director, 'Lodges or small cottages', the single-storey design on PDF page 343",
+  "kind": "lodge, one storey",
+  "storeys": 1,
+  "basement": false,
+  "floorsDrawn": [
+    0
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "rectangle with a canted bay",
+    "roof": "hipped with a gable",
+    "features": [
+      {
+        "kind": "canted bay",
+        "count": 1
+      },
+      {
+        "kind": "mullioned window",
+        "count": 1
+      },
+      {
+        "kind": "paired chimney shaft",
+        "count": 1
+      },
+      {
+        "kind": "hood mould",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Four rooms on one floor around an entrance passage, with a canted bay to the living room. Tudor: a mullioned window, a hood mould, a stack with paired shafts.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "passage",
+          "qualifier": "entrance",
+          "raw": "ENTRANCE PASSAGE"
+        },
+        {
+          "use": "living_room",
+          "raw": "LIVING ROOM, with a canted bay",
+          "feet": [
+            14,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "raw": "BED ROOM",
+          "feet": [
+            10,
+            7.75
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            8,
+            7.75
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER"
+        },
+        {
+          "use": "store",
+          "qualifier": "coals and wood",
+          "raw": "COALS & WOOD"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage:entrance",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "bedroom",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "store:coals and wood",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}
