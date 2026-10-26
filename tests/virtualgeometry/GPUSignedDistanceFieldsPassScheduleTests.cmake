@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(GPUSignedDistanceFieldsPassScheduleTests)
+get_filename_component(TEST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+add_executable(GPUSignedDistanceFieldsPassScheduleTests ${TEST_DIR}/GPUSignedDistanceFieldsPassScheduleTests.cpp)
+target_link_libraries(GPUSignedDistanceFieldsPassScheduleTests PRIVATE Engine)
+add_dependencies(GPUSignedDistanceFieldsPassScheduleTests GPUSignedDistanceFieldsShaders)
+add_test(NAME GPUSignedDistanceFieldsPassScheduleTests COMMAND GPUSignedDistanceFieldsPassScheduleTests)

@@ -1,0 +1,10 @@
+build/
+.trash/
+.vscode/
+.vs/
+.*/
+ignore/
+./wgslc-naga/target
+wgslc-naga/target/
+.DS_Store
+.*/.DS_Store
