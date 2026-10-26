@@ -1,0 +1,141 @@
+# SDF voxel dump #1
+# allocatedBricks=0 maxBricks=32768
+# cascadeCount=4 cascadeResolution=64 brickResolution=8
+# contextCounters (BrickCount=0 DirtyBricks=1 FreeBricks=2 ClearBricks=3 MergeBricks=4 NumDebugAabbs=5): [0]=0 [1]=0 [2]=32768 [3]=32768 [4]=0 [5]=0
+
+# --- CPU SceneBridge diagnostics ---
+# fallbackMeshes: loaded=1 missing=0
+# instances: prepared=1 static=1 skinned=0
+# uploaded: meshes=1 vertices=17 indices=90
+# skipped: emptyIds=0 missingRuntime=0 missingFallback=0 missingSceneInst=0 invalidBounds=0
+# lastLoadedFallback: /Users/marcosvinicius/workspace/Engine/build/tests/assets/meshes/obj/suzanne.obj.lod3.fallback.mesh
+# pending=0 updatedLastFrame=0
+
+# --- Uploaded instances (static=1) ---
+# static[0] mesh=0 aabbMin=(-3.77531,0.361061,3.55702) aabbMax=(-1.24406,2.11887,4.72889)
+
+# --- Uploaded mesh table (1 meshes) ---
+# mesh[0] vertexOffset=0 vertexCount=17 indexOffset=0 triangleCount=30 boneWeightsPerVertex=0 flags=0
+# totalVertices=17 totalIndices=90
+# vertex[0] pos=(-2.72844,1.00169,4.65858)
+# vertex[1] pos=(-2.86125,0.361061,4.63514)
+# vertex[2] pos=(-2.25969,1.00169,4.65858)
+# vertex[3] pos=(-2.705,0.861061,4.26795)
+# vertex[4] pos=(-3.11125,1.30637,4.72889)
+# vertex[5] pos=(-3.08781,1.12669,3.93983)
+# vertex[6] pos=(-2.15031,1.10325,3.56483)
+# vertex[7] pos=(-1.87688,1.30637,4.72889)
+# vertex[8] pos=(-3.2675,1.51731,3.66639)
+# vertex[9] pos=(-2.49406,1.822,4.6742)
+# vertex[10] pos=(-3.22062,1.65794,4.43983)
+# vertex[11] pos=(-1.67375,1.57981,3.90077)
+# vertex[12] pos=(-2.04094,2.11887,3.72108)
+# vertex[13] pos=(-1.24406,1.72044,3.55702)
+# vertex[14] pos=(-1.61125,1.23606,3.83827)
+# vertex[15] pos=(-3.66594,1.61106,3.66639)
+# vertex[16] pos=(-3.77531,1.30637,3.67421)
+# tri[0] 0/1/2
+# tri[1] 3/1/0
+# tri[2] 3/2/1
+# tri[3] 0/2/4
+# tri[4] 3/0/5
+# tri[5] 0/4/5
+# tri[6] 6/2/3
+# tri[7] 2/6/7
+# tri[8] 4/2/7
+# tri[9] 8/6/3
+# tri[10] 8/3/5
+# tri[11] 4/8/5
+# tri[12] 9/4/7
+# tri[13] 10/4/9
+# tri[14] 4/10/8
+# tri[15] 7/11/9
+
+# --- Per-cascade job counts + scratch counters (static path) ---
+# ScratchCounter indices: Triangles=0 MaxTriangles=1 References=2 MaxReferences=3 GroupIndex=4 CompressionBricks=5 StorageOffset=6 StorageSize=7 NumBricksAllocated=8 ClearBricks=9
+# static scratchCounters: [0]=0 [1]=6291456 [2]=0 [3]=262144 [4]=0 [5]=0 [6]=0 [7]=8388608 [8]=0 [9]=0
+# static voxelAllocationFails per cascade: [0]=0 [1]=0 [2]=0 [3]=0
+
+# static indirectArgs (stride=4 u32s per slot):
+#   [InitializeCascade/MarkUninitialized] groups=(4096,1,1)
+#   [CompactReferences] groups=(0,0,0)
+#   [EmitSdf] groups=(0,0,0)
+#   [Voxelize] groups=(0,0,0)
+#   [CompressBricks] groups=(0,0,0)
+#   [Eikonal] groups=(0,0,0)
+#   [ClearBricks] groups=(0,0,0)
+#   [MergeBricks] groups=(0,0,0)
+
+# cascade 0 voxelSize=0.5 isInitialized=1 gridMin=(-18.5,-15,-8.5) gridMax=(13.5,17,23.5) staticJobs=0 staticVoxels=0 skinnedJobs=0 skinnedVoxels=0
+# cascade 0 brickMap summary: mapped=0 invalid=262144 uninitialized=0
+
+# cascade 1 voxelSize=1 isInitialized=1 gridMin=(-35,-31,-25) gridMax=(29,33,39) staticJobs=0 staticVoxels=0 skinnedJobs=0 skinnedVoxels=0
+# cascade 1 brickMap summary: mapped=0 invalid=262144 uninitialized=0
+
+# cascade 2 voxelSize=2 isInitialized=1 gridMin=(-68,-64,-58) gridMax=(60,64,70) staticJobs=0 staticVoxels=0 skinnedJobs=0 skinnedVoxels=0
+# cascade 2 brickMap summary: mapped=0 invalid=262144 uninitialized=0
+
+# cascade 3 voxelSize=4 isInitialized=1 gridMin=(-132,-128,-124) gridMax=(124,128,132) staticJobs=0 staticVoxels=0 skinnedJobs=0 skinnedVoxels=0
+# cascade 3 brickMap summary: mapped=0 invalid=262144 uninitialized=0
+
+# --- GPU pass timings (SDF passes) ---
+# pass[107] "gpuSignedDistanceFieldsPass.staticBuild.clearCounters_gpuSignedDistanceFieldsPass.staticBuild.clearCounters_ClearCountersCS.pipeline_0" gpuMs=0.011875 compute=yes graphics=no
+# pass[109] "gpuSignedDistanceFieldsPass.staticBuild.collectClearBricks_gpuSignedDistanceFieldsPass.staticBuild.collectClearBricks_CollectClearBricksCS.pipeline_0" gpuMs=0.02075 compute=yes graphics=no
+# pass[111] "gpuSignedDistanceFieldsPass.staticBuild.prepareClearBricks_gpuSignedDistanceFieldsPass.staticBuild.prepareClearBricks_PrepareClearBricksCS.pipeline_0" gpuMs=0.044416 compute=yes graphics=no
+# pass[114] "gpuSignedDistanceFieldsPass.staticBuild.clearBrickEntry_gpuSignedDistanceFieldsPass.staticBuild.clearBrickEntry_ClearBrickEntryCS.pipeline_0" gpuMs=3.04446 compute=yes graphics=no
+# pass[116] "gpuSignedDistanceFieldsPass.staticBuild.cascade0.clearBuildCounters_gpuSignedDistanceFieldsPass.staticBuild.cascade0.clearBuildCounters_ClearBuildCountersCS.pipeline_0" gpuMs=0.064541 compute=yes graphics=no
+# pass[118] "gpuSignedDistanceFieldsPass.staticBuild.cascade0.markCascadeUninitialized_gpuSignedDistanceFieldsPass.staticBuild.cascade0.markCascadeUninitialized_MarkCascadeUninitializedCS.pipeline_0" gpuMs=0.022625 compute=yes graphics=no
+# pass[120] "gpuSignedDistanceFieldsPass.staticBuild.cascade0.scrollCascade_gpuSignedDistanceFieldsPass.staticBuild.cascade0.scrollCascade_ScrollCascadeCS.pipeline_0" gpuMs=0.00775 compute=yes graphics=no
+# pass[121] "gpuSignedDistanceFieldsPass.staticBuild.cascade0.clearRefCounters_gpuSignedDistanceFieldsPass.staticBuild.cascade0.clearRefCounters_ClearRefCountersCS.pipeline_0" gpuMs=0.008917 compute=yes graphics=no
+# pass[123] "gpuSignedDistanceFieldsPass.staticBuild.cascade0.initializeCascade_gpuSignedDistanceFieldsPass.staticBuild.cascade0.initializeCascade_InitializeCascadeCS.pipeline_0" gpuMs=0.030125 compute=yes graphics=no
+# pass[125] "gpuSignedDistanceFieldsPass.staticBuild.cascade1.clearBuildCounters_gpuSignedDistanceFieldsPass.staticBuild.cascade1.clearBuildCounters_ClearBuildCountersCS.pipeline_0" gpuMs=0.02275 compute=yes graphics=no
+# pass[126] "gpuSignedDistanceFieldsPass.staticBuild.cascade1.markCascadeUninitialized_gpuSignedDistanceFieldsPass.staticBuild.cascade1.markCascadeUninitialized_MarkCascadeUninitializedCS.pipeline_0" gpuMs=0.006417 compute=yes graphics=no
+# pass[127] "gpuSignedDistanceFieldsPass.staticBuild.cascade1.scrollCascade_gpuSignedDistanceFieldsPass.staticBuild.cascade1.scrollCascade_ScrollCascadeCS.pipeline_0" gpuMs=0.0115 compute=yes graphics=no
+# pass[128] "gpuSignedDistanceFieldsPass.staticBuild.cascade1.clearRefCounters_gpuSignedDistanceFieldsPass.staticBuild.cascade1.clearRefCounters_ClearRefCountersCS.pipeline_0" gpuMs=0.011583 compute=yes graphics=no
+# pass[129] "gpuSignedDistanceFieldsPass.staticBuild.cascade1.initializeCascade_gpuSignedDistanceFieldsPass.staticBuild.cascade1.initializeCascade_InitializeCascadeCS.pipeline_0" gpuMs=0.006083 compute=yes graphics=no
+# pass[131] "gpuSignedDistanceFieldsPass.staticBuild.cascade2.clearBuildCounters_gpuSignedDistanceFieldsPass.staticBuild.cascade2.clearBuildCounters_ClearBuildCountersCS.pipeline_0" gpuMs=0.0065 compute=yes graphics=no
+# pass[134] "gpuSignedDistanceFieldsPass.staticBuild.cascade2.markCascadeUninitialized_gpuSignedDistanceFieldsPass.staticBuild.cascade2.markCascadeUninitialized_MarkCascadeUninitializedCS.pipeline_0" gpuMs=0.006458 compute=yes graphics=no
+# pass[135] "gpuSignedDistanceFieldsPass.staticBuild.cascade2.scrollCascade_gpuSignedDistanceFieldsPass.staticBuild.cascade2.scrollCascade_ScrollCascadeCS.pipeline_0" gpuMs=0.006209 compute=yes graphics=no
+# pass[136] "gpuSignedDistanceFieldsPass.staticBuild.cascade2.clearRefCounters_gpuSignedDistanceFieldsPass.staticBuild.cascade2.clearRefCounters_ClearRefCountersCS.pipeline_0" gpuMs=0.007167 compute=yes graphics=no
+# pass[137] "gpuSignedDistanceFieldsPass.staticBuild.cascade2.initializeCascade_gpuSignedDistanceFieldsPass.staticBuild.cascade2.initializeCascade_InitializeCascadeCS.pipeline_0" gpuMs=0.006417 compute=yes graphics=no
+# pass[138] "gpuSignedDistanceFieldsPass.staticBuild.cascade3.clearBuildCounters_gpuSignedDistanceFieldsPass.staticBuild.cascade3.clearBuildCounters_ClearBuildCountersCS.pipeline_0" gpuMs=0.006042 compute=yes graphics=no
+# pass[139] "gpuSignedDistanceFieldsPass.staticBuild.cascade3.markCascadeUninitialized_gpuSignedDistanceFieldsPass.staticBuild.cascade3.markCascadeUninitialized_MarkCascadeUninitializedCS.pipeline_0" gpuMs=0.006333 compute=yes graphics=no
+# pass[140] "gpuSignedDistanceFieldsPass.staticBuild.cascade3.scrollCascade_gpuSignedDistanceFieldsPass.staticBuild.cascade3.scrollCascade_ScrollCascadeCS.pipeline_0" gpuMs=0.006209 compute=yes graphics=no
+# pass[141] "gpuSignedDistanceFieldsPass.staticBuild.cascade3.clearRefCounters_gpuSignedDistanceFieldsPass.staticBuild.cascade3.clearRefCounters_ClearRefCountersCS.pipeline_0" gpuMs=0.153334 compute=yes graphics=no
+# pass[142] "gpuSignedDistanceFieldsPass.staticBuild.cascade3.initializeCascade_gpuSignedDistanceFieldsPass.staticBuild.cascade3.initializeCascade_InitializeCascadeCS.pipeline_0" gpuMs=0.038583 compute=yes graphics=no
+# pass[143] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.clearBuildCounters_gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.clearBuildCounters_ClearBuildCountersCS.pipeline_0" gpuMs=0.05025 compute=yes graphics=no
+# pass[144] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.markCascadeUninitialized_gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.markCascadeUninitialized_MarkCascadeUninitializedCS.pipeline_0" gpuMs=0.057458 compute=yes graphics=no
+# pass[145] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.scrollCascade_gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.scrollCascade_ScrollCascadeCS.pipeline_0" gpuMs=0.027417 compute=yes graphics=no
+# pass[146] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.clearRefCounters_gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.clearRefCounters_ClearRefCountersCS.pipeline_0" gpuMs=0.063792 compute=yes graphics=no
+# pass[147] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.initializeCascade_gpuSignedDistanceFieldsPass.skinnedBuild.cascade0.initializeCascade_InitializeCascadeCS.pipeline_0" gpuMs=0.008042 compute=yes graphics=no
+# pass[148] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.clearBuildCounters_gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.clearBuildCounters_ClearBuildCountersCS.pipeline_0" gpuMs=0.01725 compute=yes graphics=no
+# pass[149] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.markCascadeUninitialized_gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.markCascadeUninitialized_MarkCascadeUninitializedCS.pipeline_0" gpuMs=0.01075 compute=yes graphics=no
+# pass[150] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.scrollCascade_gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.scrollCascade_ScrollCascadeCS.pipeline_0" gpuMs=0.006083 compute=yes graphics=no
+# pass[151] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.clearRefCounters_gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.clearRefCounters_ClearRefCountersCS.pipeline_0" gpuMs=0.006458 compute=yes graphics=no
+# pass[152] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.initializeCascade_gpuSignedDistanceFieldsPass.skinnedBuild.cascade1.initializeCascade_InitializeCascadeCS.pipeline_0" gpuMs=0.016667 compute=yes graphics=no
+# pass[153] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.clearBuildCounters_gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.clearBuildCounters_ClearBuildCountersCS.pipeline_0" gpuMs=0.012667 compute=yes graphics=no
+# pass[154] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.markCascadeUninitialized_gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.markCascadeUninitialized_MarkCascadeUninitializedCS.pipeline_0" gpuMs=0.006125 compute=yes graphics=no
+# pass[155] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.scrollCascade_gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.scrollCascade_ScrollCascadeCS.pipeline_0" gpuMs=0.00825 compute=yes graphics=no
+# pass[156] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.clearRefCounters_gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.clearRefCounters_ClearRefCountersCS.pipeline_0" gpuMs=0.006125 compute=yes graphics=no
+# pass[157] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.initializeCascade_gpuSignedDistanceFieldsPass.skinnedBuild.cascade2.initializeCascade_InitializeCascadeCS.pipeline_0" gpuMs=0.013166 compute=yes graphics=no
+# pass[158] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.clearBuildCounters_gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.clearBuildCounters_ClearBuildCountersCS.pipeline_0" gpuMs=0.006459 compute=yes graphics=no
+# pass[159] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.markCascadeUninitialized_gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.markCascadeUninitialized_MarkCascadeUninitializedCS.pipeline_0" gpuMs=0.006792 compute=yes graphics=no
+# pass[160] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.scrollCascade_gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.scrollCascade_ScrollCascadeCS.pipeline_0" gpuMs=0.012292 compute=yes graphics=no
+# pass[161] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.clearRefCounters_gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.clearRefCounters_ClearRefCountersCS.pipeline_0" gpuMs=0.012292 compute=yes graphics=no
+# pass[162] "gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.initializeCascade_gpuSignedDistanceFieldsPass.skinnedBuild.cascade3.initializeCascade_InitializeCascadeCS.pipeline_0" gpuMs=0.007167 compute=yes graphics=no
+# pass[163] "gpuSignedDistanceFieldsPass.combine.collectDirtyBricks_gpuSignedDistanceFieldsPass.combine.collectDirtyBricks_CollectDirtyBricksCS.pipeline_0" gpuMs=0.009709 compute=yes graphics=no
+# pass[164] "gpuSignedDistanceFieldsPass.combine.prepareEikonalArgs_gpuSignedDistanceFieldsPass.combine.prepareEikonalArgs_PrepareEikonalArgsCS.pipeline_0" gpuMs=0.056583 compute=yes graphics=no
+# pass[165] "gpuSignedDistanceFieldsPass.combine.eikonal_gpuSignedDistanceFieldsPass.combine.eikonal_EikonalCS.pipeline_0" gpuMs=0.009209 compute=yes graphics=no
+# pass[166] "gpuSignedDistanceFieldsPass.combine.cascade0.mergeCascades_gpuSignedDistanceFieldsPass.combine.cascade0.mergeCascades_MergeCascadesCS.pipeline_0" gpuMs=0.054583 compute=yes graphics=no
+# pass[167] "gpuSignedDistanceFieldsPass.combine.cascade0.prepareMergeBricksArgs_gpuSignedDistanceFieldsPass.combine.cascade0.prepareMergeBricksArgs_PrepareMergeBricksArgsCS.pipeline_0" gpuMs=0.018125 compute=yes graphics=no
+# pass[168] "gpuSignedDistanceFieldsPass.combine.cascade0.mergeBricks_gpuSignedDistanceFieldsPass.combine.cascade0.mergeBricks_MergeBricksCS.pipeline_0" gpuMs=0.035083 compute=yes graphics=no
+# pass[169] "gpuSignedDistanceFieldsPass.combine.cascade0.buildTreeAabb_gpuSignedDistanceFieldsPass.combine.cascade0.buildTreeAabb_BuildTreeAabbCS.pipeline_0" gpuMs=0.07325 compute=yes graphics=no
+# pass[170] "gpuSignedDistanceFieldsPass.combine.cascade0.buildTreeAabb_gpuSignedDistanceFieldsPass.combine.cascade0.buildTreeAabb_BuildTreeAabbCS.pipeline_1" gpuMs=0.003709 compute=yes graphics=no
+# pass[171] "gpuSignedDistanceFieldsPass.combine.cascade0.buildTreeAabb_gpuSignedDistanceFieldsPass.combine.cascade0.buildTreeAabb_BuildTreeAabbCS.pipeline_2" gpuMs=0.003625 compute=yes graphics=no
+# pass[172] "gpuSignedDistanceFieldsPass.combine.cascade1.mergeCascades_gpuSignedDistanceFieldsPass.combine.cascade1.mergeCascades_MergeCascadesCS.pipeline_0" gpuMs=0.019084 compute=yes graphics=no
+# pass[173] "gpuSignedDistanceFieldsPass.combine.cascade1.prepareMergeBricksArgs_gpuSignedDistanceFieldsPass.combine.cascade1.prepareMergeBricksArgs_PrepareMergeBricksArgsCS.pipeline_0" gpuMs=0.003541 compute=yes graphics=no
+# pass[174] "gpuSignedDistanceFieldsPass.combine.cascade1.mergeBricks_gpuSignedDistanceFieldsPass.combine.cascade1.mergeBricks_MergeBricksCS.pipeline_0" gpuMs=0.00725 compute=yes graphics=no
+# pass[175] "gpuSignedDistanceFieldsPass.combine.cascade1.buildTreeAabb_gpuSignedDistanceFieldsPass.combine.cascade1.buildTreeAabb_BuildTreeAabbCS.pipeline_0" gpuMs=0.032042 compute=yes graphics=no
+# pass[176] "gpuSignedDistanceFieldsPass.combine.cascade1.buildTreeAabb_gpuSignedDistanceFieldsPass.combine.cascade1.buildTreeAabb_BuildTreeAabbCS.pipeline_1" gpuMs=0.0215 compute=yes graphics=no
+# pass[177] "gpuSignedDistanceFieldsPass.combine.cascade1.buildTreeAabb_gpuSignedDistanceFieldsPass.combine.cascade1.buildTreeAabb_BuildTreeAabbCS.pipeline_2" gpuMs=0.013333 compute=yes graphics=no
+# pass[178] "gpuSignedDistanceFieldsPass.combine.cascade2.mergeCascades_gpuSignedDistanceFieldsPass.combine.cascade2.mergeCascades_MergeCascadesCS.pipeline_0" gpuMs=0.007625 compute=yes graphics=no

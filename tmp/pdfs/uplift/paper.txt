@@ -1,0 +1,1077 @@
+       Large-scale terrain authoring through interactive erosion
+                              simulation
+                Hugo Schott, Axel Paris, Lucie Fournier, Eric Guérin, Eric Galin
+
+
+
+      To cite this version:
+     Hugo Schott, Axel Paris, Lucie Fournier, Eric Guérin, Eric Galin. Large-scale terrain authoring through in-
+     teractive erosion simulation. ACM Transactions on Graphics, In press, 42 (5), pp.15. ⟨10.1145/3592787⟩. ⟨hal-
+     04049125⟩
+
+
+
+
+                                        HAL Id: hal-04049125
+                              https://hal.science/hal-04049125v1
+                                           Submitted on 28 Mar 2023
+
+
+
+
+    HAL is a multi-disciplinary open access archive             L’archive ouverte pluridisciplinaire HAL, est des-
+for the deposit and dissemination of scientific re-        tinée au dépôt et à la diffusion de documents scien-
+search documents, whether they are published or not.       tifiques de niveau recherche, publiés ou non, émanant
+The documents may come from teaching and research          des établissements d’enseignement et de recherche
+institutions in France or abroad, or from public or pri-   français ou étrangers, des laboratoires publics ou
+vate research centers.                                     privés.
+
+
+                                              HAL Authorization
+Large-scale terrain authoring through interactive erosion simulation
+HUGO SCHOTT, Univ Lyon, INSA Lyon, CNRS, UCBL, LIRIS, UMR5205, F-69621 Villeurbanne, France
+AXEL PARIS, Univ Lyon, UCBL, CNRS, INSA Lyon, LIRIS, UMR5205, F-69622 Villeurbanne, France
+LUCIE FOURNIER, Univ Lyon, UCBL, CNRS, INSA Lyon, LIRIS, UMR5205, F-69622 Villeurbanne, France
+ERIC GUÉRIN, Univ Lyon, INSA Lyon, CNRS, UCBL, LIRIS, UMR5205, F-69621 Villeurbanne, France
+ERIC GALIN, Univ Lyon, UCBL, CNRS, INSA Lyon, LIRIS, UMR5205, F-69622 Villeurbanne, France
+  1
+
+
+                                                               h
+
+
+
+
+                                                                                km
+  0                             u0                             a      10   20
+
+
+
+
+Fig. 1. Given an input uplift field, we automatically generate the large-scale terrain elevation by simulating stream power erosion using a parallel drainage
+area algorithm inlined in the simulation. The user may define the uplift field, providing ridge and river networks, or using inverse procedural modeling by
+computing the uplift from an input digital elevation model.
+
+Large-scale terrains are essential in the definition of virtual worlds. Given            1 INTRODUCTION
+the diversity of landforms and the geomorphological complexity, there is                 Modeling realistic and controllable large-scale terrain models is
+a need for authoring techniques offering hydrological consistency without
+                                                                                         essential for creating virtual worlds. The challenge stems not only
+sacrificing user control. In this paper, we bridge the gap between large-scale
+erosion simulation and authoring into an efficient framework. We set aside
+                                                                                         from the complexity of landforms, the variety of details forming
+modeling in the elevation domain in favour of the uplift domain, and compute             patterns at different scales, the need for geomorphological and hy-
+emerging reliefs by simulating the stream power erosion. Our simulation                  drological realism, but also from the need to control the shape and
+relies on a fast yet accurate approximation of drainage area and flow routing            location of landforms to follow the designer’s intent.
+to compute the erosion interactively, which allows for incremental authoring.               Existing terrain generation approaches encompass a variety of
+Our model provides landscape artists with tools for shaping mountain ranges              methods. Procedural methods [Ebert et al. 1998] mostly rely on
+and valleys, such as copy-and-paste operations; warping for imitating folds              sum of scaled noises to algorithmically reproduce the self-similarity
+and faults; point and curve elevation constraints to precisely sculpt ridges or          across scales. However, those methods do not take erosion into
+carve river networks. It also lends itself to inverse procedural modeling by             account and require careful editing from specialists to obtain realis-
+reconstructing the uplift from an input digital elevation model and allows
+                                                                                         tic erosion landmarks. Example-based methods [Zhou et al. 2007],
+hydrologically consistent blending between terrain patches.
+CCS Concepts: • Computing methodologies                Shape modeling.                  including learning-based approaches [Guérin et al. 2017], tackle
+                                                                                         realism by using terrain patches extracted from real-world digital
+Additional Key Words and Phrases: Erosion Simulation, Landscapes                         elevation models, but do not manage to generate hydrologically
+ACM Reference Format:
+                                                                                         consistent large-scale models without significantly affecting ter-
+Hugo Schott, Axel Paris, Lucie Fournier, Eric Guérin, and Eric Galin. 2010.              rain landforms. Finally, surface erosion simulations [Musgrave et al.
+Large-scale terrain authoring through interactive erosion simulation. ACM                1989] typically enhance procedurally generated terrain with sedi-
+Trans. Graph. 9 (March 2023), 15 pages.                                                  mentary valleys and small-scale erosion landmarks such as gorges
+                                                                                         and ravines, and generate visually convincing effects as long as the
+Authors’ addresses: Hugo Schott, Univ Lyon, INSA Lyon, CNRS, UCBL, LIRIS, UMR5205,
+                                                                                         initial input terrain is sufficiently realistic regarding the large-scale
+F-69621 Villeurbanne, France, hugo.schott@liris.cnrs.fr; Axel Paris, Univ Lyon, UCBL,    landmarks. Such erosion algorithms apply on a limited set of surface
+CNRS, INSA Lyon, LIRIS, UMR5205, F-69622 Villeurbanne, France, axel.paris@liris.         phenomena, that are strongly linked to restricted time and spatial
+cnrs.fr; Lucie Fournier, Univ Lyon, UCBL, CNRS, INSA Lyon, LIRIS, UMR5205, F-69622
+Villeurbanne, France, lucie.fournier@liris.cnrs.fr; Eric Guérin, Univ Lyon, INSA Lyon,   scale ranges, which intrinsically prevents their usage for generating
+CNRS, UCBL, LIRIS, UMR5205, F-69621 Villeurbanne, France, eric.guerin@liris.cnrs.fr;     large-scale terrains.
+Eric Galin, Univ Lyon, UCBL, CNRS, INSA Lyon, LIRIS, UMR5205, F-69622 Villeurbanne,         A key observation is that landforms are emerging structures
+France, eric.galin@liris.cnrs.fr.
+                                                                                         resulting from the competition between uplift and erosion. Their
+                                                                                         diversity is the consequence of complex natural phenomena, includ-
+                                                                                         ing tectonics, stratification, aeolian and hydraulic erosion, which are
+                                                                                         involved at different spatial and time scales. Modeling those natural
+                                                                                         phenomena is complex and comes at the price of computationally
+                                                                                         intensive, involved, and hard to control simulations [Cordonnier
+39:2    • Schott et al.
+
+
+et al. 2016, 2018]. Another crucial observation is that artists require    1988; Musgrave et al. 1989], to algorithmically reproduce the self-
+interactive editing processes when authoring terrains, and conse-          similarity across scales. They are in general computationally effi-
+quently favor techniques that provide user control. Even though            cient and lend themselves for a parallel implementation on graphics
+a vast variety of methods exist for controlling landforms – in gen-        hardware. Control typically takes the form of applying noise with
+eral through the use of curves and point controllers [Gain et al.          circular brushes [de Carpentier and Bidarra 2009] or matching curve
+2009; Guerin et al. 2022; Hnaidi et al. 2010], little attention has been   and point constraints using warping [Gain et al. 2009], shortest path
+dedicated to combining geomorphologically coherent large-scale             traversal [Rusnell et al. 2009], multi-frequency blending [Bradbury
+erosion simulations with interactive editing controls.                     et al. 2014], or diffusion [Hnaidi et al. 2010]. Recently, Guérin et
+   We address these limitations by proposing a novel approach for          al. [2022] advocated gradient domain editing for terrain modeling,
+authoring and simulating large-scale terrains. In this work, we aim        demonstrating the effectiveness of gradient domain for seamless
+at bridging the gap between erosion simulation providing realism,          blending of terrain patches, copy-and-paste operations and genera-
+and interactive editing giving control. The challenge consists in          tion from control feature points and curves. Unfortunately, those
+supplying the user with erosion-based sculpting tools with an in-          approaches do not take erosion into account and require careful
+teractive feedback of the stream power erosion to guarantee re-            editing from specialists to obtain erosion landmarks.
+alistic mountain ranges with hydrologically consistent drainage               Example-based methods tackle realism by combining patches ex-
+networks [Cordonnier et al. 2018]. Our framework tries to combine          tracted from real-world digital elevation models. Here, control is
+the best of both worlds by relying on the computation of the uplift        achieved by structure-sensitive warping to match sketched silhou-
+to generate predictable mountain ranges, and on the elevation space        ettes [Tasse et al. 2014], or the use of Conditional Generative Ad-
+by introducing control and feature curves that constrain landscape         versarial Networks to learn a correspondence between terrains and
+erosion.                                                                   the sketch maps corollaries [Guérin et al. 2017]. Parallel texture-
+   To achieve these goals, we introduce a hierarchical uplift construc-    based terrain synthesis [Gain et al. 2015] modifies the matching
+tion tree to control the large scale structures. Taking inspiration        process to support style painting, region-based copy-and-paste, and
+from Argudo et al. [2019], we propose several novel algorithms             curve and point manipulators. The assembly of terrain patches,
+based on orometry, i.e. the distribution and connectivity between          even locally geomorphologically correct, is not sufficient for gen-
+peaks and saddles points. We propose authoring tools compatible            erating globally consistent landscapes. Recently, Scott et al. [2021]
+with tectonic erosion bringing sketching, copy-and-paste sequences,        advocated the use of a breaching algorithm interlaced in multi-
+inverse procedural modeling into large-scale erosion simulations,          resolution example-based terrain synthesis to improve hydrological
+thus providing ways for the designer to define or impose the lo-           consistency. Although hydrologically consistent, the breaching pro-
+cation, the orientation and the distribution of specific mountain          cess still produces visually artificial canyons.
+ranges while preserving the global hydrological consistency of the            Erosion simulation methods can be broadly classified in two cate-
+final terrain (Figure 1). More precisely, our contributions are as fol-    gories: surface erosion algorithms and tectonic-based simulations.
+lows: 1) We propose a model allowing to author the terrain in the          Surface erosion algorithms enhance procedurally generated terrain
+elevation domain or in the uplift domain. 2) We propose an iterative       with sedimentary valleys and small-scale erosion landmarks such as
+approximation of the drainage area, allowing for a parallel imple-         gorges and ravines. Musgrave et al. [1989] first presented a complete
+mentation and embedding in the stream power erosion simulation,            hydraulic model simulating material detachment, transport and
+which produces a coherent drainage computation. 3) We introduce            deposition between heightfield cells. A geological representation
+the Uplift Tree, a hierarchical vector-based construction tree taking      for modeling the strata of the bedrock was introduced by Roudier
+its inspiration from the implicit models construction trees, but with      et al. [1993] that considers the characteristics of the different ma-
+the particularity that it can represent complex uplift scalar fields       terials during the erosion process. These early approaches were
+with asymmetric profiles or faults.                                        improved in several ways, by computing the acceleration or decelera-
+   Images shown throughout the paper as well as the accompanying           tion of the fluid to erode the bedrock or deposit sediments [Neidhold
+video depict large-scale terrains ranging from 100×100 km2 to 1000×        et al. 2005], combining a shallow water simulation with hydraulic
+1000 km2 , and demonstrate that our method combines interactive            erosion [Benes 2007], or using Smoothed Particle Hydrodynam-
+authoring and geomorphologically-based erosion simulations in a            ics [Krištof et al. 2009]. As fluid simulations are computationally
+unified framework.                                                         intensive, implementations on graphics hardware were proposed
+                                                                           to speed-up computations [Mei et al. 2007; Šťava et al. 2008; Vanek
+                                                                           et al. 2011].
+2      RELATED WORK                                                           Surface erosion methods perform the simulations at a limited
+A vast variety of terrain generation methods exist and can be sorted       temporal and spatial scale and then implicitly scale up the results
+into one of the following categories: procedural generation, texture       to approximate large scale terrains. Although intrinsically flawed
+synthesis and physical erosion simulation, as classified in a recent       (as the equations of the corresponding phenomena are not linear),
+overview [Galin et al. 2019]. Given the identified goals of control,       those methods generate visually convincing small-scale erosion
+performance, and hydrological realism, we focus this review on             effects as long as the initial input terrain is sufficiently realistic and
+authoring frameworks that evidence interactive response rates.             supplies large-scale landmarks. Specific landforms can be authored
+   Procedural terrain modeling relies on noise synthesis, often com-       exclusively through the initial terrain, and are often damaged by
+bined with river network carving [Ebert et al. 1998; Kelley et al.         the simulation.
+                                                                   Large-scale terrain authoring through interactive erosion simulation                      •        39:3
+
+
+                      Controls                                                   Uplift                                                          Elevation
+      Networks       Procedural       Brushes        Interactive             Blend
+                                                                                                             Erosion simulation
+                                                      authoring
+                                                                                                          𝑑𝑑𝑑                                                    𝑎𝑎
+                                   Peaks                                                           u0          = 𝑢𝑢0 + 𝑢𝑢� − 𝑠𝑠 𝑛𝑛 𝑎𝑎𝑚𝑚 + Δℎ
+                                                     Procedural
+                                                                      Noise      Curves                   𝑑𝑑𝑑𝑑
+    Ridges Rivers Tensor Fields Feature curves       generation              Construction Tree                                                 Terrain model
+                                                              Inverse procedural modeling                                    Correction control 𝑢𝑢�
+
+Fig. 2. Our method computes the terrain elevation ℎ from the uplift 𝑢 = 𝑢 0 + 𝑢˜ using a modified Stream Power law. Control is achieved by prescribing the
+static term 𝑢 0 from a user-defined or procedurally-generated Uplift Tree. Sparse elevations constraints are handled through the dynamic term ˜
+                                                                                                                                             𝑢.
+
+
+   Tectonic simulations in contrast, attempt to reproduce large-scale                The stream power erosion simulation ensures that the resulting
+erosion effects by taking into account the uplift of the bedrock                     elevation is coherent and flows towards the borders of the map.
+balanced by different types of erosion described in geology. Con-
+trary to previously described surface erosion methods, they pro-                     Erosion
+duce realistic large scale mountain ranges with dendritic river net-                 The shaping of mountainous landscapes by the Stream Power law
+works without the need for an initial elevation. Cordonnier et                       and hill slope processes (linear diffusion) has been extensively
+al. [2016] introduced the Stream Power erosion law from geomor-                      studied in geomorphology [Howard and Kerby 1983; Whipple and
+phology [Whipple and Tucker 1999] to computer graphics. This                         Tucker 1999]. The simplified governing equation can be written as:
+work was extended [Cordonnier et al. 2018] with a geologically-
+                                                                                                               𝜕ℎ
+coherent model taking into account folds and faults and the charac-                                               = 𝑢 − 𝑠 𝑛 𝑎𝑚 + Δℎ                                    (1)
+teristics of the different bedrock strata from the relative movement                                           𝜕𝑡
+of the tectonic plates. Although the simulation can be guided by mov-                   The term 𝑢 − 𝑠 𝑛 𝑎𝑚 states that the rate of change of surface
+ing the tectonic plates, controlling the generation of the small-scale               topography ℎ is controlled by the balance between the uplift 𝑢 and
+features remains difficult. Moreover, large-scale erosion simulations                the fluvial erosion, which is a function of the local slope 𝑠 and
+remain computationally intensive and challenging to control, which                   the drainage area 𝑎 that represents the amount of water flowing
+deters them from production environments.                                            through a point (see Section 4.1). The constant exponents 𝑛 and 𝑚
+   In contrast, our method bridges the gap between tectonic ero-                     depend on the type of terrain; geomorphology studies [Theodoratos
+sion and interactive authoring and provides a unified framework                      and Kirchner 2020; Whipple and Tucker 1999] agree that only the
+combining the automatic generation of large scale landforms and                      ratio 𝑚/𝑛 is relevant and should be set to ≈ 1/2. The hillslope
+user-constrained peaks, ridges, valleys or other landmarks. It com-                  term Δℎ smoothes the terrain by elevating concavities and lowering
+bines the best of both worlds, allowing the user to control the shape                convexities by using the Laplacian. A crucial assumption of the
+of landforms with painting, region-based copy-and-paste, and curve                   stream power equation is that the sediments are transported by
+and point manipulators while relying on a coherent stream power                      rivers and not deposited on the simulated domain. More complex
+erosion to generate realistic and hydrologically consistent dendritic                models exist that account for sediment deposition [Yuan et al. 2019]
+mountainous landforms.                                                               but are beyond the scope of this work.
+                                                                                        The drainage area 𝑎 of a point p represents the amount of wa-
+                                                                                     ter that flows through p (see Figure 3). Computing 𝑎 is the most
+                                                                                     computationally intensive part of the stream power erosion, as it
+3    OVERVIEW                                                                        requires processing cells in descending elevation order. Our work
+The elevation of the terrain results from an equilibrium between up-                 relies on an efficient and accurate approximation of the drainage
+lift and stream power erosion (also called fluvial erosion). We depart               area (Section 4.2).
+from tectonic-based computation and propose to rely on a procedu-                       The uplift defines the speed at which the ground is elevating
+rally defined construction tree to control the uplift that indirectly                due to tectonic processes. One originality of this work is to define
+defines the shape and elevation of the mountain ranges. Both repre-                  the uplift as a sum of two terms 𝑢 = 𝑢 0 + ˜   𝑢, where 𝑢 0 denotes the
+sentations are tightly coupled, which allows to intuitively author                   static part and 𝑢˜ a dynamic correction term used to prescribe precise
+elevations by the mean of the uplift, while enforcing altitudes using                elevations (see Section 5). Those terms play a crucial part in the
+sparse constraints defined in the elevation domain. Our authoring                    shape of large-scale mountain ranges, and our framework provides
+framework rests on the foundations of a fast erosion simulation                      different strategies to construct them.
+based on a incremental and parallel drainage area approximation.                        The static term 𝑢 0 is defined using a hierarchical construction tree,
+Figure 2 presents a synthetic overview of the workflow.                              the Uplift Tree, an efficient vector-based model for constructing and
+    In a typical workflow, the user constructs the static uplift 𝑢 0 using           interactively authoring uplift maps. Our model takes its inspiration
+brushes (that are combinations of skeletal primitives and operators)                 from the construction tree used for terrain modeling [Génevaux
+and the erosion simulation carves the mountain ranges. At any                        et al. 2015], but notably differs as we model the uplift instead of the
+time, the user can modify 𝑢 0 , prescribe elevation constraints along                elevation. We detail several primitives adapted for the representation
+crest lines, or directly modify the terrain in the elevation domain.                 of asymmetric cross-section profiles observed in geomorphology.
+39:4    • Schott et al.
+
+
+Our model departs from elevation models as it does not require                 V𝑖 | ℎ 𝑗 > ℎ𝑖 } and B𝑖 = { 𝑗 ∈ V𝑖 | ℎ 𝑗 < ℎ𝑖 } denote the set of the
+continuity: discontinuities account for an approximation of faults             indexes of the neighboring cells that are respectively above and be-
+and folds and produce realistic effects after erosion.                         low 𝑐𝑖 . Whenever all neighboring cells are above or of equal height,
+                                                                               then the cell is considered as a pit by the drainage area algorithm,
+Control                                                                        and the flow propagation stops. In practice, such pits are progres-
+User-control is central to our framework and involves a variety of             sively removed by the stream power erosion process. Overall, in
+tools for authoring complex large-scale terrains (see Figure 2).               the discrete case, the drainage area 𝑎𝑖 of a cell 𝑐𝑖 can be recursively
+   In the uplift domain, control is achieved by directly modifying             defined as the weighted sum of the drainage area 𝑎 𝑗 of the cells
+𝑢 0 using brushes that operate on the underlying Uplift Tree model.            A𝑖 . In addition, the precipitation on the cell (proportional to the
+We also propose an inverse procedural modeling approach to infer               cell area, but here taken constantly as 1 for simplification) is also
+𝑢 0 from an input elevation map by detecting the ridge and river               summed:                           ∑︁
+networks (Section 6.1 and 6.2). This reconstruction process yields an                                   𝑎𝑖 = 1 +      𝑤𝑖 𝑗 𝑎 𝑗                     (3)
+uplift 𝑢 0 that, under the effect of fluvial erosion, only approximates                                                 𝑗 ∈ A𝑖
+the input elevation. Finally, we also present an original procedural           Let 𝑝 ∈ [1, +∞[ denote a chosen exponent corresponding to a L 𝑝
+technique to generate uplift from a procedurally-defined tensor field          metric. Let 𝑑𝑖 𝑗 denote the Euclidean distance between 𝑐𝑖 and 𝑐 𝑗 ,
+representing the crust folds (Section 6.3).                                    and 𝑠𝑖 𝑗 = (ℎ𝑖 − ℎ 𝑗 )/𝑑𝑖 𝑗 the slope between 𝑐𝑖 and 𝑐 𝑗 . The weighting
+   In the elevation domain, sparse constraints enforce the elevation           coefficients 𝑤𝑖 𝑗 define how the water in a cell 𝑐 𝑗 flows down to its
+at user-given points or along curves (Section 6.4), in the spirit of           lower neighbours:
+features curves proposed by Hnaidi et al. [2010].                                                                  𝑝
+                                                                                                                𝑠 𝑗𝑖
+4      INTERACTIVE EROSION SIMULATION                                                             𝑤𝑖 𝑗 =       Í 𝑝               𝑝 ∈ [1, +∞(           (4)
+                                                                                                                     𝑠 𝑗𝑘
+We address the incremental and interactive resolution of the stream                                           𝑘 ∈ B𝑗
+power equation. One particularity of this work compared to most
+                                                                               Setting 𝑝 = ∞ simulates that the flow follows the steepest slope,
+simulations in geomorphology is that the uplift 𝑢 = 𝑢 0 + 𝑢˜ is not
+                                                                               whereas setting 𝑝 = 1 produces a uniform diffusion proportionally
+constant and can be modified at any time by the designer. Instead of
+                                                                               to the directional slope of the terrain. Figure 4 illustrates the compu-
+using a triangulated irregular network combined with an implicit
+                                                                               tation of the drainage area for those exponents. We implemented the
+scheme [Cordonnier et al. 2016, 2018], we propose a framework
+                                                                               general case, while using specific cases for 𝑝 = 1 and 𝑝 = ∞ avoid
+operating on a regular grid and using an explicit integration scheme.
+                                                                               the computation of a series of computationally-intensive power
+   Let ℎ𝑖 , 𝑎𝑖 , 𝑢𝑖 , 𝑠𝑖 denote the elevation, drainage area, uplift and
+                                                                               functions. However, according to Holmgren [1994], the most accu-
+steepest slope of a cell 𝑐𝑖 respectively, with 𝑖 denoting the linear
+                                                                               rate values are obtained with 4 ≤ 𝑝 ≤ 6. Throughout the remainder
+index in the grid. Let Δ𝑡 denote the time step, at iteration 𝑘 + 1, we
+                                                                               of the paper, the exponent 𝑝 is set to 4 unless stated otherwise.
+have:
+
+                                                                                Neighboring
+        ℎ𝑖 (𝑘 + 1) = ℎ𝑖 (𝑘) + Δ𝑡 𝑢𝑖 (𝑘) − 𝑠𝑖𝑛 (𝑘) 𝑎𝑚
+                                                   𝑖 (𝑘) + Δℎ𝑖 (𝑘)
+                                                                     
+                                                                         (2)    cells below c        c
+   Instead of relying on the steepest slope for evaluating the drainage                                  sj
+area, we use an L 𝑝 metric (Section 4.1) that balances diffusive flow                                         cj
+                                                                                Steepest
+routing and steepest slope based algorithms. We then propose an                 slope
+                                                                                                                        p=∞                    p=1
+approximation to the computation of the drainage area (Section 4.2)
+which can be directly integrated in the explicit integration scheme
+of equation 2.                                                                 Fig. 4. Distribution of flow among neighboring cells, 𝑝 = ∞ corresponds
+                                                                               to routing the flow along the steepest slope (bold arrow), whereas 𝑝 = 1
+4.1     Flow routing                                                           simulates a diffusion proportionally to the terrain slope, which leads to a
+                                                                               smoother drainage area map.
+The upstream drainage area 𝑎 of point
+p is the amount of water that flows
+through p. In the case of constant pre-
+cipitation, 𝑎 is proportional to the area            a(p)                      4.2   Parallel approximation of the drainage area
+of the surface where every downstream                                          In the general case, the computation of the drainage area proceeds
+route passes through p.                                p
+                                                                               as follows. Cells are first sorted according to their elevation and
+   The efficient computation of the                                            assigned a reference drainage area value of 1 corresponding to a
+drainage area, based on flow routing                                           uniform amount of rain. Cells are then processed in descending
+between cells, is crucial in the stream     Fig. 3. Drainage area              order, incrementally computing the drainage area by propagating
+power erosion simulation. Several al-       of a point and its high-           the values to lower cells according to the flow routing equation. This
+gorithms [Holmgren. 1994; Seibert and       lighted watershed.                 algorithm has 𝑂 (𝑛 2 ln 𝑛) complexity (with 𝑛 the width of the terrain
+McGlynn. 2007] have been proposed. Let                                         in cells) and cannot be easily parallelized. Improved techniques for
+V𝑖 denote the set of 8-neighboring cells of 𝑐𝑖 . Let A𝑖 = { 𝑗 ∈                cells connected by a graph perform in linear time [Cordonnier et al.
+                                                                    Large-scale terrain authoring through interactive erosion simulation           •   39:5
+
+
+2019]. However, those methods do not lend themselves to parallel
+implementation on graphics hardware.
+   One particular challenge in accelerating the erosion simulation is                    h                                    h
+to compute the drainage area in parallel [Barnes 2019]. Our solution
+consists of an iterative approximation of the drainage area that
+progressively converges to the exact value and can be used in the                        a~   7,5 15
+                                                                                                       km                     a
+parallel erosion algorithm. At every step, we compute the flow
+routing for the 8 neighboring cells V𝑖 according to equation 4. We              Fig. 7. Comparison between the stream power erosion with the approxima-
+then evaluate the fraction 𝑤 𝑗𝑖 of the drainage area of each neighbor           tion 𝑎˜ (left) and with the reference computation 𝑎 (right). The two methods
+flowing into the cell 𝑐𝑖 , and update the value 𝑎˜𝑖 . Therefore, for every      produce highly similar results.
+cell 𝑐𝑖 , we analyse 5×5 cells (see Figure 5). The values 𝑎˜𝑖 (𝑘) obtained
+at iteration 𝑘 are used to compute the flow contributions at the next
+iteration 𝑘 + 1:
+                                                                                   Using an iterative approximate solver rather than computing the
+                                                                                exact solution is compensated by the parallel execution. Moreover,
+                                     ∑︁
+                   𝑎˜𝑖 (𝑘 + 1) = 1 +     𝑤 𝑗𝑖 (𝑘) 𝑎˜ 𝑗 (𝑘)              (5)
+                                    𝑗 ∈ A𝑖
+                                                                                the approximation proves to be sufficiently accurate, even with only
+                                                                                a few steps, to set up the erosion process (see accompanying video).
+                                                                                One iteration takes a few milliseconds and the stream power erosion
+                                                                                algorithm converges to the final steady-state elevation in a few
+             Processed
+             receiver cell c i
+                                                                                seconds for medium sized grids, i.e. ≤ 1024 × 1024 (see Section 7.2).
+                                                                                   The consistency of the surface flow of water is a crucial aspect
+             Neighboring
+                                             ci                                 of digital landscape realism. We qualify a river network as con-
+             cells Vi
+                                                                                sistent when the flow is directed to the boundary of the domain,
+             Contributors                                                       without pit-cells retaining water. Most terrain synthesis techniques
+             Ai to cell c i                                                     do not guarantee the consistency of the water flow, and require
+                                                                                a pit-removal process: most often depression breaching or filling
+                                                                                [Barnes et al. 2014]. In contrast, our erosion simulation based on the
+Fig. 5. Approximation of the drainage area 𝑎˜ using the direct neighboring
+                                                                                stream power equation converges to a consistent water flow and a
+cells A𝑖 above 𝑐𝑖 .
+                                                                                more natural river network.
+                                                                                   Figure 7 shows a comparison between the stream power erosion
+   The convergence rate of this approximation depends on the length
+                                                                                with the drainage area approximation 𝑎˜ and the reference implemen-
+of the maximum flow path in the terrain. Theoretically, the optimal
+                                                                                tation. Both terrains were generated with a uniform uplift 𝑢 0 over a
+case arises when the terrain has a pyramidal shape with its peak at
+                                                                                square domain. The two methods produce similar ridge and river
+the centre, with a maximum flow path length equal to 𝑛/2, where 𝑛
+                                                                                network patterns: differences resulting from our approximations
+denotes the grid resolution. In the worst case, a flow path is mean-
+                                                                                remain subtle and not crucial in our context.The simulation con-
+dering through the terrain [Hooshyar et al. 2020], producing flow
+                                                                                verges to a consistent drainage area and forms the classic dendritic
+paths with 𝑂 (𝑛 2 ) length. The drainage area network progressively
+                                                                                cross patterns described by Bonetti et al. [2020] and Hooshyar et al.
+improves through the first iterations and becomes rapidly accurate
+                                                                                [2020]: results conform to the reference implementation, even with
+over the entire domain. Figure 6 shows the evolution of the drainage
+                                                                                the use of the approximate drainage area ˜𝑎.
+network on a 256 × 256 terrain.
+
+                                                                                5   UPLIFT CONSTRUCTION TREE
+                                                                      h         Recall that the uplift defines the speed at which the ground is elevat-
+                                                                                ing, for each point of the domain. To build uplift maps efficiently, we
+                                                                                introduce a hierarchical construction tree, the Uplift Tree, denoted as
+                                                                                T . We introduce asymmetric profile-based primitives for generating
+                                                                                asymmetric large-scale mountain ranges and discontinues primi-
+                10 steps                50 steps               130 steps
+                                                                                tives and operators to approximate faults. Our algorithms synthesize
+                                                                                and update the tree structure interactively. The construction tree
+Fig. 6. Approximation of the drainage area 𝑎˜ on a 256 × 256 resolution         can be queried at a specific point 𝑢 (p) or converted into a discrete
+terrain; the reference is reached at 130 iterations.                            map and directly streamed to the GPU for the erosion simulation.
+                                                                                   Figure 8 depicts a typical Uplift Tree structure, the corresponding
+  We performed a series of experiments on real-terrain digital ele-             map 𝑢 0 , and the generated relief ℎ, and demonstrates its part in
+vation maps and synthetic terrains to evaluate the convergence rate             the creation of the terrain’s main features. The leaves of the tree
+and compare it to a reference implementation. Results show that                 are primitives defined over a compact region in R2 . The nodes are
+our method yields the same drainage area after several iterations               either unary operators (deformations or affine transformations) or
+ranging between 𝑛 and 4 𝑛, with an average of 1.5𝑛.                             binary operators (minimum, maximum, blending) that combine
+39:6    • Schott et al.
+
+
+               Blend                                                                  Figure 10 illustrates the effectiveness of star-shaped primitives for
+                                                                                   large-scale terrain authoring. The east-west asymmetry of the moun-
+           Warp     Difference             h                                 a     tain ranges results from the asymmetry of the uplift. We observed
+                                                                                   that regions with a high gradient always create a high gradient in
+       Blend      Points   Curves                                                  the elevation, i.e. a steep slope flank.
+
+  Points    Segments
+                                          u0                        5   10
+                                                                             km
+                                                                                                 Boundary curve Γ
+                                                                                                 Skeleton S
+Fig. 8. Example of an uplift scalar field 𝑢 0 authored with the Uplift Tree.
+Curve primitives define the mountain ranges in the north-east, whereas a                                                                            h
+large disc-based primitives create the south-west mountain range. The river
+network was carved using segment primitives.
+
+
+
+values calculated by their sub-trees. The value at a given point is                         25   50
+                                                                                                      km                            𝑢𝑢0             a
+evaluated by recursively traversing the tree.
+                                                                                   Fig. 10. Asymmetrical star-shaped primitives used to create a large moun-
+5.1    Uplift primitives                                                           tain system near the sea.
+
+The function of a primitive, denoted as 𝑢 P , combines the distance 𝑑
+                                                                                      As more complex examples, we describe here two typical prim-
+to a skeleton S, with a falloff function 𝑔 parameterized by a radius
+                                                                                   itives useful for creating large-scale landscapes: the first used for
+𝑟 and a maximum value located on the skeleton 𝑢 S :
+                                                                                   mountain range modeling (see Section 6.3), the second designed to
+                                     𝑢 S (1 − 𝑑 2 /𝑟 2 ) 3 if 𝑑 ≤ 𝑟                carve valleys (see Section 6.2).
+                                   
+   𝑢 P (p) = 𝑔 ◦ 𝑑 (p)    𝑔(𝑑) =                                    (6)                                                The segment mountain range prim-
+                                     0 otherwise
+                                                                                                                    itive is based on segment-skeleton
+   Mountain ranges are typically asymmetrical, which is the conse-                                                  S = [a, b] associated with a varying
+                                                                                            uS (p)
+quence of tectonics [Willett et al. 1993]. On one side of the moun-                                     b           radius 𝑟 : [0, 1] → R+ and profile
+                                                                                    a           q
+tains, the strong gradient leads to elevated topography and steep                                                   𝑢 S : [0, 1] → R+ along the skele-
+                                                                                       ra                   rb
+surface slopes, whereas the other side features gentle slopes. Geo-                                p                ton.For any point p in the plane, we
+morphology demonstrates that this overall asymmetry comes from                                                      compute its projection q on the seg-
+several factors, including crust folding, faulting and alignment or-               Fig. 11. Mountain range          ment. Let 𝑥 = ∥a−q∥/∥a−b∥ clamped
+thogonal to the compression direction. Instead of taking those com-                uplift profile.                  between 0 and 1, we compute the cor-
+plex crust and layered strata phenomena into account as done by                                                     responding radius 𝑟 (𝑥) and value on
+Cordonnier et al. [2018], we developed computationally efficient                   the skeleton 𝑢 S (𝑥). We finally compute 𝑢 P (p) by evaluating the
+asymmetric primitives, taking inspiration from the implicit star-                  distance ∥p − q∥ and applying the falloff function of equation (6)
+shaped surfaces of Crespin [1996].                                                 with radius 𝑟 (𝑥) and skeleton 𝑢 S (𝑥).
+                               To introduce asymmetry in the clas-                    The valley primitive is also based
+                            sic skeleton-based primitives, we re-                  on a segment-skeleton S = [a, b],
+          q                 place the Euclidean distance with an                   whereas the classic falloff is replaced                  w
+                            anisotropic pseudo distance 𝑑.˜ It is com-             by a valley profile curve, with low val-                              uP (p)
+             p    m
+      S                     puted from a closed boundary curve Γ                   ues in the valley zone, and high val-                  River axis    p
+ Γ                          that encompasses a curve skeleton S (see               ues outside (see Figure 12). The main
+                            Figure 9). In our framework, Γ is a piece-             parameter of the profile is the vary-          Fig. 12. Valley uplift pro-
+Fig. 9. Asymmetric          wise quadric Bezier curve, which permits
+primitives construc-
+                                                                                   ing width of the valley 𝑤 : [0, 1] →           file curve.
+                            efficient nearest point computation and                R+ along the segment. The user may
+tion.
+                            intersection with a segment. For a point               edit specific profile curves, keeping
+                            p, we first compute its orthogonal pro-                in mind that high slopes are required to produce valleys during the
+jection q on S, then define m as the first intersection between [q, p)             simulation.
+and Γ. Finally, the pseudo distance 𝑑˜ is:
+                                                                                   5.2   Operators
+                                      ∥q − p∥
+                              𝑑˜(p) =                                        (7)   To complete the set of previously presented primitives, operators
+                                      ∥q − m∥
+                                                                                   offer a flexible way to transform a subtree or combine several
+S defines the set of points where the uplift is maximum, i.e., the                 ones. Blending or warping in the elevation often yields unrealis-
+crest line in the elevation domain, whereas the curve Γ determines                 tic artificial-looking terrains with inconsistent drainage network
+the boundary of the compact support, i.e. the extent of the mountain               featuring numerous pits, and a loss of the characteristic geometric
+range.                                                                             proportions and power laws of landforms.
+                                                                   Large-scale terrain authoring through interactive erosion simulation          •   39:7
+
+
+   Working in the uplift domain alleviates this limitation. Extreme            produced by the erosion simulation, as outlined in Figure 2. This
+deformations or even discontinuities are correctly handled by the              model provides landscape artists with tools for shaping mountain
+erosion process and do not violate the geomorphological and hy-                ranges and valleys, such as copy-and-paste operations, and warp-
+drological coherence of the resultant terrain. We separate operators           ing for imitating folds and faults. Section 6.3 presents a procedural
+into two categories: unary operators encompass affine transfor-                mountain range pattern generation algorithm based on user pre-
+mations and non-linear deformations, whereas binary operators                  scribed folds. Section 6.1 and 6.2 describe methods to build 𝑢 0 from
+implement adding, blending, or carving sub-trees. We present a                 graphs representing the ridge lines and river beds of a terrain.
+relevant example for each of these two categories.                                While modeling the base uplift 𝑢 0 proves to be efficient for mod-
+                                                                               eling mountain ranges, it remains somewhat limited for prescribing
+  Warping. We use space deformations, implemented as a unary
+                                                                               specific elevations for peaks or crest lines. Therefore, Section 6.4
+warping operator, to remove the regular pattern produced by skeleton-
+                                                                               introduces point and feature curve elevation-based constraints that
+based primitives. The deformation is defined by a bijective function
+                                                                               modify the dynamic uplift component 𝑢˜ throughout the simulation
+𝜔 : R2 → R2 , and applied to a sub-tree 𝐴. Let 𝑢𝜔 (𝐴) the uplift of
+                                                                               to retarget the elevation according to the designer prescriptions.
+the resulting warped sub-tree, we have:
+                          𝑢𝜔 (𝐴) = 𝑢𝐴 ◦ 𝜔 −1                          (8)      6.1   Ridge networks
+The advantage of warping the uplift instead of the elevation is                In this section, we present a compact vector-based model for char-
+illustrated in Figure 25 and further discussed in Section 7.1. Faults          acterizing the prevailing landforms of a mountain range.
+and folds modeled in the uplift domain effectively approximate                    Argudo et al. [2019] provide a method to analyze and extract the
+the large-scale deformed mountain ranges, preserve the erosion                 representative characteristics of mountainous terrain as a spanning
+patterns, and avoid distorted elevations.                                      tree, namely a divide tree or ridge tree, connecting significant peaks
+                                                                               and saddle points. Although a thorough presentation of the divide
+    𝑢𝑢𝐴𝐴      𝑢𝑢𝐵𝐵        α                                  𝑢𝑢                tree is beyond the scope of this method, let us briefly recall the
+                                                                               definition of peaks and saddles. Peaks are defined as the most signif-
+                                                                               icant local maxima of the surface and connected together through
+                                                                               a spanning tree that maximizes the minimum elevation of each
+    ℎ𝐴𝐴       ℎ𝐵𝐵                                            h                 peak-to-peak path. For each of those paths, the saddle is the point
+                                                                               of minimum elevation. Finally, the divide tree is defined as a set of
+                                                                               saddle-to-peak paths that we approximate as segments, associated
+    𝑎𝑎𝐴𝐴      𝑎𝑎𝐵𝐵                                           a                 with the elevation information of the points. This structure can
+                                                                               either be extracted from DEMs, synthesized to respect a given style
+                                        km
+                                                                               of landscape, or sketched by the user.
+                              25   50
+
+
+
+
+Fig. 13. Example of uplift blending: the generated waterflow remains co-
+herent while features from both input terrains are preserved thanks to the
+erosion simulation.
+
+                                                                                 Real terrain      Ridge Network      Uplift 𝑢𝑢0        Output
+   Blending. Modeling complex terrains often requires assembling
+parts of selected models. We adapt the blending operator that smoothly         Fig. 14. Illustration of the ridge network constraint: the ridge network is
+combines terrain patches described by Génevaux et al. [2015] in                extracted from a real terrain and converted into an Uplift Tree streamed to
+the uplift domain, casting the elevation computation to the simu-              the simulation.
+lation. A detailed comparison of the results is given in Section 7.1.
+The blending operator takes two sub-trees 𝐴, 𝐵, and a weighting                   Let R = {R𝑖 }0≤𝑖 ≤𝑛 denote the set of segments that compose the
+function 𝛼 : R2 → [0, 1]. The resulting uplift 𝑢𝐴+𝐵 is defined as:             divide tree, and a𝑖 , b𝑖 the end points of the segments. To build the
+                                                                               Uplift Tree T , each R𝑖 is converted into a mountain range primitive
+                      𝑢𝐴+𝐵 = (1 − 𝛼)𝑢𝐴 + 𝛼 𝑢𝐵                         (9)
+                                                                               (see Section 5). The radii and values are set proportionally to the
+The stream power erosion guarantees the consistency of the drainage            elevation values of the divide tree. Primitives are finally assembled
+when it reaches a steady-state (see illustration in Figure 13) con-            into a tree structure using the maximum operator.
+trary to traditional blending that operates directly on elevation                 Using the resulting static uplift 𝑢 0 , the erosion simulation yields
+and that produces not only a blurring effect on elevations but also            landforms that conform to the structure of the input ridge network
+inconsistent drainage.                                                         and accord to the approximate elevations of the peak and saddle
+                                                                               points. This demonstrates the effectiveness of the divide tree for
+6      SIMULATION CONTROL                                                      controlling large scale mountain ranges.
+In this section, we show that authoring the base uplift 𝑢 0 offers a              The divide tree provides us with complementary strategies for
+unified framework for generating large-scale structures and offers             generating terrains. Sketching or procedurally generating a divide
+many terrain authoring possibilities for controlling the landforms             tree gives control to the user over the position and shape of the
+39:8       • Schott et al.
+
+
+  Alps                                                                                  Figure 16 shows that the valleys are perfectly shaped according
+                                                                                     to the river network.
+
+                                                                                     6.3   Procedural generation
+      25   50
+                km                                                                   A key feature of large scale mountain ranges is the distribution
+       Digital elevation model               Erosion simulation                      of mountainous clusters following folds and faults produced by
+                                                                                     the tectonic forces. Instead of simulating the crust folds and faults
+                                                                                     as presented by Cordonnier et al. [2018], we propose an original
+Fig. 15. Comparison between a real digital elevation model of the Alps and
+a simulation based on the static uplift 𝑢 0 built from its ridge network R.
+                                                                                     procedural approach for generating an Uplift Tree controlled by a
+                                                                                     user-prescribed vector field 𝑣 representing the crust folds.
+
+mountain ranges. Another strategy consists in extracting the divide                            v (p)        Ni
+tree from a digital elevation model and using it in an inverse proce-                                              Di
+dural modeling process to generate a static uplift. The stream power
+erosion process produces a terrain that approximates the original                                      t
+input terrain. Figures 14 and 15 highlight this inverse procedural
+                                                                                        Vector field v       Disc distribution D           Mountain
+modeling process and exhibit a lack of variety in the elevation of
+                                                                                      from tensor field t    with triangulation            clusters C
+valleys, that comes from the absence of sediment depositions in
+the model (see Section 7.5). Actually, the main features of the input
+                                                                                     Fig. 17. Principal components of the procedural dendritic ridge cluster
+terrain are successfully reproduced by the simulation, confirming
+                                                                                     generation algorithm.
+the inverse procedural modeling capacities of our model.
+                                                                                        The algorithm operates in three steps (Figure 17). First, the de-
+6.2        River networks
+                                                                                     signer defines a tensor field by interactively combining primitives
+River networks and drainage valleys play a crucial part in shaping                   which, in turn, define a vector field, as advocated by Zhang et al.
+the mountain ranges. By limiting the amount of tectonic uplift                       [2007]. The large scale structures of the mountains are then gener-
+within river and valley areas, we force the flow routing to those                    ated by using an anisotropic off-lattice Eden growth model whose
+specific zones and guide the erosion process.                                        growth probability is driven by the direction of the vector field.
+   The river network can be either sketched or derived by analysing                  Finally, the dendritic clusters are converted into primitives and as-
+real terrain digital elevation models as exposed by Argudo et al.                    sembled into an Uplift Tree T . Altogether, the cluster-based gener-
+[2019]. In the case of a user-defined network, the graph should                      ation algorithm synthesizes large-scale mountain ranges primitives
+contain coherent elevations or drainage area values. Should the                      aligned with user-defined directions.
+input be inconsistent, the simulation sill yields a hydrologically-                     The vector field 𝑣 sets the main direction of the folds for every
+coherent river network by construction which might not address                       point p in the domain. It is computed from a tensor field 𝜏 as pre-
+some of the user’s prescriptions (see accompanying video).                           sented by Zhang et al. [2007], designed through a construction
+   Recall that a river tree R is a directed acyclic graph connecting                 tree combining primitives in a hierarchical structure, which allows
+nodes R𝑘 defined as geometric points that are characterized by                       for interactive modifications of the tensor field 𝜏 like blending or
+their elevation and drainage area ℎ𝑘 and 𝑎𝑘 respectively. Similarly                  copy-paste operations, hence the resulting vector field 𝑣.
+to the case of the ridges, we convert every edge in R into a valley                     Once the vector field 𝑣 has been set by the designer, we sample
+uplift primitive (Section 5.1). The drainage area along the segment is               the domain using a Poisson-disc [Lagae and Dutré 2006] distribu-
+computed by interpolating the drainage values at the corresponding                   tion with a radius 𝑟 D corresponding to the smallest mountainous
+nodes in the graph. The varying valley width 𝑤 is computed using                     landmark. Let D = {D𝑖 }, 0 ≤ 𝑖 ≤ 𝑛 D denote the set of discs. The
+power law: 𝑤 ∝ 𝑎 0.4 introduced in geomorphology (see the work of                    discs are then assembled into clusters C𝑖 .
+Harel et al. [2022] for a discussion on the width-area-slope scaling                                                 We generate clusters by applying a
+of valleys and channels).                                                                                         greedy   off-lattice Eden growth algo-
+                                                                                                p        Ci
+                                                                                                  i
+                                                                                          mij                     rithm [Murray. 1961; Wang et al. 1995] to
+                                                                                               v (mij)            the set of discs. To optimize Eden growth,
+                                                                                         p                v
+                                                                                           j                     we first perform a Delaunay triangula-
+                                  a                                                                               tion of the discs to accelerate the nearest
+                                                                                                                  neighbor queries required in the growth
+                                                                                     Fig. 18. Anisotropic         process. Therefore, we define the neigh-
+                                                                                     cluster growth.              borhood N𝑘 of D𝑘 as the set of discs that
+                       u0         h                                    5   10
+                                                                                km
+                                                                                                                  share an edge with D𝑘 in the Delaunay
+                                                                                     triangulation.
+Fig. 16. Example of a static uplift 𝑢 0 created by carving a river network with         Starting from a yet unlinked disc D𝑖 ∈ D, the growth process
+varying valley widths.                                                               incrementally aggregates discs by repeating the following steps:
+                                                                       Large-scale terrain authoring through interactive erosion simulation                        •   39:9
+
+
+1) Select a random cluster C𝑖 in the set of clusters, and a random                 𝑒 (𝑡) = ℎ 0 − ℎ(𝑡) between the target elevation ℎ 0 , and the current
+disc D 𝑗 in C𝑖 . 2) Select an unlinked disc D𝑘 in N𝑗 if it exists, and             one ℎ(𝑡) in the simulation. Depending on the sign of 𝑒 (𝑡), the uplift
+add it to the cluster C𝑖 by creating an edge between D𝑘 and D 𝑗                    needs to increase or decrease by an unknown amount. This task is
+(Figure 18) if the edge accords to the direction of the vector field 𝑣.            performed using a proportional–integral–derivative (PID) controller:
+3) Otherwise, define D 𝑗 as a new cluster, remove it from the set of                                                     ∫ 𝑡
+                                                                                                                                          𝑑𝑒 (𝑡)
+candidate discs. The creation of new clusters stops when the set of                               𝑢˜ (𝑡) = 𝐾𝑝 𝑒 (𝑡) + 𝐾𝑖     𝑒 (𝑡)𝑑𝑡 + 𝐾𝑑
+                                                                                                                          𝑡0               𝑑𝑡
+discs D is empty.
+   The condition for creating an edge in the cluster growth process is             The coefficient 𝐾𝑝 adjusts the uplift proportionally to the error.
+based on the underlying direction of the vector field 𝑣. Aggregation               The integral coefficient 𝐾𝑖 increases the response according to the
+depends on the angle between the edge and the direction of 𝑣: a                    persistence of the error: the longer a small error persists, the higher
+maximum angle 𝛼 is used. Let p𝑖 and p𝑘 centres of the discs D𝑘 and                 the uplift is pushed to make it disappear. Finally, the derivative
+D𝑖 , and m𝑖𝑘 the mid-point. We test the scalar product between the                 coefficient 𝐾𝑑 controls the influence of the variation of the error:
+unit vector of the direction of the edge connecting D𝑘 and D𝑖 and                  the faster the error is rising, the higher the feedback to stabilize it.
+the vector field:                                                                     In the discrete case, the dynamic uplift update at iteration 𝑘 + 1
+                                                                                   is defined as follows:
+                  |(p𝑘 − p𝑖 ) · 𝑣 (m𝑖𝑘 )| /∥p𝑘 − q𝑖 ∥ ≤ cos(𝛼)
+                                                                                                                   𝑘
+                                                                                                                  ∑︁
+  The Eden clusters are converted into an Uplift Tree model by                         𝑢˜ (𝑘 + 1) = 𝐾𝑝 𝑒 (𝑘) + 𝐾𝑖     𝑒 ( 𝑗) + 𝐾𝑑 (𝑒 (𝑘) − 𝑒 (𝑘 − 1))  (10)
+parsing the edges of the clusters’ graphs and generating segment-                                                         𝑗=0
+based primitives. At this stage, a variety of user-defined control                 Updating 𝑢˜ and the controller state at every iteration is not manda-
+maps modulate the construction process.                                            tory and can be performed only at a user-given regular interval. The
+                                                                                   parameters were set experimentally to 𝐾𝑝 = 0.01, 𝐾𝑑 = 0.01 and
+                                                                                   𝐾𝑖 = 0.001, for an update every 10 iterations.
+              t
+          P                                                               h              h       𝑒𝑒 𝑘𝑘 = ℎ0 − ℎ(𝑘𝑘, 𝐪𝐪)    𝑢𝑢�
+                                                                                        h0                Target elevation
+                                                                                                                                            𝑢𝑢(𝑘𝑘 + 1)(𝐪𝐪)
+                                                                                                                                            �                    𝑢𝑢(𝑘𝑘 + 1)
+                                                                                                                                                                 �
+                                                                                    h(k, q)                            Elevation at
+         E                         u0               km                    a                                            iteration k                                𝑢𝑢(𝑘𝑘)
+                                                                                                                                                                  �
+                                         7,5   15
+                                                                                                                               𝑢𝑢(𝑘𝑘)(𝐪𝐪)
+                                                                                                                               �
+
+Fig. 19. Uplift map obtained from the tensor field 𝜏 and elevation and density                               q                                               q
+                                                                                                                                                   r
+control maps E and P, the resulting terrain shows dendritic mountain
+ranges aligned with the vector field.
+                                                                                       Fig. 20. Dynamic update of 𝑢˜ in response to the elevation error 𝑒.
+
+   In our model, we rely on two low-resolution density maps: P
+                                                                                      Point-based constraints are useful for prescribing the elevation
+representing the probability of the presence of a mountain range,
+                                                                                   of peaks or other points of interest. Let P denote a point constraint
+and E defining the target global elevation of mountain ranges. We
+                                                                                   located at q ∈ R2 , and ℎ 0 its prescribed elevation. We define a
+remove segments according to P and parameterize the maximum
+                                                                                   corresponding dynamic uplift primitive 𝑢˜ P defined as a compactly
+uplift value 𝑢 S and radii of the primitives according to E. Eventu-
+                                                                                   supported smooth step function centred at q. The radius 𝑟 is set
+ally, procedurally defined low-frequency deformation operators are
+                                                                                   by the user to define the influence of the constraint, and 𝑢˜ P (q, 0)
+inserted in the Uplift Tree T to warp crest lines. Figure 19 depicts
+                                                                                   is initialized to 0. A controller is then assigned to this constraint
+the generation process with slightly warped primitives aligned with
+                                                                                   with the error function 𝑒 (𝑘, q) = ℎ 0 − ℎ(𝑘, q). At every iteration
+the direction of the user-defined vector field 𝑣.
+                                                                                   𝑘, we compute the correcting term 𝑢˜ (𝑘 + 1) for the primitive (see
+                                                                                   Figure 20).
+6.4   Elevation constraints
+The Uplift Tree T defining 𝑢 0 provides a global control over the
+major landforms. However, the precise control of the elevation of
+characteristic landforms such as peaks, ridges or valleys can be
+difficult: the steady-state elevation reached at a point p does not
+only depend on 𝑢 0 (p) but is a complex process ruled by the stream                              h
+power erosion. This non-linearity can make the proper control of
+altitudes a challenging task, and controlling the altitude of specific
+points in the terrain remains difficult.
+   We define elevation constraints by introducing a dynamic uplift
+                                                                                                 a                km                                               u0+u~
+component 𝑢˜ to adapt the values of 𝑢 during the simulation. A funda-                                  7,5   15
+
+
+mental aspect of elevation constraints is their compatibility with the
+global erosion simulation. The value depends on the measured error                  Fig. 21. Example of peak and ridges produced by elevations constraints.
+39:10    •       Schott et al.
+
+
+
+
+                                                  𝑢0                                                            𝑢0                                           𝑢0
+
+
+
+
+             h                            Riverbeds            h                                        Erasing           h                  Alpine mountains
+
+
+
+                                                  𝑢0                                                        𝑢0 + 𝑢෤                                          𝑢0
+
+
+
+
+             h                   Copy/Paste + Rotate           h                    Elevation constraint                  h                       Tensor field
+
+Fig. 22. Example of an interactive editing session. The designer first generated an Uplift Tree from a river network and let the erosion simulation converge. She
+then erased the uplift over an entire region, which removed mountains and instead used an Alpine brush to create a half-circle shaped mountain range. The
+circular mountain range was obtained by selecting, rotating and copying the previously defined Alpine uplift. Finally, the designer specified some explicit
+elevation constraints, before filling the flatlands with smaller mountain ranges (along a main direction, in a similar way to the Iranian Zagros range) produced
+by our procedural tensor field generation algorithm.
+
+
+  The uplift value corresponding to the target elevation ℎ 0 is found                                                                                            e
+                                                                                                 a
+when an elevation controller reaches a steady-state. The controllers                                                  d               c
+are deactivated to freeze the corresponding dynamic uplift compo-
+nent 𝑢˜ and integrate it into the static term 𝑢 0 . The simulation finally                                                                            a
+converges while conforming to the elevation constraints with a                                                                                                   d
+                                                                                                                      b
+coherent flow discharge.
+  Figure 21 illustrates curve constraints to set ridges elevation.                               d
+Given a user-defined target ridge curve and its corresponding ele-                                                            f
+vation, we sample the curve to place multiple point constraints that                                   km
+                                                                                           100   200
+will form a continuous ridge; limitations are discussed in Section 7.5.
+                                                                                      u0                                          a
+7     RESULTS
+We implemented our method in C++, the drainage area and stream
+power erosion algorithms were coded as GLSL compute shaders.
+Experiments were performed on a desktop computer equipped with
+Intel® Core 𝑖7, clocked at 4 GHz with 16 GB of RAM, and an NVidia
+                                                                                    Fig. 23. Authoring of a large terrain (about 1200 × 600 km), starting from
+GTX 1080ti graphics card. The generated terrains were directly                      an inverse procedural modeling of the Alps, and using several high-level
+rendered in real-time with a GLSL shader using the optimized Sphere                 brushes to edit existing features and add new ones: (a) - sea editing; (b) -
+Tracing algorithm for terrains [Génevaux et al. 2015; Hart 1996]                    twist deformation; (c) - erase brush to create craters; (d) - point primitives
+to provide immediate feedback to the user or streamed into Eon-                     distribution; (e) - low frequency warping; (f) - sketching of a replica of O’ahu
+Software Vue to produce photorealistic landscapes (Figures 1 and                    island in the Mediterranean sea.
+29). The erosion simulation code is available at https://github.com/H-
+Schott/StreamPowerErosion.
+
+7.1     Control                                                                     stroke, which allows for rapid sketching of large-scale terrains but
+Figure 22 illustrates various aspects of user control with screen-                  provides less precision than the low-level tools favoured by experi-
+shots from a typical authoring session. In general, inexperienced                   enced artists. Elevation constraints lend themselves to specifying
+users favour high-level tools such as copy-and-paste or predefined                  the elevation of peaks.
+uplift maps computed from digital elevation models that allow ef-                      Users can model large-scale terrains featuring different types
+ficient creation and duplication of complex mountain ranges. A                      of valleys and landforms in a few minutes. The editing session in
+variety of uplift tools generate realistic mountain ranges in a single              Figure 22 took 3 minutes (see the accompanying video), whereas
+                                                                    Large-scale terrain authoring through interactive erosion simulation            • 39:11
+
+  Elevation blend                      Uplift blend                                Elevation warp                          Uplift warp
+
+
+                                   a                                    a                                             a                                   a
+
+
+
+
+                                   h                                    h                                             h                       u           h
+
+Fig. 24. Two terrains obtained from the erosion simulation are blended           Fig. 25. A terrain obtained from the erosion simulation is warped by twisting
+together using their elevation or their uplift. The loss of natural features     its elevation or its uplift. While the main lines are following the warping
+such as dendrites is emphasized in white, while the drainage areas show          as intended in both cases, we observe that, with the elevation twist, the
+that the second method preserves a consistent flow.                              dendritic features are also inevitably distorted.
+
+
+                                                                                                      Size    Steps       𝑡𝑠 (ms)   𝑡𝑐 (s)
+the landscape depicted in Figure 23 was completed in less than 10
+minutes by an experienced user.                                                                       256        5𝑘          0.1     0.5
+   Editing brushes are based on well-designed primitives adapted to                                   512        5𝑘          0.3     1.3
+authoring. Although indirect, the Uplift Tree provides control over                                   1024      11𝑘          0.8     9.1
+the location and the average elevation of mountains and valleys; and                                  2048      39𝑘          3.3     128
+over the trajectories of ridges and rivers. The designer can enforce
+a given dendritic ridge or river network using either divide trees or                                 4096      81𝑘         12.5    1036
+river trees as advocated by Argudo et al. [2019] or by sketching low             Table 1. Performance of the simulation with a constant uniform uplift 𝑢 0 :
+                                                                                 grid resolution, number of steps, average time for one step 𝑡𝑠 (in millisec-
+uplift valleys.
+                                                                                 onds), total simulation time to converge 𝑡𝑐 (in seconds).
+   Uplift operators. Here we advocate uplift operators as more suit-
+able modeling tools than direct elevation combinations and transfor-
+mations. As stated in the Section 5.2, blending terrain parts or apply-
+ing deformations to elevation often yields unrealistic results with                 Convergence speed. While the exact graph-based drainage area
+over-distorted reliefs, blurred landforms, and inconsistent drainage             computations of Cordonnier et al. [2016] allows for fewer steps,
+networks. In contrast, performing interpolation (Figure 24) or warp-             our method still converges up to two orders of magnitude faster,
+ing in the uplift domain (see Section 5.2 and Figure 25) allows com-             thanks to the parallel implementation on graphics hardware. On
+plex editing processes while preserving the overall hydrology con-               a 160k points graph, equivalent to a 400 × 400 grid, their method
+sistency provided by the stream power erosion simulation.                        requires ≈ 200 steps to converge, and each step takes about 1.3 𝑠
+                                                                                 (total time 252 𝑠). Our approach needs ≈ 5000 steps over a 512 ×
+   Inverse procedural modeling. The vector-based representation of               512 grid with 0.3 𝑚𝑠 per step for a total time of 1.3 𝑠 (see Table 1).
+the Uplift Tree delivers valuable properties: it does not depend on              Results demonstrate that the graphics hardware parallelism largely
+the underlying grid resolution, and it is compact in memory, which               compensates the slower explicit solver.
+qualifies it for inverse procedural modeling methods. Our orometry-                 The convergence to steady-state depends primarily on the grid
+based approach [Argudo et al. 2019] can take any digital elevation               resolution and the choice of Δ𝑡. The number of iterations to conver-
+model as input, extract the ridge and river networks, convert the                gence increases for large grids (resolution greater than 1024 × 1024).
+graphs to uplift primitives and generate a compact Uplift Tree repre-            One solution consists in adapting the time step Δ𝑡, which should
+sentation completed with elevation constraints for prominent peaks.              be large enough to reduce iteration count, and small enough to
+The only information needed to reconstruct an approximation of                   guarantee stability. We observed that the number of pits-cell #P, i.e.
+the input terrain is the compact Uplift Tree. Although the synthe-               cells with no downward neighbors, is related to the overall stability,
+sized terrain is not strictly identical to the input, the stream power           since it decreases toward zero through the simulation. Therefore,
+erosion generates landforms with the same major ridges and valleys,              we implemented a heuristic that adapts the time step Δ𝑡 to the num-
+as illustrated in Figures 15, 16, and 27.                                        ber of pit-cells by increasing it by 1% if #P decreases, and strongly
+                                                                                 reducing it if the #P significantly increases:
+7.2   Performance                                                                                        
+                                                                                                           1.01Δ𝑡𝑖 if #P is decreasing
+Erosion simulations are a key modeling tool for virtual terrains                                Δ𝑡𝑖+1 =
+                                                                                                           0.75Δ𝑡𝑖 otherwise
+and achieving interactive visualisation helps artists and geologists
+understand the processes and tune parameters accordingly. An-                      While this heuristic allows the process to converge in most cases,
+other crucial aspect of the stream power erosion simulation is the               more complex integration schemes or multigrid techniques would
+convergence to a steady-state. We compare our approach to the                    undoubtedly improve the convergence of the simulation. Table 1
+state-of-the-art erosion methods considering both interactivity and              shows the time required to converge to steady-state under uniform
+convergence speed.                                                               uplift conditions using an adaptive time step simulation.
+39:12              •   Schott et al.
+
+
+
+
+              𝑢𝑢                              ℎ                                                                           ℎ                                                                 ℎ
+
+
+   Mountain
+
+
+
+                                                  Initial                                                                 1k steps                                                          15k steps
+
+
+
+              𝑢𝑢                              ℎ                                                                          ℎ                                                                  ℎ
+
+  Carving
+
+
+
+                                             700 steps                                                                    3k steps                                                          15k steps
+
+
+Fig. 26. Evolution of the terrain under two editing scenarios in the uplift domain: top row shows the apparition of a large mountain range at the center, and
+bottom row shows the creation of deep valleys starting from the borders of the domains. In both cases, the erosion rapidly creates the desired landforms
+(already visible after 1k steps) and then converges to a steady state.
+
+
+  Rockies                                                                         elevation difference between the terrain at each step and the final
+                                                                                  terrain at steady-state using a L 1 metric. Convergence curves show
+                                                                                  a rapid convergence to a first approximation of the elevation after a
+                                                                                  few hundred steps, then a plateau where ridge migration processes
+                                                                                  take place, and finally convergence to the steady-state.
+ Himalaya                                                                                                         300                                        300
+                                                                                                                                            Mountain                                    Carving
+
+
+
+
+                                                                                   Average elevation difference
+                                                                                                                  225                                        225
+
+
+                                                                                                                  150                                        150
+
+
+                                                                                                                   75                                         75
+   Digital elevation model                Erosion simulation
+                                                                                                                   0    3750       7500      11250   15000    0    3750       7500      11250     15000
+Fig. 27. Comparison between digital elevation models (North American                                                           Number of steps                            Number of steps
+Rockies and Himalaya) and the result of the inverse procedural method
+based on the erosion simulation (using the divide tree and the river tree         Fig. 28. Convergence curves for the terrains shown in Figure 26 under two
+respectively).                                                                    editing scenarios using a L 1 metric.
+
+
+
+   Interactivity. Cordonnier et al. [2018] were able to achieve interac-          7.3                               Validation
+tive rates on 100 × 100 grids. Due to our efficient parallel implemen-            In addition to control tools and performance, an authoring frame-
+tation of the stream power erosion, we achieve interactive frame                  work is also characterized by the variety of the terrains it can pro-
+rates on large grids up to 4096 × 4096, as shown by the average times             duce. Figure 29 shows four different outputs of the erosion simu-
+for one step in Table 1. The higher the resolution, the more steps are            lation and demonstrates that our model is capable of producing
+needed to observe the impact and results of an edition operation. In              various types of large scale landscapes.
+practice, we achieve real-time feedback and editing for 1024 × 1024                  Evaluating the plausibility of a generated terrain is not a simple as-
+terrains (as shown in the accompanying video).                                    signment. One solution consists in assessing the geomorphological
+   Furthermore, even though the stream power erosion may require                  coherency by verifying if observations made by geologists remain
+many iterations to converge, the shape of the final terrain is observ-            valid for synthesized models. We rely on Hack’s river scaling power
+able after only a few hundred iterations, which allows fast feedback              law observed in geomorphology [Hack 1957]. For a given point on
+and lends our framework for interactive editing. Figure 26 shows                  the terrain, Hack’s law correlates the area of its watershed (funda-
+the evolution of a 512 × 512 terrain after two editing processes: the             mentally its drainage area) 𝑎 to the length of its longest upstream
+creation of a large mountain range at the centre, and the carving                 river 𝑙 as follows:
+of deep valleys from the borders. Figure 28 indicates the average                                                 𝑙 = 𝑐 𝑎𝑛                            (11)
+                                                                            Large-scale terrain authoring through interactive erosion simulation     • 39:13
+
+
+
+
+                  km                                         km                                     km                                 km
+       25    50                                    30   60                               7,5   15                            15   30
+
+
+
+
+Fig. 29. Various large scale landscapes obtained through the erosion simulation, inspired from Himalayas, Nevada, Appalachians and Iran (from left to right).
+
+
+      Figure           Size   Cell      #U       Memory              Hack                7.4        Comparison with other techniques
+                                                                                         It is worth essaying a detailed comparison with other modeling
+                              size                                  𝑐        𝑛
+                                                                                         approaches, particularly 1) hydrologically-based procedural models,
+            10          300   293        967            76        1.27   0.542           2) feature curves oriented models, and 3) surface erosion and tectonic
+            13          300   293        911            89        1.19   0.556           simulation methods.
+            14           80    78       3511           281        1.29   0.581              Procedural techniques. Procedural techniques and example-based
+            15          150   146       7899           632        1.25   0.561           techniques [Gain et al. 2015; Zhou et al. 2007] do not generate ter-
+            16           80    78        653            55        1.38   0.553           rains that are hydrologically consistent. Scott and Dodgson [2021]
+            19          300   293        540            41        1.10   0.575           propose to use a breaching algorithm [Lindsay. 2016] interlaced in
+                                                                                         multi-resolution example-based terrain synthesis to improve hydro-
+            23         1200   600    ≈ 35000        ≈ 2800        1.00   0.584
+                                                                                         logical consistency, which only partially alleviates the problem as
+            24          150   146      11411           914        1.22   0.568           breaching still produces artificial canyons. In contrast, the stream
+            25          260   254      10128           810        1.15   0.563           power erosion algorithm always converges to hydrologically coher-
+Table 2. Size (in kilometers), cell size (in meters), number of nodes #U in              ent terrains without pits, which allows the extraction and generation
+the Uplift Tree and memory size of the Uplift Tree (in kilobytes), of most of            of river networks easier. Moreover, the Uplift Tree primitives can
+the generated terrains presented in the figures. All terrains are modeled by             prescribe the width of valleys while preserving the overall drainage
+a 1024 × 1024 grid (except for Figure 23, which is 2000 × 1200).                         network. Génevaux et al. [2013] proposed a specific model focusing
+                                                                                         on the generation of a hydrologically correct river network. An es-
+                                                                                         sential limitation of this approach is that the procedurally generated
+The terms 𝑐 and 𝑛 are constants referred to as Hack’s coefficient                        mountain ranges may not be hydrologically correct, and may not
+and Hack’s exponent, studies [Sassolas-Serrayet et al. 2018] report                      exhibit characteristic dendritic shapes.
+a range of [1, 6] for 𝑐 and [0.45, 0.7] for 𝑛.                                              Feature curve models. Point and curve elevation constraints have
+   Figure 30 reports statistics for two different terrains generated                     already been introduced in other authoring contexts. Hnaidi et al.
+using the stream power erosion simulation. The obtained Hack’s                           [2010] use control points on Bézier curves, whereas Guérin et al.
+coefficients 𝑐 and 𝑛 lie in a valid range which demonstrates that our                    [2022] relie on a user-defined gradient vector field with elevation
+model conforms to this power law. Small watersheds (𝑎 < 10 km2 )                         and gradient constraints along curves and a tensor field to freely
+were removed from the plot to avoid artefacts to the grid resolution.                    warp it. Gradient-based terrain editing based on control [Guerin
+The red line was fitted on the log-scaled terrain data using a least                     et al. 2022] provide great control to the user but they do not cre-
+square method.                                                                           ate hydrologically-correct terrains, and using breaching [Lindsay.
+                                                                                         2016] only partially alleviate the problems as visual artefacts can be
+ 𝐿𝐿 = 1.3 𝑎𝑎0.558                         𝐿𝐿 = 1.1 𝑎𝑎0.563
+                                                                                         created.
+                                                                                            Hydrological realism comes from the stream power erosion simu-
+                                                                                         lation that carves the uplift-elevated terrain. Therefore, we neither
+                                                                                         rely on user-prescribed oriented noise to create dendritic features,
+                                                                                         nor need gradient constraints to assess coherent ridges or river net-
+                                                                                         works. Nonetheless, we still need to set the elevation of the peaks
+                                                                                         or ridges, which is achieved by introducing elevation constraints
+                                                                                         with a varying uplift parameter 𝑢˜ (see Section 6.4).
+Fig. 30. Hack’s Law validation for two terrains generated with the erosion
+framework. The obtained coefficients fit the ranges given in literature.                    Erosion simulation. Although producing visually convincing small-
+                                                                                         scale landmarks such as ravines or sedimentary valleys, surface
+  We tested all our generated models and the results indicate that                       erosion algorithms do not lend themselves to creating large-scale
+they are validated by Hack’s law. Table 2 reports the computed                           terrains. Most notably, those methods do not guarantee hydrolog-
+coefficients, which stand in the range described in geomorphology.                       ically correct reliefs and often produce pits in valleys, requiring
+39:14    •   Schott et al.
+
+
+further post-processing using breaching or depression filling [Lind-      roads. Our method produces standard heightfields and is therefore
+say. 2016]. Closer to our technique is the method from Cordonnier et      compatible with standard amplification techniques such as sparse
+al. [2018]. While controlling the simulation of the compression and       modeling [Guérin et al. 2016], or learning-based approaches [Zhao
+folding of tectonic plates using displacement motions proves to be        et al. 2019]. Figure 1 (right) shows a synthesized terrain obtained
+a good approximation for producing realistic large-scale landforms,       after a ×8 sparse amplification.
+this indirect control does not qualify this approach for authoring.          Our implementation of the stream power simulation ensures that
+Moreover, the stream power erosion simulation relies on a compu-          the water flows outside the terrain. Although this gives realistic
+tationally intensive drainage area computation, which drastically         large-scale results, it does not allow for the placement of lakes. The
+limits the terrain resolution. In contrast, our approach broadens         temporal and spatial scale of the results also makes the conservation
+the scope of stream power erosion to interactive authoring. We            of matter challenging: uplift continuously elevates bedrock, whereas
+provide different editing tools and allowing to author and control        the stream power erosion removes material. Mass conservation is
+large-scale terrains interactively by combining brushes (Section 6.4),    not guaranteed as the method considers that eroded material is
+procedural generation (Section 6.3), or using an inverse procedural       transported and discharged out of the domain without any sediment
+modeling approach by generating uplift from ridge or river net-           deposition mechanism. Such processes could be taken into account
+works extracted from digital elevation models (see Section 6.1 and        [Yuan et al. 2019] at the expense of more intensive computation, or
+Section 6.2).                                                             added as a post-processing step.
+   The coherence of the surface flow of water is a crucial aspect of
+digital landscape generation. We qualify a river network as coherent      8    CONCLUSION
+when the flow is directed to the boundary of the domain, without          Combining the stream power erosion simulation with the uplift con-
+pit-cells retaining water. Most terrain synthesis techniques do not       struction tree and user-prescribed sparse constraints provides foun-
+guarantee the coherence of the water flow, and require a pit-removal      dations for interactive large-scale terrains authoring. Our method
+process. This extra step can take various forms: Scott and Dodgson        incorporates painting, sketching, and copy-and-paste of terrain frag-
+[2021] remove the depressions in parallel with the texture synthesis      ments with automatic generation of hydrologically consistent reliefs.
+algorithm, whereas Cordonnier et al. [2016] uses the flow routing         The controlled erosion formalism bridges the gap between simu-
+algorithm to connect depressions forming lakes and preserve the           lation and authoring. Our fast parallel drainage area computation
+consistency of the river network. While those methods gives great         algorithm allows designers to interactively compose the large-scale
+results, they cannot be performed on a GPU. In contrast, the erosion      shape of complex landforms with a broad spectrum of procedural
+simulation based on the stream power equation consistently con-           and modeling tools, including landform feature primitives and ridge
+verges to a coherent river flow. While drainage area computations         or river networks. Specific elevations prescribed by local controllers
+based on a hydrologically correct water flow require fewer steps,         directly influence the erosion equation by dynamically retargeting
+our iterative approach requires more steps but allows for a parallel      the uplift.
+implementation on graphics hardware.                                         While the erosion simulation and the orometry-based reconstruc-
+                                                                          tion do not provide a bijective mapping between the elevation and
+                                                                          uplift domains, their relationship is intuitive and allows a variety
+7.5     Limitations                                                       of existing procedural and simulation-based modeling tools. More-
+Elevation constraints are a powerful way to prescribe mountainous         over, it lends itself to inverse procedural modeling by allowing the
+features through control points or curves describing peaks, crests        definition of the uplift from an input digital elevation model and
+lines, or river valleys. However, they do not come without limi-          capturing its essential landmarks.
+tations. First, the designer should handle constraints carefully by          This work opens avenues for future research. In particular, im-
+adapting them with either disjoint supports or compatible elevations.     proving the stream power erosion model to take into account rock
+Placing several neighboring peak constraints with incompatible ele-       hardness (plateaus, strata), sediments (screes) [Yuan et al. 2019] or
+vations and overlapping influence regions may lead to instabilities.      even glacial erosion (U-shaped and hanging valleys) [Hergarten.
+The rationale is that each controller tries to satisfy different target   2021] would be a direction worth investigating for modeling a
+constraints.                                                              broader range of landforms.
+   In the current implementation, the continuous update of the uplift
+allows for precise elevation constraints but slows down the overall       ACKNOWLEDGMENTS
+simulation as the correction term 𝑢˜ is computed on the CPU. A            This work was part of the project AMPLI ANR-20-CE23-0001, sup-
+straightforward acceleration consisted in updating 𝑢 = 𝑢 0 + 𝑢˜ every     ported by Agence Nationale de la Recherche Française. We also
+≈ 10 iterations, which proved to be sufficiently accurate. Another        thank James Gain (University of Cape Town, South Africa) for fruit-
+solution would consist of computing the dynamic term 𝑢˜ on graphics       ful scientific discussions.
+hardware, which is beyond the scope of the paper.
+   The resolution of the cells in the stream power erosion simulation     REFERENCES
+ranges from 80 to 600 meters. Consequently, our synthesized terrains      Oscar Argudo, Eric Galin, Adrien Peytavie, Axel Paris, James Gain, and Eric Guérin. 2019.
+need to be post-processed using amplification techniques to reach a          Orometry-Based Terrain Analysis and Synthesis. ACM Transactions on Graphics 38,
+                                                                             6, Article 199 (2019), 12 pages.
+higher resolution, where details of a smaller scale can be added, like    Richard Barnes. 2019. Accelerating a fluvial incision and landscape evolution model
+rivers with varying width [Peytavie et al. 2019], vegetation, or even        with parallelism. Geomorphology 330 (2019), 28–39.
+                                                                              Large-scale terrain authoring through interactive erosion simulation                    • 39:15
+
+
+Richard Barnes, Clarence Lehman, and David Mulla. 2014. Priority-flood: An optimal         Peter Krištof, Bedrich Benes, Jaroslav Křivánek, and Ondřej Šťava. 2009. Hydraulic
+   depression-filling and watershed-labeling algorithm for digital elevation models.          Erosion Using Smoothed Particle Hydrodynamics. Computer Graphics Forum 28, 2
+   Computers and Geosciences 62 (2014), 117–127.                                              (2009), 219–228.
+Bedrich Benes. 2007. Real-Time Erosion Using Shallow Water Simulation. In Proceedings      Ares Lagae and Philip Dutré. 2006. An Alternative for Wang Tiles: Colored Edges
+   of Virtual Reality Interactions and Physical Simulations. Eurographics Association,        versus Colored Corners. ACM Transactions on Graphics 25, 4 (2006), 1442–1459.
+   Dublin, Ireland, 43–50.                                                                 John B. Lindsay. 2016. Efficient hybrid breaching-filling sink removal methods for flow
+Sara Bonetti, Milad Hooshyar, Carlo Camporeale, and Amilcare Porporato. 2020. Chan-           path enforcement in digital elevation models. Hydrological Processes 30, 6 (2016),
+   nelization cascade in landscape evolution. Proceedings of the National Academy of          846–857.
+   Sciences 117, 3 (2020), 1375–1382.                                                      Xing Mei, Philippe Decaudin, and Baogang Hu. 2007. Fast Hydraulic Erosion Simulation
+Gwyneth Bradbury, Il Choi, Cristina Amati, Kenny Mitchell, and Tim Weyrich. 2014.             and Visualization on GPU. In Pacific Graphics. IEEE, 47–56.
+   Frequency-Based Creation and Editing of Virtual Terrain. In Proceedings of European     Eden Murray. 1961. A two-dimensional growth process. In Proceedings of the Fourth
+   Conference on Visual Media Production. ACM, London, UK, Article 15, 10 pages.              Berkeley Symposium on Mathematical Statistics and Probability, Vol. 2. University of
+Guillaume Cordonnier, Benoît Bovy, and Jean Braun. 2019. A Versatile, Linear Complex-         California Press, 223–239.
+   ity Algorithm for Flow Routing in Topographies with Depressions. Earth Surface          Forest Kenton Musgrave, Craig E. Kolb, and Robert S. Mace. 1989. The synthesis and
+   Dynamics 7, 2 (2019), 549–562.                                                             rendering of eroded fractal terrains. Computer Graphics 23, 3 (1989), 41–50.
+Guillaume Cordonnier, Jean Braun, Marie-Paule Cani, Bedrich Benes, Eric Galin, Adrien      Benjamin Neidhold, Markus Wacker, and Olivier Deussen. 2005. Interactive physically
+   Peytavie, and Éric Guérin. 2016. Large Scale Terrain Generation from Tectonic Uplift       based Fluid and Erosion Simulation. In Proceedings of the Eurographics Workshop on
+   and Fluvial Erosion. Computer Graphics Forum 35, 2 (2016), 165–175.                        Natural Phenomena. Eurographics Association, Dublin, Ireland, 25–32.
+Guillaume Cordonnier, Marie-Paule Cani, Bedrich Benes, Jean Braun, and Eric Galin.         Adrien Peytavie, Thibault Dupont, Eric Guérin, Yann Cortial, Benes Benes, James Gain,
+   2018. Sculpting Mountains: Interactive Terrain Modeling Based on Subsurface                and Eric Galin. 2019. Procedural Riverscapes. Computer Graphics Forum 38, 7 (2019),
+   Geology. IEEE Transactions on Visualization and Computer Graphics 24, 5 (2018),            35–46.
+   1756–1769.                                                                              Pascale Roudier, Bernard Peroche, and Michel Perrin. 1993. Landscapes synthesis
+Benoît Crespin, Carole Blanc, and Christophe Schlick. 1996. Implicit Sweep Objects.           achieved through erosion and deposition process simulation. Computer Graphics
+   Computer Graphics Forum 15, 3 (1996), 165–174.                                             Forum 12, 3 (1993), 375–383.
+Giliam J. P. de Carpentier and Rafael Bidarra. 2009. Interactive GPU-based Procedural      Brennan Rusnell, David Mould, and Mark G. Eramian. 2009. Feature-rich distance-based
+   Heightfield Brushes. In Proceedings of the International Conference on Foundations of      terrain synthesis. The Visual Computer 25, 5-7 (2009), 573–579.
+   Digital Games. ACM, Orlando, USA, 55–62.                                                Timothée Sassolas-Serrayet, Rodolphe Cattin, and Matthieu Ferry. 2018. The shape of
+David S. Ebert, Forest Kenton Musgrave, Darwyn Peachey, Ken Perlin, and Steven                watersheds. Nature Communications 9, 3791 (2018).
+   Worley. 1998. Texturing and Modeling: A Procedural Approach (3rd ed.). Elsevier.        Joshua J. Scott and Neil A. Dodgson. 2021. Example-based terrain synthesis with pit
+James Gain, Bruce Merry, and Patrick Marais. 2015. Parallel, Realistic and Controllable       removal. Computers and Graphics 99, C (2021), 43–53.
+   Terrain Synthesis. Computer Graphics Forum 34, 2 (2015), 105–116.                       Jan Seibert and Brian L. McGlynn. 2007. A new triangular multiple flow direction
+James E. Gain, Patrick Marais, and Wolfgang Strasser. 2009. Terrain sketching. In             algorithm for computing upslope areas from gridded digital elevation models. Water
+   Proceedings of the Symposium on Interactive 3D Graphics and Games. ACM, Boston,            Resources Research 43, 4 (2007), 1–8.
+   USA, 31–38.                                                                             Ondřej Šťava, Bedřich Beneš, Matthew Brisbin, and Jaroslav Křivánek. 2008. Interactive
+Eric Galin, Eric Guérin, Adrien Peytavie, Guillaume Cordonnier, Marie-Paule Cani,             Terrain Modeling Using Hydraulic Erosion. In Proceedings of the Symposium on
+   Bedrich Benes, and James Gain. 2019. A Review of Digital Terrain Modeling. Com-            Computer Animation. 201–210.
+   puter Graphics Forum (Proceedings of Eurographics 2019) 38, 2 (2019), 553–577.          Flora Ponjou Tasse, Arnaud Emilien, Marie-Paule Cani, Stefanie Hahmann, and Adrien
+Jean-David Génevaux, Éric Galin, Éric Guérin, Adrien Peytavie, and Bedřich Beneš.             Bernhardt. 2014. First Person Sketch-based Terrain Editing. In Proceedings of Graph-
+   2013. Terrain Generation Using Procedural Models Based on Hydrology. ACM                   ics Interface. Canadian Information Processing Society, Montreal, Canada, 217–224.
+   Transaction on Graphics 32, 4 (2013), 143:1–143:13.                                     Nikos Theodoratos and James W. Kirchner. 2020. Dimensional analysis of a landscape
+Jean-David Génevaux, Éric Galin, Adrien Peytavie, Éric Guérin, Cyril Briquet, François        evolution model with incision threshold. Earth Surface Dynamics 8, 2 (2020), 505–
+   Grosbellet, and Bedrich Benes. 2015. Terrain Modeling from Feature Primitives.             526.
+   Computer Graphics Forum 34, 6 (2015), 198–210.                                          Juraj Vanek, Bedrich Benes, Adam Herout, and Ondrej Stava. 2011. Large-Scale Physics-
+Eric Guérin, Julie Digne, Eric Galin, and Adrien Peytavie. 2016. Sparse representation        Based Terrain Editing Using Adaptive Tiles on the GPU. IEEE Computer Graphics
+   of terrains for procedural modeling. Computer Graphics Forum (proceedings of               and Applications 31, 6 (2011), 35–44.
+   Eurographics 2016) 35, 2 (2016), 177–187.                                               Chang Y. Wang, Pei-Ling Liu, and James Bassingthwaighte. 1995. Off-lattice Eden-C
+Eric Guérin, Julie Digne, Eric Galin, Adrien Peytavie, Christian Wolf, Bedrich Benes,         cluster growth model. Journal of physics A: Mathematical and general 28 (1995),
+   and Benoit Martinez. 2017. Interactive Example-Based Terrain Authoring with                2141–2148.
+   Conditional Generative Adversarial Networks. ACM Transactions on Graphics               Kelin X. Whipple and Gregory E. Tucker. 1999. Dynamics of the stream-power river in-
+   (proceedings of Siggraph Asia 2017) 36, 6, Article 228 (2017), 13 pages.                   cision model: Implications for height limits of mountain ranges, landscape response
+Eric Guerin, Adrien Peytavie, Simon Masnou, Julie Digne, Basile Sauvage, James Gain,          timescales, and research needs. Journal of Geophysical Research: Solid Earth 104, B8
+   and Eric Galin. 2022. Gradient Terrain Authoring. Computer Graphics Forum                  (1999), 17661–17674.
+   (proceedings of Eurographics 2022) 44, 2 (2022), 85–95.                                 Sean Willett, Christopher Beaumont, and Philippe Fullsack. 1993. Mechanical model
+John T. Hack. 1957. Studies of longitudinal stream profiles in Virginia and Maryland.         for the tectonics of doubly vergent compressional orogens. Geology 21, 4 (1993),
+   U.S Geological Survey Professional Paper 294-B (1957), 45–97.                              371–374.
+Elhanan Harel, Lian Goren, Onn Crouvi, Hanan Ginat, and Eitan Shelef. 2022. Drainage       Xiaoping P. Yuan, Jean Braun, Laure Guerit, Delphine Rouby, and Guillaume Cordonnier.
+   reorganization induces deviations in width-area-slope scaling of valleys and chan-         2019. A new efficient method to solve the stream power law model taking into
+   nels. Earth Surface Dynamics Discussions 2022 (2022), 1–35.                                account sediment deposition. Journal of Geophysical Research: Earth Surface 124, 6
+John C. Hart. 1996. Sphere Tracing: A Geometric Method for the Antialiased Ray                (2019), 1346–1365.
+   Tracing of Implicit Surfaces. The Visual Computer 12, 10 (1996), 527–545.               Eugene Zhang, James Hays, and Greg Turk. 2007. Interactive Tensor Field Design and
+Stefan Hergarten. 2021. Modeling glacial and fluvial landform evolution at large scales       Visualization on Surfaces. IEEE Transactions on Visualization and Computer Graphics
+   using a stream-power approach. Earth Surface Dynamics 9, 4 (2021), 937–952.                13, 1 (2007), 94–107.
+Houssam Hnaidi, Éric Guérin, Samir Akkouche, Adrien Peytavie, and Éric Galin. 2010.        Yiwei Zhao, Han Liu, Igor Borovikov, Ahmad Beirami, Maziar Sanjabi, and Kazi Zaman.
+   Feature based terrain generation using diffusion equation. Computer Graphics Forum         2019. Multi-Theme Generative Adversarial Terrain Amplification. ACM Transactions
+   29, 7 (2010), 2179–2186.                                                                   on Graphics 38, 6, Article 200 (2019), 14 pages.
+Peter Holmgren. 1994. Multiple flow direction algorithms for runoff modelling in grid      Howard Zhou, Jie Sun, Greg Turk, and James M. Rehg. 2007. Terrain Synthesis from
+   based elevation models: An empirical evaluation. Hydrological Processes 8 (1994),          Digital Elevation Models. IEEE Transactions on Visualization and Computer Graphics
+   327–334.                                                                                   13, 4 (2007), 834–848.
+Milad Hooshyar, Shashank Anand, and Amilcare Porporato. 2020. Variational analysis
+   of landscape elevation and drainage networks. Proceedings of the Royal Society A:
+   Mathematical, Physical and Engineering Sciences 476, 2239 (2020), 20190775.
+Alan D. Howard and Gordon Kerby. 1983. Channel changes in badlands. Geological
+   Society of America Bulletin 94, 6 (1983), 739–52.
+Alex D. Kelley, Michael C. Malin, and Gregory M. Nielson. 1988. Terrain simulation
+   using a model of stream erosion. Computer Graphics 22, 4 (1988), 263–268.
+

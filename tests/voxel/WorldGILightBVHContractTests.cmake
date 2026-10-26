@@ -1,0 +1,4 @@
+add_executable(WorldGILightBVHContractTests ${TEST_DIR}/WorldGILightBVHContractTests.cpp)
+target_link_libraries(WorldGILightBVHContractTests PRIVATE Engine)
+add_test(NAME WorldGILightBVHContractTests COMMAND WorldGILightBVHContractTests)
+set_tests_properties(WorldGILightBVHContractTests PROPERTIES LABELS "worldgi.light-bvh;cpu")

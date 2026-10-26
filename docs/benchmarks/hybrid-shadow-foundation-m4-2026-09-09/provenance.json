@@ -1,0 +1,8 @@
+{
+  "utc": "2026-09-09T19:21:34.871376+00:00",
+  "head": "1cb5811dde95c5508ed4230aef39672337dae542",
+  "working_tree": "uncommitted implementation",
+  "binary_sha256": "aa57abd1f1819a4dab30e97d8fb7f5d6d2edbc118756d8fbef81e94f99944e07",
+  "command": "VirtualGeometryHardwareRayTraceBenchmark --suite full --query any|closest --instances 1000 --rays 1000000 --clusters 1 --warmup 120 --frames 600 --output <file>",
+  "ordering": "five interleaved repeats, order alternates"
+}

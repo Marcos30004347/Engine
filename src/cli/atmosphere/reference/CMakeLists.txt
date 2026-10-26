@@ -1,0 +1,5 @@
+project(atmosphere_reference_cli LANGUAGES CXX)
+
+add_executable(AtmosphereReference main.cpp)
+target_link_libraries(AtmosphereReference PRIVATE runtime)
+engine_copy_sdl_runtime(AtmosphereReference)

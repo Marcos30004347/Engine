@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "commit": "1cb5811dde95c5508ed4230aef39672337dae542",
+  "working_tree_dirty": true,
+  "binary_sha256": "c4d611eef11a89b685921f2e1b47692234df19db3431d12745c78aa74b730f18",
+  "source_sha256": {
+    "assets/shaders/virtualgeometry/metal/virtualgeometry-raytrace.metal": "e8c00ed5c177e7d439cf839b000ccfbdffe78125fdb15e4564a7e627a975d42d",
+    "src/runtime/virtualgeometry/raytracing/metal/VirtualGeometryMetalRayTraceBackend.mm": "fd235b0f4a393c25fa28feb8790a26e3e9d3edecc4f1768d00797dc6d5a6a11a",
+    "tests/virtualgeometry/VirtualGeometryHardwareRayTraceBenchmark.mm": "f76a986f683d11358e112d80ac0d89f4f83a5a38ef844c7517551cb3276450a2"
+  },
+  "measurement": "serialized native GPU microbenchmarks; no renderer integration timing",
+  "cases": {
+    "trace-1k-1m": {
+      "runs": 5,
+      "device": "Apple M4",
+      "os": "Version 26.5.2 (Build 25F84)",
+      "median_run_p50_ms": 0.7087499834597111,
+      "median_run_p95_ms": 5.049875006079674,
+      "worst_run_p99_ms": 7.803083339240402,
+      "run_p50_min_ms": 0.6339999963529408,
+      "run_p50_max_ms": 0.9064166806638241,
+      "blas_bytes": 7744,
+      "tlas_bytes": 650304,
+      "scratch_bytes": 128704
+    },
+    "tlas-1k": {
+      "runs": 5,
+      "device": "Apple M4",
+      "os": "Version 26.5.2 (Build 25F84)",
+      "median_run_p50_ms": 0.2095416421070695,
+      "median_run_p95_ms": 1.5507499920204282,
+      "worst_run_p99_ms": 6.692000024486333,
+      "run_p50_min_ms": 0.10970834409818053,
+      "run_p50_max_ms": 0.43720833491533995,
+      "blas_bytes": 7744,
+      "tlas_bytes": 650304,
+      "scratch_bytes": 128704
+    },
+    "full-1k-1m": {
+      "runs": 5,
+      "device": "Apple M4",
+      "os": "Version 26.5.2 (Build 25F84)",
+      "median_run_p50_ms": 0.9086250211112201,
+      "median_run_p95_ms": 4.5682499767281115,
+      "worst_run_p99_ms": 8.046916627790779,
+      "run_p50_min_ms": 0.7191666518338025,
+      "run_p50_max_ms": 0.9589582914486527,
+      "blas_bytes": 7744,
+      "tlas_bytes": 650304,
+      "scratch_bytes": 128704
+    },
+    "full-10k-1m": {
+      "runs": 5,
+      "device": "Apple M4",
+      "os": "Version 26.5.2 (Build 25F84)",
+      "median_run_p50_ms": 1.9866249640472233,
+      "median_run_p95_ms": 5.690250021871179,
+      "worst_run_p99_ms": 6.434291659388691,
+      "run_p50_min_ms": 1.9247083691880107,
+      "run_p50_max_ms": 2.37649999326095,
+      "blas_bytes": 7232512,
+      "tlas_bytes": 6492672,
+      "scratch_bytes": 4626688
+    },
+    "blas-1k": {
+      "runs": 5,
+      "device": "Apple M4",
+      "os": "Version 26.5.2 (Build 25F84)",
+      "median_run_p50_ms": 12.42362504126504,
+      "median_run_p95_ms": 19.87879170337692,
+      "worst_run_p99_ms": 25.254250038415194,
+      "run_p50_min_ms": 9.044708334840834,
+      "run_p50_max_ms": 17.907749977894127,
+      "blas_bytes": 7232512,
+      "tlas_bytes": 650304,
+      "scratch_bytes": 10109376
+    }
+  }
+}

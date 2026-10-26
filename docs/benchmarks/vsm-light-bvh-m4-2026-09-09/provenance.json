@@ -1,0 +1,17 @@
+{
+  "recorded_utc": "2026-09-09T21:22:53.742376+00:00",
+  "head": "1cb5811dde95c5508ed4230aef39672337dae542",
+  "working_tree": "uncommitted implementation",
+  "gpu": "Apple M4",
+  "command": "cd build/tests && ./VirtualShadowTileTests --benchmark",
+  "build": "build (existing CMake configuration)",
+  "binary_sha256": "99da8c5f8022dcc1a13082b19dd83796ca98fb9ee60e8e700cec02a82f11cbe4",
+  "warmup_frames_per_run": 20,
+  "measured_frames_per_run": 80,
+  "interleaved_repeats": 4,
+  "scope": "RenderGraph GPU timestamps of the _LightTiles.pipeline node only",
+  "median_of_run_medians_ms": {
+    "linear": 0.229021,
+    "bvh": 0.274063
+  }
+}
