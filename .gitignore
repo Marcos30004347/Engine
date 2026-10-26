@@ -1,0 +1,23 @@
+build/
+build-xcode/
+build-release/
+.trash/
+.vscode/
+.vs/
+.*/
+ignore/
+./wgslc-naga/target
+wgslc-naga/target/
+.DS_Store
+.*/.DS_Store
+docs/
+# Local generated-world runtime export and preview.
+/world-data/
+/world-data-preview.png
+__pycache__
+.DS_Storeprogramme-gallery.json
+programme-gallery.json
+programme-solids.json
+
+.DS_Store
+Testing/Temporary/

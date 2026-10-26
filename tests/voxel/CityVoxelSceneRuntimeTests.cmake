@@ -1,0 +1,6 @@
+add_executable(CityVoxelSceneRuntimeTests
+    ${CMAKE_CURRENT_LIST_DIR}/CityVoxelSceneRuntimeTests.cpp)
+target_link_libraries(CityVoxelSceneRuntimeTests PRIVATE Engine)
+target_compile_features(CityVoxelSceneRuntimeTests PRIVATE cxx_std_17)
+add_test(NAME CityVoxelSceneRuntimeTests COMMAND CityVoxelSceneRuntimeTests)
+set_tests_properties(CityVoxelSceneRuntimeTests PROPERTIES LABELS "svraster.cityvoxel.phase10")

@@ -1,0 +1,51 @@
+cmake_minimum_required(VERSION 3.10)
+
+get_filename_component(TEST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+add_executable(
+  SparseVoxelVGVisibilityGPUTests
+  ${TEST_DIR}/SparseVoxelVGVisibilityGPUTests.cpp)
+target_link_libraries(SparseVoxelVGVisibilityGPUTests PRIVATE Engine)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_gbuffer_readback_cs)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_page_decode_cs)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_cull_prepass_multipass)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_cull_prepass_multipass_draw_indirect_count_disabled)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_streaming_page_selection_cs)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_vertex_shader_motion)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_vertex_shader_motion_draw_indirect_count_disabled)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_fragment_shader_motion)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_software_raster_cs)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_visibility_merge_cs)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_visibility_resolve)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_depth_reduce_to_pot)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_depth_pyramid_spd)
+add_dependencies(SparseVoxelVGVisibilityGPUTests wgsl_virtualgeometry_depth_pyramid_spd_source_depth)
+
+add_test(
+  NAME SparseVoxelVGVisibilityGPU
+  COMMAND SparseVoxelVGVisibilityGPUTests
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+set_tests_properties(
+  SparseVoxelVGVisibilityGPU
+  PROPERTIES
+    TIMEOUT 600
+    LABELS "svraster.virtualgeometry;virtualgeometry;virtualgeometry.raster;gpu")
+
+if(APPLE)
+  add_dependencies(SparseVoxelVGVisibilityGPUTests sparse_voxel_terrain_compute_raster_atomic64_metal)
+  add_test(NAME SparseVoxelVGVisibilityAtomic64GPU COMMAND SparseVoxelVGVisibilityGPUTests
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+  set_tests_properties(SparseVoxelVGVisibilityAtomic64GPU PROPERTIES
+    ENVIRONMENT "VG_TEST_NATIVE_ATOMIC64=1" TIMEOUT 180 LABELS "virtualgeometry;gpu")
+endif()
+
+add_test(NAME SparseVoxelVGVisibilityCompressedGPU COMMAND SparseVoxelVGVisibilityGPUTests
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+set_tests_properties(SparseVoxelVGVisibilityCompressedGPU PROPERTIES
+  ENVIRONMENT "VG_TEST_COMPRESSED=1" TIMEOUT 180 LABELS "virtualgeometry;gpu")
+if(APPLE)
+  add_test(NAME SparseVoxelVGVisibilityCompressedAtomic64GPU COMMAND SparseVoxelVGVisibilityGPUTests
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+  set_tests_properties(SparseVoxelVGVisibilityCompressedAtomic64GPU PROPERTIES
+    ENVIRONMENT "VG_TEST_COMPRESSED=1;VG_TEST_NATIVE_ATOMIC64=1" TIMEOUT 180 LABELS "virtualgeometry;gpu")
+endif()

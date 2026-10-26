@@ -1,0 +1,227 @@
+{
+  "page": 502,
+  "source": "The Builder's Practical Director, Plates 108 and 109, description on PDF pages 501 and 502",
+  "kind": "villa on a simply oblong plan",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "oblong without breaks or recesses",
+    "roof": "hipped",
+    "features": [
+      {
+        "kind": "zinc roof with rolls",
+        "count": 1
+      },
+      {
+        "kind": "cemented walls",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "'There is no Basement, the Kitchen Offices being on the Ground Floor, which is raised two feet above the level of the Ground.' The argument for its shape is worth keeping because it is an argument about massing: 'The simply oblong form of the house, without breaks and recesses has many advantages. It is always the most economical, and allows of the simplest possible kind of roof. Where also there are many angles to a building, damp is more likely to be retained, as the sun cannot shine so equally on the walls, and the angles are apt to retain moisture.' 1300 pounds.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "the Hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "A Staircase is shown to lead to Cellars if desired"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing Room, with folding doors"
+        },
+        {
+          "use": "morning_room",
+          "qualifier": "or breakfast room",
+          "raw": "Morning or Breakfast Room"
+        },
+        {
+          "use": "dining_room",
+          "raw": "Dining Room"
+        },
+        {
+          "use": "kitchen",
+          "raw": "Kitchen"
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery"
+        },
+        {
+          "use": "closet",
+          "qualifier": "ground",
+          "raw": "the requisite Closets"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "morning_room:or breakfast room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "drawing_room",
+          "b": "morning_room:or breakfast room",
+          "link": "open"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "closet:ground",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "upper floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "eight apartments appropriated as Bed and Dressing Rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "4",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "5",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "6",
+          "raw": "ditto"
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "1",
+          "raw": "ditto"
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "upper",
+          "raw": "besides Closets"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:4",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:5",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:6",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:upper",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:1",
+          "b": "dressing_room:1",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:2",
+          "b": "dressing_room:2",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "none",
+    "adjacency": "low"
+  }
+}

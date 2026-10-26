@@ -1,0 +1,320 @@
+{
+  "page": 459,
+  "source": "The Builder's Practical Director, 'Design for a suburban villa', ground and first floor plans on PDF page 459",
+  "kind": "suburban villa",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "notes": "Planned as three blocks stepping back from the street - the drawing room and the porch in front, the dining room and hall behind them, the kitchen wing behind that - on a corridor running through. Read off the plate, the lobbies are the point of the plan: there are three on the ground floor and one upstairs, and every one of them sits between a served room and a serving one. The dining room is not entered from the corridor directly but through a lobby; the scullery and larder hang off a lobby rather than off the kitchen; the water closet and the coals open off a third, reached past the china closet and never through the kitchen. The two principal rooms do not communicate.",
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "stepped blocks on a corridor",
+    "features": [
+      {
+        "kind": "porch",
+        "count": 1
+      },
+      {
+        "kind": "canted bay",
+        "count": 3
+      },
+      {
+        "kind": "cistern",
+        "count": 1
+      }
+    ]
+  },
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "porch",
+          "raw": "PORCH"
+        },
+        {
+          "use": "hall",
+          "raw": "HALL"
+        },
+        {
+          "use": "staircase",
+          "raw": "the stair, drawn in the hall"
+        },
+        {
+          "use": "passage",
+          "qualifier": "corridor",
+          "raw": "CORRIDOR, running from the hall to the kitchen wing"
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            18,
+            15
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            18,
+            16
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            18,
+            18
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            14,
+            7
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "scullery",
+          "raw": "LOBBY, between the kitchen and the scullery"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "dining",
+          "raw": "LOBBY, off the corridor at the dining room"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "service",
+          "raw": "LOBBY, in the row of offices under the kitchen"
+        },
+        {
+          "use": "pantry",
+          "qualifier": "china",
+          "raw": "CHINA"
+        },
+        {
+          "use": "store",
+          "qualifier": "coal",
+          "raw": "COALS"
+        },
+        {
+          "use": "wc",
+          "raw": "W.C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "hall",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "passage:corridor",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "lobby:dining",
+          "link": "door"
+        },
+        {
+          "a": "lobby:dining",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "pantry:china",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "pantry:china",
+          "b": "lobby:service",
+          "link": "door"
+        },
+        {
+          "a": "lobby:service",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "lobby:service",
+          "b": "store:coal",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "lobby:scullery",
+          "link": "door"
+        },
+        {
+          "a": "lobby:scullery",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "lobby:scullery",
+          "b": "larder",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "passage",
+          "qualifier": "upper corridor",
+          "raw": "CORRIDOR"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "BED ROOM",
+          "feet": [
+            18.25,
+            13.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the dining room",
+          "raw": "BED ROOM",
+          "feet": [
+            15.25,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the drawing room",
+          "raw": "BED ROOM",
+          "feet": [
+            18,
+            16
+          ]
+        },
+        {
+          "use": "lobby",
+          "qualifier": "first floor",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "wc",
+          "qualifier": "first floor",
+          "raw": "W.C"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the lobby",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the cistern",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "store",
+          "qualifier": "cistern",
+          "raw": "CISTERN"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "passage:upper corridor",
+          "link": "open"
+        },
+        {
+          "a": "passage:upper corridor",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:upper corridor",
+          "b": "bedroom:over the dining room",
+          "link": "door"
+        },
+        {
+          "a": "passage:upper corridor",
+          "b": "lobby:first floor",
+          "link": "door"
+        },
+        {
+          "a": "lobby:first floor",
+          "b": "wc:first floor",
+          "link": "door"
+        },
+        {
+          "a": "lobby:first floor",
+          "b": "closet:by the lobby",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the drawing room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:by the cistern",
+          "link": "door"
+        },
+        {
+          "a": "closet:by the cistern",
+          "b": "store:cistern",
+          "link": "open"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "adjacencySource": "openings",
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

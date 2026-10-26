@@ -1,0 +1,2042 @@
+{
+ "source": "The Builder's Practical Director, 784 page scans",
+ "note": "One record per page image. See tools/procedural/write_page.py.",
+ "pages": {
+  "1": {
+   "kind": "front",
+   "title": "Front board"
+  },
+  "2": {
+   "kind": "front",
+   "title": "Endpaper; Ex Libris C. K. Ogden"
+  },
+  "5": {
+   "kind": "blank"
+  },
+  "7": {
+   "kind": "front",
+   "title": "Half title"
+  },
+  "9": {
+   "kind": "front",
+   "title": "Engraved title: buildings for all classes",
+   "note": "Names the book's range: cottages, villas, farm buildings, dispensaries, public schools"
+  },
+  "11": {
+   "kind": "prose",
+   "title": "Introduction"
+  },
+  "13": {
+   "kind": "prose",
+   "title": "Elementary introduction: lineal measure"
+  },
+  "15": {
+   "kind": "prose",
+   "title": "Circumference and perimeter of figures"
+  },
+  "16": {
+   "kind": "prose",
+   "title": "Practical geometry"
+  },
+  "17": {
+   "kind": "plate",
+   "title": "Superficies (Plate 1)",
+   "draws": [
+    "diagram"
+   ],
+   "note": "Twelve figures of equal perimeter and differing area; the argument that a square encloses more than an elongated plan"
+  },
+  "19": {
+   "kind": "prose",
+   "title": "Practical geometry: definitions"
+  },
+  "20": {
+   "kind": "prose",
+   "title": "practical",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "21": {
+   "kind": "plate",
+   "title": "Brickwork: counter arch, invert, hollow walls, Flemish bond (Plate 9)",
+   "draws": [
+    "detail"
+   ]
+  },
+  "23": {
+   "kind": "prose",
+   "title": "Practical geometry: geometrical problems"
+  },
+  "24": {
+   "kind": "prose",
+   "title": "practical geometry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "25": {
+   "kind": "plate",
+   "title": "Adaptation of timber (Plate 12)",
+   "draws": [
+    "detail"
+   ]
+  },
+  "27": {
+   "kind": "plate",
+   "title": "Semi-detached villa: basement plan and elevation",
+   "draws": [
+    "basement plan",
+    "front elevation"
+   ],
+   "scale": true,
+   "design": "plate-027"
+  },
+  "28": {
+   "kind": "blank"
+  },
+  "29": {
+   "kind": "prose",
+   "title": "rrac'tk ai, rjeomktuy",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "30": {
+   "kind": "prose",
+   "title": "practical geometry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "31": {
+   "kind": "plate",
+   "title": "Plan for two fourth rate houses (Plate 21)",
+   "draws": [
+    "ground plan",
+    "first floor plan",
+    "elevation",
+    "section",
+    "roof plan"
+   ],
+   "scale": true,
+   "design": "plate-110"
+  },
+  "33": {
+   "kind": "prose",
+   "title": "practical geometry, joinery",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "34": {
+   "kind": "prose",
+   "title": "foundations, building site",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "35": {
+   "kind": "plate",
+   "title": "Sections and partitions, fourth rate house",
+   "draws": [
+    "section"
+   ],
+   "note": "Naked partitions between staircase, parlour and bedroom; no plan"
+  },
+  "36": {
+   "kind": "blank"
+  },
+  "37": {
+   "kind": "prose",
+   "title": "foundations, ihii",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "38": {
+   "kind": "prose",
+   "title": "foundations, building site",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "39": {
+   "kind": "plate",
+   "title": "Trapping of closets and drains (Plate 11)",
+   "draws": [
+    "detail"
+   ]
+  },
+  "41": {
+   "kind": "prose",
+   "title": "foundations, building site",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "42": {
+   "kind": "specification",
+   "title": "Plan, elevation and sections of a labourer's cottage",
+   "note": "Prose; the plate is elsewhere. Also drainage and cesspool matter"
+  },
+  "45": {
+   "kind": "specification",
+   "title": "Specification of works, one labourer's cottage of five rooms",
+   "design": "plate-051"
+  },
+  "46": {
+   "kind": "table",
+   "title": "estimate",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "47": {
+   "kind": "plate",
+   "title": "Public school and residence (Plate 80)",
+   "draws": [
+    "elevation"
+   ],
+   "design": "plate-461"
+  },
+  "49": {
+   "kind": "prose",
+   "title": "Concrete"
+  },
+  "50": {
+   "kind": "prose",
+   "title": "concrete",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "51": {
+   "kind": "plate",
+   "title": "Labourer's cottage of five rooms (Plate 32)",
+   "draws": [
+    "ground plan",
+    "elevation",
+    "sections"
+   ],
+   "design": "plate-051"
+  },
+  "53": {
+   "kind": "specification",
+   "title": "Plan, elevation and sections of one fourth-rate house",
+   "design": "plate-055"
+  },
+  "54": {
+   "kind": "prose",
+   "title": "specification, etc",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "55": {
+   "kind": "plate",
+   "title": "Fourth rate house (Plate 33)",
+   "draws": [
+    "cellar plan",
+    "ground plan",
+    "first floor plan"
+   ],
+   "scale": true,
+   "design": "plate-055"
+  },
+  "57": {
+   "kind": "specification",
+   "title": "Specification: plasterer, mason, blacksmith, plumber, painter",
+   "note": "For a pair with two parlours, washhouse and privy"
+  },
+  "58": {
+   "kind": "prose",
+   "title": "quantities of a fourth rate house and additional buildings thereto",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "59": {
+   "kind": "plate",
+   "title": "Adaptation of timber (Plate 13)",
+   "draws": [
+    "detail"
+   ]
+  },
+  "61": {
+   "kind": "table",
+   "title": "Quantities of a fourth-rate house: walls",
+   "note": "Measured wall lengths per element; gives storey heights 7'6 cellar, 17'6 above"
+  },
+  "65": {
+   "kind": "table",
+   "title": "Quantities of a fourth-rate house: roof, joiner, sash shutters, skirting"
+  },
+  "69": {
+   "kind": "table",
+   "title": "Quantities of a fourth-rate house: staircase, plasterer, cement, lath plaster"
+  },
+  "71": {
+   "kind": "plate",
+   "title": "Labourer's cottage for a narrow slip of land (Plate 20)",
+   "draws": [
+    "ground plan",
+    "bedroom floor plan"
+   ],
+   "design": "plate-071"
+  },
+  "73": {
+   "kind": "prose",
+   "title": "quanti es of a foxjrth-rate house and additionat",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "74": {
+   "kind": "prose",
+   "title": "sujimary of quantities etc",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "77": {
+   "kind": "prose",
+   "title": "summahy of quantities, etc",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "78": {
+   "kind": "table",
+   "title": "brickwork, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "79": {
+   "kind": "plate",
+   "title": "Family residence: basement (Plates 55-58)",
+   "draws": [
+    "basement plan",
+    "front elevation"
+   ],
+   "design": "plate-079"
+  },
+  "81": {
+   "kind": "prose",
+   "title": "Brickwork: bonds, counter arches, inverted arches"
+  },
+  "82": {
+   "kind": "prose",
+   "title": "brickwork",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "83": {
+   "kind": "plate",
+   "title": "Family residence: ground plan",
+   "draws": [
+    "ground plan",
+    "section of front wall"
+   ],
+   "design": "plate-079"
+  },
+  "85": {
+   "kind": "prose",
+   "title": "mortaks",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "86": {
+   "kind": "prose",
+   "title": "mortars",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "87": {
+   "kind": "plate",
+   "title": "Family residence: first floor, roof, rooms in roof (Plate 57)",
+   "draws": [
+    "first floor plan",
+    "roof plan",
+    "attic plan"
+   ],
+   "scale": true,
+   "design": "plate-079"
+  },
+  "89": {
+   "kind": "prose",
+   "title": "mortars",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "90": {
+   "kind": "prose",
+   "title": "mortars",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "93": {
+   "kind": "prose",
+   "title": "mortaks",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "94": {
+   "kind": "prose",
+   "title": "hydraulic mortars",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "95": {
+   "kind": "plate",
+   "title": "Pair of semi-detached seven-roomed houses and offices",
+   "draws": [
+    "ground plan",
+    "front elevation"
+   ],
+   "design": "plate-095"
+  },
+  "97": {
+   "kind": "prose",
+   "title": "watek proof mastic ckment",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "98": {
+   "kind": "prose",
+   "title": "timber",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "101": {
+   "kind": "prose",
+   "title": "timrkk",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "105": {
+   "kind": "prose",
+   "title": "Carpenter's work: quarter partitions, floor joists, trimming"
+  },
+  "106": {
+   "kind": "prose",
+   "title": "description",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "109": {
+   "kind": "specification",
+   "title": "Labourer's cottage, Plate 20: accommodation and door-by-door description",
+   "design": "plate-071"
+  },
+  "110": {
+   "kind": "specification",
+   "title": "Two fourth-rate houses for freehold allotments (Plate 21)",
+   "design": "plate-110"
+  },
+  "113": {
+   "kind": "prose",
+   "title": "Aspect and prospect, after Repton",
+   "note": "States the orientation rule: a southern aspect is most desirable, south-east the best, south-west the worst"
+  },
+  "114": {
+   "kind": "prose",
+   "title": "freehold land societies",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "118": {
+   "kind": "prose",
+   "title": "specu'ication for foumation ok roads and drains",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "121": {
+   "kind": "prose",
+   "title": "Freehold land societies",
+   "note": "Allotment sizing: 25 ft frontage by 109 ft depth is ten poles, a sixteenth of an acre; detached or semi-detached only, no continuous rows; houses to face the opening between the opposite pair"
+  },
+  "125": {
+   "kind": "prose",
+   "title": "tiijncj, slating, kooi",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "126": {
+   "kind": "prose",
+   "title": "roof construction",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "127": {
+   "kind": "plate",
+   "title": "Elevation for four fourth-rate houses (Plate 26)",
+   "draws": [
+    "ground plan",
+    "bedroom plan",
+    "elevation"
+   ],
+   "design": "plate-127"
+  },
+  "129": {
+   "kind": "prose",
+   "title": "tilini;, si-atino, rook covkrino, etc",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "130": {
+   "kind": "prose",
+   "title": "tiling, slating, roof covering, etc",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "133": {
+   "kind": "specification",
+   "title": "Six-roomed house (Plate 25); farm house (Plates 46-47)",
+   "design": "plate-133"
+  },
+  "134": {
+   "kind": "specification",
+   "title": "Farm house bedroom floor and offices (Plates 46-47)",
+   "design": "plate-134"
+  },
+  "135": {
+   "kind": "prose",
+   "title": "diagram, farm house, house, timber framing and carpentry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "137": {
+   "kind": "prose",
+   "title": "Manures; elevation of a farm house and offices"
+  },
+  "142": {
+   "kind": "specification",
+   "title": "Farm bailiff's cottage (Plate 49)",
+   "note": "Ground floor listed; bedroom floor continues overleaf"
+  },
+  "143": {
+   "kind": "plate",
+   "title": "Two semi-detached nine-roomed houses with conservatory (Plate 39)",
+   "draws": [
+    "ground plan",
+    "basement plan"
+   ],
+   "design": "plate-143"
+  },
+  "145": {
+   "kind": "prose",
+   "title": "the mkthods of measuring timbek",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "146": {
+   "kind": "prose",
+   "title": "remarks concerning the nature of jiortars and cements",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "149": {
+   "kind": "prose",
+   "title": "remarks conceknina the natures of moktaks and cements",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "150": {
+   "kind": "prose",
+   "title": "remarks concerning the nature of mortars and cements",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "153": {
+   "kind": "prose",
+   "title": "remarks concerning the nature of mortars and cements",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "157": {
+   "kind": "prose",
+   "title": "scarping and joinino timbers",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "158": {
+   "kind": "specification",
+   "title": "Four fourth-rate houses (Plate 26)",
+   "design": "plate-127"
+  },
+  "159": {
+   "kind": "prose",
+   "title": "elevation, cottage, semi-detached houses, farm house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "161": {
+   "kind": "specification",
+   "title": "Semi-detached family cottage residences (Plate 27); seven-room houses (Plate 28)",
+   "design": "plate-161a"
+  },
+  "162": {
+   "kind": "prose",
+   "title": "i staircases and tkap-dooks",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "163": {
+   "kind": "plate",
+   "title": "Pair of ornamental villas (Plates 62-63)",
+   "draws": [
+    "ground plan",
+    "principal elevation"
+   ],
+   "design": "plate-163"
+  },
+  "165": {
+   "kind": "prose",
+   "title": "staircases and trap - doors",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "166": {
+   "kind": "prose",
+   "title": "profiles op mouldings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "167": {
+   "kind": "plate",
+   "title": "Pair of ornamental villas: bed room and attic floors",
+   "draws": [
+    "bedroom floor plan",
+    "attic plan"
+   ],
+   "scale": true,
+   "design": "plate-163"
+  },
+  "170": {
+   "kind": "prose",
+   "title": "steength op materials",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "173": {
+   "kind": "prose",
+   "title": "strength of materials",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "175": {
+   "kind": "prose",
+   "title": "elevation, cottage, semi-detached houses",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "177": {
+   "kind": "specification",
+   "title": "Design for a cottage residence: description of the drawings",
+   "design": "plate-177"
+  },
+  "178": {
+   "kind": "specification",
+   "title": "Design for a cottage residence: specification",
+   "design": "plate-177"
+  },
+  "181": {
+   "kind": "prose",
+   "title": "design for a cottage residence",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "182": {
+   "kind": "prose",
+   "title": "design for a cottage residence",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "183": {
+   "kind": "plate",
+   "title": "Pair of second rate houses",
+   "draws": [
+    "ground plan",
+    "chamber plan"
+   ],
+   "design": "plate-183"
+  },
+  "185": {
+   "kind": "prose",
+   "title": "k8i(in fou a cottaok residknck",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "186": {
+   "kind": "specification",
+   "title": "Cottage residence continued; workmen's cottages (Plate 31)",
+   "design": "plate-189a"
+  },
+  "189": {
+   "kind": "specification",
+   "title": "Workmen's cottages: dimensions and description (Plate 31)",
+   "design": "plate-189a"
+  },
+  "191": {
+   "kind": "plate",
+   "title": "Two 3rd rate semi-detached seven roomed cottages",
+   "draws": [
+    "ground plan",
+    "bed room plan",
+    "elevation",
+    "section"
+   ],
+   "design": "plate-191"
+  },
+  "194": {
+   "kind": "prose",
+   "title": "arches",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "195": {
+   "kind": "prose",
+   "title": "elevation",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "198": {
+   "kind": "prose",
+   "title": "designs for a pair op model cottages",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "199": {
+   "kind": "prose",
+   "title": "section, labourer's cottage, cottage, house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "202": {
+   "kind": "prose",
+   "title": "Designs for a pair of model cottages: foundations, drainage and water"
+  },
+  "205": {
+   "kind": "prose",
+   "title": "designs for a pair of modkl cottages",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "206": {
+   "kind": "prose",
+   "title": "designs for a pair of model cottages",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "210": {
+   "kind": "prose",
+   "title": "designs for a pair of model cottages",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "213": {
+   "kind": "prose",
+   "title": "designs voll a i'aik of imodkl, cottaoks",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "214": {
+   "kind": "prose",
+   "title": "Model cottages: general principles",
+   "note": "States the minimum accommodation for a labouring family"
+  },
+  "218": {
+   "kind": "prose",
+   "title": "Model cottages continued"
+  },
+  "221": {
+   "kind": "prose",
+   "title": "designs for a pair of j[odel cottaoes",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "222": {
+   "kind": "prose",
+   "title": "design for a pair of model cottages",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "225": {
+   "kind": "specification",
+   "title": "Gentleman's villa (Plate 37); two semi-detached seven-roomed houses (Plate 38)",
+   "design": "plate-225"
+  },
+  "226": {
+   "kind": "specification",
+   "title": "Seven-roomed houses continued; nine-roomed villa (Plate 39)",
+   "design": "plate-143"
+  },
+  "229": {
+   "kind": "prose",
+   "title": "the causes and remedies of smoky chimneys",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "230": {
+   "kind": "prose",
+   "title": "building instruction and specification text",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "233": {
+   "kind": "prose",
+   "title": "Fireplaces and the causes of smoky chimneys"
+  },
+  "235": {
+   "kind": "prose",
+   "title": "diagram, house, brickwork and masonry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "237": {
+   "kind": "prose",
+   "title": "The causes and remedies of smoky chimneys"
+  },
+  "238": {
+   "kind": "prose",
+   "title": "i 4 the la1",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "239": {
+   "kind": "plate",
+   "title": "Design for a cottage residence",
+   "draws": [
+    "ground plan",
+    "chamber plan",
+    "front elevation",
+    "section"
+   ],
+   "scale": true,
+   "design": "plate-177"
+  },
+  "241": {
+   "kind": "prose",
+   "title": "brickwork and masonry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "247": {
+   "kind": "prose",
+   "title": "construction detail, cottage, house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "249": {
+   "kind": "prose",
+   "title": "tlik causks ank ijl",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "250": {
+   "kind": "prose",
+   "title": "the causes and remedies of smoky chimneys",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "251": {
+   "kind": "prose",
+   "title": "section, cottage, house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "254": {
+   "kind": "specification",
+   "title": "First class tavern: ground floor accommodation and the bar",
+   "design": "plate-254"
+  },
+  "256": {
+   "kind": "blank",
+   "note": "Bleed-through only"
+  },
+  "257": {
+   "kind": "specification",
+   "title": "First class tavern: first floor",
+   "design": "plate-254"
+  },
+  "258": {
+   "kind": "prose",
+   "title": "deskix foi; a fli;st ci",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "261": {
+   "kind": "specification",
+   "title": "Small villa (Plates 43-44)",
+   "design": "plate-261"
+  },
+  "262": {
+   "kind": "prose",
+   "title": "specification of the cunstkuctkin an!) ffi tings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "265": {
+   "kind": "specification",
+   "title": "Specification of construction and fittings"
+  },
+  "266": {
+   "kind": "prose",
+   "title": "sl'f",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "267": {
+   "kind": "plate",
+   "title": "Chamber floor of a large house or institution",
+   "draws": [
+    "section",
+    "chamber plan"
+   ],
+   "note": "Foul linen closet; not identified to a design"
+  },
+  "268": {
+   "kind": "blank"
+  },
+  "269": {
+   "kind": "prose",
+   "title": "specification ok 1111",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "270": {
+   "kind": "prose",
+   "title": "specification of the construction and fittings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "271": {
+   "kind": "plate",
+   "title": "Design for a pair of suburban residences (Plate 45)",
+   "draws": [
+    "front elevation",
+    "ground plan",
+    "chamber plan"
+   ],
+   "scale": true,
+   "design": "plate-273"
+  },
+  "273": {
+   "kind": "specification",
+   "title": "Pair of suburban residences (Plate 45)",
+   "design": "plate-273"
+  },
+  "274": {
+   "kind": "prose",
+   "title": "design for a pair of sfrurran' ufsidexces",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "275": {
+   "kind": "plate",
+   "title": "Small villa (Plates 43-44)",
+   "draws": [
+    "front elevation",
+    "ground plan"
+   ],
+   "design": "plate-261"
+  },
+  "277": {
+   "kind": "prose",
+   "title": "Zinc roofing; planning arrangements of domestic habitations",
+   "note": "States the rule separating family rooms from kitchen offices"
+  },
+  "278": {
+   "kind": "prose",
+   "title": "design for a pair of suiuirbax residences",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "283": {
+   "kind": "prose",
+   "title": "diagram, house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "289": {
+   "kind": "prose",
+   "title": "building instruction and specification text",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "290": {
+   "kind": "prose",
+   "title": "the timder trees used in bl'ildixg operations",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "294": {
+   "kind": "prose",
+   "title": "the tdiber trees l\"5ed ix bl'ildlxg operations",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "295": {
+   "kind": "plate",
+   "title": "Town house, four floors",
+   "draws": [
+    "ground plan",
+    "first floor plan"
+   ],
+   "scale": true,
+   "design": "plate-295"
+  },
+  "297": {
+   "kind": "prose",
+   "title": "tiif, timbku thkl'",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "298": {
+   "kind": "prose",
+   "title": "the timber trees tsed ix lini",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "302": {
+   "kind": "prose",
+   "title": "no the tnibl'",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "303": {
+   "kind": "plate",
+   "title": "Design for an isolated villa",
+   "draws": [
+    "front elevation",
+    "ground plan"
+   ],
+   "scale": true,
+   "design": "plate-303"
+  },
+  "305": {
+   "kind": "prose",
+   "title": "The timber trees used in building operations"
+  },
+  "306": {
+   "kind": "prose",
+   "title": "the timbku trees used in liltldlntj ol'ekatioxs",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "307": {
+   "kind": "prose",
+   "title": "construction detail, house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "309": {
+   "kind": "prose",
+   "title": "roof construction, timber framing and carpentry, joinery",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "314": {
+   "kind": "prose",
+   "title": "the pnr",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "315": {
+   "kind": "plate",
+   "title": "Design for an isolated villa: chamber plan",
+   "draws": [
+    "side elevation",
+    "chamber plan"
+   ],
+   "design": "plate-303"
+  },
+  "318": {
+   "kind": "prose",
+   "title": "tuk rr",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "319": {
+   "kind": "plate",
+   "title": "A cottage, by S. Brookes",
+   "draws": [
+    "elevation",
+    "ground plan",
+    "chamber plan"
+   ],
+   "scale": true,
+   "design": "plate-319"
+  },
+  "321": {
+   "kind": "prose",
+   "title": "roof construction, timber framing and carpentry, finishes and decoration",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "322": {
+   "kind": "specification",
+   "title": "Design for a detached town house (Plates 50-51)",
+   "design": "plate-322"
+  },
+  "326": {
+   "kind": "prose",
+   "title": "dkskin i'or a detacllll) town house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "327": {
+   "kind": "prose",
+   "title": "section, house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "329": {
+   "kind": "prose",
+   "title": "Staircases: varieties and proportioning"
+  },
+  "330": {
+   "kind": "prose",
+   "title": "the:\\iechanical peinx'iples of carpentry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "331": {
+   "kind": "prose",
+   "title": "construction detail",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "333": {
+   "kind": "prose",
+   "title": "rilk",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "334": {
+   "kind": "prose",
+   "title": "the m1\u25a0:c11a^\u25a0k\u25a0al it",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "337": {
+   "kind": "table",
+   "title": "tiik mechanical pnincipi",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "338": {
+   "kind": "prose",
+   "title": "the mf",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "343": {
+   "kind": "plate",
+   "title": "Lodges or small cottages",
+   "draws": [
+    "chamber plan",
+    "ground plan",
+    "plan",
+    "principal elevations"
+   ],
+   "scale": true,
+   "design": "plate-343a"
+  },
+  "349": {
+   "kind": "prose",
+   "title": "roof construction, stairs, drainage and sanitation",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "350": {
+   "kind": "prose",
+   "title": "designs foi; two lodges oil small cottages",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "351": {
+   "kind": "prose",
+   "title": "elevation, cottage, house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "357": {
+   "kind": "prose",
+   "title": "desir",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "358": {
+   "kind": "prose",
+   "title": "roof construction, ventilation and heating",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "359": {
+   "kind": "plate",
+   "title": "Villa chamber floor",
+   "draws": [
+    "side elevation",
+    "section",
+    "chamber plan"
+   ],
+   "scale": true,
+   "design": "plate-359"
+  },
+  "361": {
+   "kind": "prose",
+   "title": "deskin",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "362": {
+   "kind": "prose",
+   "title": "designs fok two lodc",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "363": {
+   "kind": "plate",
+   "title": "Designs for town residences (Plates 67-70)",
+   "draws": [
+    "basement plan",
+    "ground plan",
+    "first floor plan",
+    "second floor plan"
+   ],
+   "design": "plate-363"
+  },
+  "365": {
+   "kind": "prose",
+   "title": "sst^^^-iksss^^^^siess",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "366": {
+   "kind": "prose",
+   "title": "tiif",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "369": {
+   "kind": "prose",
+   "title": "roof construction",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "370": {
+   "kind": "prose",
+   "title": "tllk practice of carpentry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "371": {
+   "kind": "prose",
+   "title": "diagram",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "373": {
+   "kind": "specification",
+   "title": "Design for a family residence (Plates 55-58)",
+   "design": "plate-079"
+  },
+  "375": {
+   "kind": "plate",
+   "title": "Design for an Italian villa, frontage 70 feet",
+   "draws": [
+    "ground plan",
+    "first floor plan"
+   ],
+   "scale": true,
+   "design": "plate-375"
+  },
+  "377": {
+   "kind": "prose",
+   "title": "design fok a cottage",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "381": {
+   "kind": "prose",
+   "title": "the fir",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "382": {
+   "kind": "prose",
+   "title": "till-; cknkkal conditions attachi",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "385": {
+   "kind": "specification",
+   "title": "Design for a pair of ornamental villas (Plates 62-63)",
+   "design": "plate-163"
+  },
+  "386": {
+   "kind": "prose",
+   "title": "design for a uetaciiei) villa",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "393": {
+   "kind": "prose",
+   "title": "dksuin foi; a dk'iai lll",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "394": {
+   "kind": "prose",
+   "title": "design for a detacllkd villa",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "397": {
+   "kind": "prose",
+   "title": "design yon a netached vim, a",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "398": {
+   "kind": "prose",
+   "title": "design for a detached villa",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "401": {
+   "kind": "prose",
+   "title": "stairs, drainage and sanitation",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "402": {
+   "kind": "prose",
+   "title": "design for a dktaciii",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "403": {
+   "kind": "plate",
+   "title": "Details of ground and first-floor windows",
+   "draws": [
+    "details"
+   ]
+  },
+  "405": {
+   "kind": "prose",
+   "title": "l a s t k i! 1-, i!",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "407": {
+   "kind": "plate",
+   "title": "Design for a villa containing 13 rooms",
+   "draws": [
+    "transverse section",
+    "chamber plan"
+   ],
+   "note": "Ground plan not yet found"
+  },
+  "409": {
+   "kind": "prose",
+   "title": "the construction ok i",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "411": {
+   "kind": "plate",
+   "title": "Design for a model cottage (Plates 110-111)",
+   "draws": [
+    "section",
+    "chamber plan"
+   ],
+   "scale": true,
+   "design": "plate-411"
+  },
+  "413": {
+   "kind": "prose",
+   "title": "roof construction",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "414": {
+   "kind": "prose",
+   "title": "the coksriiuctions of roofs, flooks and partitions",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "415": {
+   "kind": "plate",
+   "title": "Design for a pair of model cottages (Plate 88)",
+   "draws": [
+    "front elevation",
+    "ground plan"
+   ],
+   "scale": true,
+   "design": "plate-469c"
+  },
+  "417": {
+   "kind": "prose",
+   "title": "tlir",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "418": {
+   "kind": "prose",
+   "title": "the constructions of roofs,",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "421": {
+   "kind": "prose",
+   "title": "timber framing and carpentry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "422": {
+   "kind": "prose",
+   "title": "the construf'tions of itoofs",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "423": {
+   "kind": "prose",
+   "title": "section",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "425": {
+   "kind": "prose",
+   "title": "the conmillt ik'ns (i| konls",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "426": {
+   "kind": "specification",
+   "title": "Designs for town residences (Plates 67-70)",
+   "design": "plate-363"
+  },
+  "429": {
+   "kind": "specification",
+   "title": "Town residences: second and attic floors; chimney proportions",
+   "design": "plate-363"
+  },
+  "430": {
+   "kind": "prose",
+   "title": "j id designs for town kesidences",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "433": {
+   "kind": "specification",
+   "title": "Designs for a gentleman's residence (Plates 71-73)",
+   "note": "Mansion with stable and coach house; plates not yet found"
+  },
+  "434": {
+   "kind": "prose",
+   "title": "designs foi; shop fronts",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "437": {
+   "kind": "prose",
+   "title": "designs koi; silol\" fronts",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "438": {
+   "kind": "prose",
+   "title": "i 4 designs for shop fronts",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "441": {
+   "kind": "prose",
+   "title": "designs fou shop fronts",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "442": {
+   "kind": "prose",
+   "title": "designs for sliol\" fkokts",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "445": {
+   "kind": "prose",
+   "title": "designs i-oi; siioi- fuonts",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "446": {
+   "kind": "specification",
+   "title": "Three shop fronts on 20 ft allotments (Plate 78)",
+   "design": "plate-446"
+  },
+  "447": {
+   "kind": "plate",
+   "title": "Design for a pair of seven roomed villas (Plate 116)",
+   "draws": [
+    "front elevation",
+    "ground plan"
+   ],
+   "design": "plate-467"
+  },
+  "449": {
+   "kind": "prose",
+   "title": "kiinkky",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "454": {
+   "kind": "prose",
+   "title": "joinery",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "455": {
+   "kind": "plate",
+   "title": "Design for semi-detached town house",
+   "draws": [
+    "first floor plan",
+    "basement plan"
+   ],
+   "design": "plate-455"
+  },
+  "457": {
+   "kind": "prose",
+   "title": "joinery, stairs",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "459": {
+   "kind": "plate",
+   "title": "Design for a suburban villa",
+   "draws": [
+    "ground plan",
+    "first floor plan"
+   ],
+   "design": "plate-459"
+  },
+  "461": {
+   "kind": "specification",
+   "title": "Public school and residence (Plates 79-80); town house (Plates 81-83)",
+   "design": "plate-461"
+  },
+  "462": {
+   "kind": "prose",
+   "title": "design fol! a tnwn house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "463": {
+   "kind": "plate",
+   "title": "Design for semi-detached town houses",
+   "draws": [
+    "front elevation",
+    "ground plan"
+   ],
+   "design": "plate-455"
+  },
+  "466": {
+   "kind": "prose",
+   "title": "plastering",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "467": {
+   "kind": "plate",
+   "title": "Pair of seven-roomed villas: chamber plan",
+   "draws": [
+    "side elevation",
+    "chamber plan"
+   ],
+   "design": "plate-467"
+  },
+  "469": {
+   "kind": "specification",
+   "title": "Semi-detached family residences (84-85); public dispensary (86-87); model cottages (88)",
+   "design": "plate-469a"
+  },
+  "470": {
+   "kind": "specification",
+   "title": "Country house (89-90); villa residences (91); isolated villa (92-93)",
+   "design": "plate-470a"
+  },
+  "471": {
+   "kind": "plate",
+   "title": "Design for a row of nine-roomed houses (Plate 127)",
+   "draws": [
+    "basement plan",
+    "ground plan",
+    "first floor plan",
+    "second floor plan"
+   ],
+   "design": "plate-526c"
+  },
+  "473": {
+   "kind": "prose",
+   "title": "l^aintini;",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "474": {
+   "kind": "specification",
+   "title": "Design for an Italian villa (Plates 94-96)",
+   "design": "plate-474"
+  },
+  "477": {
+   "kind": "prose",
+   "title": "brickwork and masonry, roof construction",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "481": {
+   "kind": "prose",
+   "title": "the stones used in building operations",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "482": {
+   "kind": "prose",
+   "title": "the stones used in kl'ir",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "485": {
+   "kind": "table",
+   "title": "brickwork and masonry, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "486": {
+   "kind": "prose",
+   "title": "the stones used ix buildixg opekations",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "489": {
+   "kind": "prose",
+   "title": "building instruction and specification text",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "490": {
+   "kind": "prose",
+   "title": "the stones used in ru'ilding operations",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "493": {
+   "kind": "prose",
+   "title": "roof construction",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "494": {
+   "kind": "prose",
+   "title": "design for a mansion in the old english style",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "495": {
+   "kind": "plate",
+   "title": "Design for a detached town house",
+   "draws": [
+    "principal elevation",
+    "ground plan"
+   ],
+   "design": "plate-495"
+  },
+  "497": {
+   "kind": "specification",
+   "title": "Mansion (Plates 98-100) end; pair of six-roomed cottages (Plates 101-102)",
+   "design": "plate-539"
+  },
+  "498": {
+   "kind": "specification",
+   "title": "Six-roomed cottages; small villa (Plate 103)",
+   "design": "plate-498a"
+  },
+  "499": {
+   "kind": "prose",
+   "title": "elevation, cottage, villa, house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "501": {
+   "kind": "specification",
+   "title": "Villa end; first class town mansion (Plates 104-107); villa (108-109)",
+   "design": "plate-501"
+  },
+  "502": {
+   "kind": "specification",
+   "title": "Villa (108-109) end; model cottage (110-111); semi-detached town house (112-113)",
+   "design": "plate-502a"
+  },
+  "505": {
+   "kind": "specification",
+   "title": "Design for a suburban villa (Plates 114-115)",
+   "design": "plate-505"
+  },
+  "506": {
+   "kind": "prose",
+   "title": "masonry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "509": {
+   "kind": "prose",
+   "title": "masonry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "514": {
+   "kind": "specification",
+   "title": "Design for a pair of seven roomed villas (Plates 116-117)",
+   "design": "plate-467"
+  },
+  "517": {
+   "kind": "prose",
+   "title": "rait",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "518": {
+   "kind": "specification",
+   "title": "Warehouse or factory (118); pair of suburban residences (119-120)",
+   "design": "plate-518a"
+  },
+  "521": {
+   "kind": "prose",
+   "title": "masonry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "522": {
+   "kind": "prose",
+   "title": "masoxry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "525": {
+   "kind": "prose",
+   "title": "building instruction and specification text",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "526": {
+   "kind": "specification",
+   "title": "Eight roomed houses (121-122); schools (123-125); row of nine roomed houses (126-127)",
+   "design": "plate-526a"
+  },
+  "529": {
+   "kind": "specification",
+   "title": "Shop front (128); detached villa (129-130); detached town house (131-132)",
+   "design": "plate-529b"
+  },
+  "530": {
+   "kind": "prose",
+   "title": "glossaky of ikollmcal tkkms uskl) in buij",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "533": {
+   "kind": "prose",
+   "title": "glossauy (jk ti'cilnicar",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "534": {
+   "kind": "glossary",
+   "title": "Glossary of technical terms used in building"
+  },
+  "539": {
+   "kind": "plate",
+   "title": "Design for a mansion in the Old English style (Plates 98-100)",
+   "draws": [
+    "ground plan",
+    "first floor plan"
+   ],
+   "design": "plate-539"
+  },
+  "541": {
+   "kind": "plate",
+   "title": "Design for a detached villa (Plates 129-130)",
+   "draws": [
+    "first floor plan",
+    "basement plan"
+   ],
+   "design": "plate-541"
+  },
+  "543": {
+   "kind": "plate",
+   "title": "Design for a detached town house (Plate 132)",
+   "draws": [
+    "second floor plan",
+    "first floor plan"
+   ],
+   "design": "plate-529b"
+  },
+  "545": {
+   "kind": "prose",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "546": {
+   "kind": "prose",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "551": {
+   "kind": "prose",
+   "title": "u e f a c e",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "552": {
+   "kind": "prose",
+   "title": "construction detail, school, chapel, estimates and quantities",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "555": {
+   "kind": "prose",
+   "title": "The Metropolitan Building Act, 1855"
+  },
+  "556": {
+   "kind": "prose",
+   "title": "the metkorolitan building act, 1855",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "559": {
+   "kind": "prose",
+   "title": "first schedule",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "560": {
+   "kind": "table",
+   "title": "the metropolitan building act, ts55, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "563": {
+   "kind": "table",
+   "title": "tlir",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "567": {
+   "kind": "prose",
+   "title": "the metkopolitan building act, 1855",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "568": {
+   "kind": "prose",
+   "title": "the metropolitan building act, 1^55",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "571": {
+   "kind": "prose",
+   "title": "the jif",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "572": {
+   "kind": "prose",
+   "title": "the metropolitan building act, 1855",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "573": {
+   "kind": "prose",
+   "title": "section, construction detail, chapel, roof construction",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "575": {
+   "kind": "prose",
+   "title": "tiik metropolitan building act, 1s55",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "576": {
+   "kind": "prose",
+   "title": "ib the metropolitan building act, 1855",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "580": {
+   "kind": "prose",
+   "title": "the hetkol'olitak building act, 1855",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "583": {
+   "kind": "prose",
+   "title": "building instruction and specification text",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "584": {
+   "kind": "prose",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "587": {
+   "kind": "prose",
+   "title": "tiik mktkdl'oi",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "592": {
+   "kind": "prose",
+   "title": "specification",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "595": {
+   "kind": "prose",
+   "title": "specific atiox",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "599": {
+   "kind": "prose",
+   "title": "specifk'atiox",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "600": {
+   "kind": "specification",
+   "title": "Chapel fittings: benches, desks, pulpits; plasterer"
+  },
+  "601": {
+   "kind": "prose",
+   "title": "section, construction detail, chapel",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "603": {
+   "kind": "prose",
+   "title": "roof construction, drainage and sanitation, finishes and decoration",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "604": {
+   "kind": "prose",
+   "title": "nit the ventilation of buildings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "607": {
+   "kind": "prose",
+   "title": "tiiic vkntii",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "608": {
+   "kind": "prose",
+   "title": "the vkntii",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "611": {
+   "kind": "prose",
+   "title": "the vf",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "612": {
+   "kind": "table",
+   "title": "drainage and sanitation, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "613": {
+   "kind": "prose",
+   "title": "elevation, house",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "615": {
+   "kind": "prose",
+   "title": "tiik ventilation (ik lillldincs",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "619": {
+   "kind": "prose",
+   "title": "the ventilation of buildings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "620": {
+   "kind": "prose",
+   "title": "the warjniing of buildings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "623": {
+   "kind": "prose",
+   "title": "tiik wali",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "627": {
+   "kind": "prose",
+   "title": "ventilation and heating",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "632": {
+   "kind": "prose",
+   "title": "designs fok shop fittings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "635": {
+   "kind": "prose",
+   "title": "designs fok miop mi11n<;",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "636": {
+   "kind": "prose",
+   "title": "designs for cem1<:tery entrances and lodges",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "651": {
+   "kind": "prose",
+   "title": "drainage of lan!) and luii",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "652": {
+   "kind": "prose",
+   "title": "ukainage of i",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "655": {
+   "kind": "prose",
+   "title": "diiainacr",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "659": {
+   "kind": "prose",
+   "title": "dkainaill, (if land and iii iii )|\\(;,s",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "663": {
+   "kind": "prose",
+   "title": "drainage of land and buildings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "664": {
+   "kind": "prose",
+   "title": "ou drainage of land and huildings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "667": {
+   "kind": "prose",
+   "title": "nuainac",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "668": {
+   "kind": "prose",
+   "title": "drainage of land and buildings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "672": {
+   "kind": "prose",
+   "title": "drainage of land and buildings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "675": {
+   "kind": "prose",
+   "title": "design i'ou a cilarici",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "679": {
+   "kind": "prose",
+   "title": "deskin i'ok a cllai'kl",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "680": {
+   "kind": "prose",
+   "title": "design for a chapel",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "683": {
+   "kind": "prose",
+   "title": "design i'lu; a luaimcl",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "684": {
+   "kind": "prose",
+   "title": "design for a chapel",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "688": {
+   "kind": "prose",
+   "title": "the st'pn",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "692": {
+   "kind": "prose",
+   "title": "s2 tin::\\ii;",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "695": {
+   "kind": "prose",
+   "title": "brickwork and masonry",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "696": {
+   "kind": "table",
+   "title": "the measurement and valuation of artificers work, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "703": {
+   "kind": "table",
+   "title": "tabular building information, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "704": {
+   "kind": "prose",
+   "title": "the measuiiejlent and valuation ov aktificeks work",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "707": {
+   "kind": "prose",
+   "title": "thic jlkasrur",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "716": {
+   "kind": "table",
+   "title": "the measurement and valuation of aktificeks wokk, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "719": {
+   "kind": "prose",
+   "title": "tiik mkasurkment and var",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "720": {
+   "kind": "prose",
+   "title": "yo the jieasuremknt an'li vai",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "723": {
+   "kind": "prose",
+   "title": "the mrasrukmiat and valiatmn ok aiitifk v",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "724": {
+   "kind": "prose",
+   "title": "tiik",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "728": {
+   "kind": "prose",
+   "title": "tllk mkaslkr",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "731": {
+   "kind": "prose",
+   "title": "smith and fuuxdek",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "732": {
+   "kind": "table",
+   "title": "the mkasl'rement axd valuation of artificers work, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "736": {
+   "kind": "prose",
+   "title": "the mf",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "744": {
+   "kind": "prose",
+   "title": "stable fittings",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "748": {
+   "kind": "prose",
+   "title": "desckipxrox of plates",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "752": {
+   "kind": "prose",
+   "title": "the valuation of houses and estates",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "756": {
+   "kind": "table",
+   "title": "the valuation of houses and estates, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "759": {
+   "kind": "table",
+   "title": "tiif",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "760": {
+   "kind": "table",
+   "title": "tiik vall'ation of houses and estates, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "763": {
+   "kind": "table",
+   "title": "tlik valuation of ilihisks and estates, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "764": {
+   "kind": "table",
+   "title": "tire valuation of houses and estates, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "767": {
+   "kind": "table",
+   "title": "the vau'atiox of houses and estates, arranged primarily as text or a table",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "768": {
+   "kind": "prose",
+   "title": "and estat!",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "771": {
+   "kind": "prose",
+   "title": "tami",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "772": {
+   "kind": "prose",
+   "title": "building law and leases",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "773": {
+   "kind": "prose",
+   "title": "memoranda ok the laws iiki-aiincj to iiol'ses, etc",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "774": {
+   "kind": "prose",
+   "title": "memoranda 01\" tiik laws 1;ei",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "775": {
+   "kind": "prose",
+   "title": "memoranda ok tuf",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "776": {
+   "kind": "prose",
+   "title": "memoranda of the laws kklating to houses, etc",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "778": {
+   "kind": "prose",
+   "note": "classified from the OCR; no drawing on the page"
+  },
+  "784": {
+   "kind": "prose",
+   "note": "classified from the OCR; no drawing on the page"
+  }
+ },
+ "count": 372
+}

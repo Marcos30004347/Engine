@@ -1,0 +1,374 @@
+{
+  "page": 261,
+  "source": "The Builder's Practical Director, Plates 43 and 44: specification on PDF page 261, plate with front elevation and ground plan on PDF page 275",
+  "kind": "small villa",
+  "storeys": 3,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1,
+    2
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile with back addition",
+    "roof": "mansard with dormers",
+    "plotFrontageFeet": 30,
+    "storeysInRoof": 1,
+    "features": [
+      {
+        "kind": "ornamental dormer",
+        "count": 3
+      },
+      {
+        "kind": "corner site",
+        "count": 1
+      },
+      {
+        "kind": "columned entrance",
+        "count": 1
+      },
+      {
+        "kind": "entrance steps",
+        "count": 1
+      },
+      {
+        "kind": "rusticated quoins",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "'Adapted for a frontage of 30 feet, and would be conveniently placed at the angle of a road, which position is always preferable on account of its more commanding position, the extra light and prospect gained on one side, and the means afforded of communication at the back of the house.' Three floors, the attic repeating the first. 'The elevations are of an Italian character, and the dormer windows lighting the Attics are converted into ornamental features giving a picturesque effect to the roof.' Storey heights are given and are not recorded as room dimensions: ground 10'6, first 9'0, attic 7'0, the ground floor raised 2'3 above the ground level. The plate confirms the three ground-floor dimensions and draws the entrance passage, hall and back passage the specification describes, with closets either side of the kitchen and the coal cellar and pantry off the back passage. The elevation is Italian with a mansard and three ornamental dormers - which is what 'the dormer windows lighting the Attics are converted into ornamental features' means.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "passage",
+          "qualifier": "entrance",
+          "raw": "an Entrance Passage"
+        },
+        {
+          "use": "hall",
+          "raw": "a well-lighted Hall, with Staircase rising out of it"
+        },
+        {
+          "use": "staircase",
+          "raw": "the Staircase"
+        },
+        {
+          "use": "wc",
+          "raw": "a W. C., placed under the staircase"
+        },
+        {
+          "use": "closet",
+          "qualifier": "stove",
+          "raw": "a stove-closet, placed under the staircase"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "A Drawing Room",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "dining_room",
+          "raw": "A Dining Room",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "passage",
+          "qualifier": "offices",
+          "raw": "a passage leading to the Kitchen Offices and to the Garden"
+        },
+        {
+          "use": "kitchen",
+          "raw": "A Kitchen, exclusive of recess",
+          "feet": [
+            10.5,
+            10.5
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "kitchen",
+          "raw": "Closet"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "Coal Cellar"
+        },
+        {
+          "use": "pantry",
+          "raw": "Pantry"
+        },
+        {
+          "use": "yard",
+          "qualifier": "garden",
+          "raw": "the Garden"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage:entrance",
+          "b": "hall",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "passage:offices",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "closet:stove",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "yard:garden",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "closet:kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front left",
+          "raw": "Two Front Bed Rooms, each",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front right",
+          "raw": "ditto",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "A Back Bed Room",
+          "feet": [
+            10.5,
+            6.5
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "A Dressing Room",
+          "feet": [
+            10,
+            5.25
+          ]
+        },
+        {
+          "use": "wc",
+          "qualifier": "first floor",
+          "raw": "W. C."
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen first",
+          "raw": "Linen Closets"
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen second",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front left",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:front right",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:first floor",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:linen first",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:linen second",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:front left",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "attic floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "attic",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic front left",
+          "raw": "Bed-rooms similar to those on the First Floor",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic front right",
+          "raw": "ditto",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic back",
+          "raw": "ditto",
+          "feet": [
+            10.5,
+            6.5
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic first",
+          "raw": "together with two Closets"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic second",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic front left",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic front right",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic back",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "closet:attic first",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "closet:attic second",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:attic",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

@@ -1,0 +1,283 @@
+{
+  "page": 177,
+  "source": "The Builder's Practical Director, 'Design for a cottage residence': description and specification on PDF pages 177 and 178, plate with ground and chamber plans, front elevation and section on PDF page 239",
+  "kind": "cottage residence",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile with back addition",
+    "roof": "cross-gabled",
+    "features": [
+      {
+        "kind": "gable",
+        "count": 2
+      },
+      {
+        "kind": "oriel window",
+        "count": 1
+      },
+      {
+        "kind": "porch",
+        "count": 1
+      },
+      {
+        "kind": "pierced barge-board",
+        "count": 1
+      },
+      {
+        "kind": "ornamental chimney shaft",
+        "count": 2
+      },
+      {
+        "kind": "patterned tiling",
+        "count": 1
+      },
+      {
+        "kind": "covered side space",
+        "count": 1
+      },
+      {
+        "kind": "seat by the porch",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Gothic: a steep gabled front with a pierced barge-board, a traceried oriel over a pointed porch, patterned tiling in two colours. Two doors are stated rather than inferred - the parlours communicate by folding doors, and 'a door opening out of the hall excludes the steam etc. from the kitchen, which damages furniture, and, rising to the bed-rooms, damps and injures the linen'. The plate carries the same note as the text about building it in pairs: put the W.C. under the stairs, the coal cellar in its place, and light the hall by a window over the roof of the coal-cellar. The back bed-room divides into two on the dotted lines, which is not counted here because the plate draws it whole.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "porch",
+          "raw": "PORCH, with a SEAT beside it"
+        },
+        {
+          "use": "hall",
+          "raw": "HALL, well-lighted, with the staircase"
+        },
+        {
+          "use": "staircase",
+          "raw": "the staircase"
+        },
+        {
+          "use": "closet",
+          "qualifier": "under the stairs",
+          "raw": "CLOSET; 'store closet beneath the latter'"
+        },
+        {
+          "use": "parlour",
+          "qualifier": "front",
+          "raw": "PARLOR",
+          "feet": [
+            16,
+            14
+          ]
+        },
+        {
+          "use": "parlour",
+          "qualifier": "back",
+          "raw": "PARLOR",
+          "feet": [
+            12,
+            12
+          ]
+        },
+        {
+          "use": "passage",
+          "raw": "PASSAGE"
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN, with boiler, sink and other requisites",
+          "feet": [
+            14,
+            12.5
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER"
+        },
+        {
+          "use": "store",
+          "qualifier": "coal",
+          "raw": "COALS"
+        },
+        {
+          "use": "wc",
+          "raw": "W.C."
+        },
+        {
+          "use": "yard",
+          "qualifier": "covered space",
+          "raw": "COVERED SPACE, between the coal cellar and the W.C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "hall",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "parlour:front",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "parlour:back",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "passage",
+          "link": "door"
+        },
+        {
+          "a": "parlour:front",
+          "b": "parlour:back",
+          "link": "open"
+        },
+        {
+          "a": "staircase",
+          "b": "closet:under the stairs",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "yard:covered space",
+          "link": "door"
+        },
+        {
+          "a": "yard:covered space",
+          "b": "store:coal",
+          "link": "door"
+        },
+        {
+          "a": "yard:covered space",
+          "b": "wc",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "principal",
+          "raw": "BED ROOM",
+          "feet": [
+            16.25,
+            14
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "middle",
+          "raw": "BED-ROOM",
+          "feet": [
+            12.25,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED-ROOM; the dotted lines indicate division into two bed-rooms",
+          "feet": [
+            14.25,
+            12.5
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "DRESSING ROOM, adjunct to the principal bed-room"
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen",
+          "raw": "LINEN CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "stores",
+          "raw": "CLOSET, beside the dressing room"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:principal",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:middle",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:linen",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:principal",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "dressing_room",
+          "b": "closet:stores",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

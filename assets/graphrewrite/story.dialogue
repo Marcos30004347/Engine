@@ -1,0 +1,434 @@
+# What the people of the village say, and when.
+#
+#   dialogue <rule> [chance N]:      a block, hung off a rule
+#     when <condition> [and ...]:    a clause; the first that holds wins
+#     unless <condition>:            the same, negated
+#     else:                          always holds
+#       <Role>: "..."                a spoken line
+#       <Role> to <Role>: "..."      spoken at someone
+#
+# A condition asks the chronicle - every firing of the whole run, not this
+# month - about the rule's OWN roles:
+#
+#   B in the-vows-are-said              B was in one, ever, before now
+#   B met X in the-heads-make-a-match   both of them, in the SAME one
+#   B in blood-for-blood twice          at least twice (or `N times`)
+#   ... within 52                       and no more than 52 weeks back
+#
+# `{A}` and `{A:his}` are the rule's variables, exactly as in the narration
+# file, and `<subs>` work too. `chance N` is the percent of firings that say
+# anything at all: most events pass without a word, and a line that turns up
+# every single time stops being worth reading.
+
+# Three attribution verbs, and they are not interchangeable. `said` opens a
+# line spoken to nobody in particular; `said-to` opens one aimed at someone,
+# so every alternative has to read with "to <name>" after it - "put it to
+# him" is English, "put it" on its own is not; `answered` is every line after
+# the first, which is the only place a reply belongs.
+sub said:     said *3 | spoke up | said it plainly
+sub said-to:  said *3 | put it | said plainly
+sub answered: answered | replied | said | said back
+# Everything a sub expands to here lands INSIDE what somebody says, so every
+# alternative has to be speech. An adverb that belongs to the attribution -
+# "flatly", "and meant it" - reads as nonsense in the speaker's mouth.
+sub grave:    grave | burial | funeral
+sub silver:   silver | coin | the price of it
+sub enough:   enough | long enough | as long as I mean to
+
+# --- courtship and the match -------------------------------------------------
+
+dialogue they-get-engaged chance 25:
+  when A met B in strangers-take-against-each-other:
+    A to B: "I did not like you at first. I have been wrong before."
+  else:
+    B to A: "I have nothing to give you but my name and the work of my hands."
+
+dialogue the-heads-make-a-match chance 30:
+  when F met G in the-heads-make-a-match:
+    F to G: "We have done this before, you and I. It went well enough."
+  when A in strangers-take-against-each-other within 104:
+    A to F: "You might have asked me."
+  else:
+    F to G: "Then it is settled. {A} to {B}, and the houses at peace."
+
+dialogue the-heads-make-peace-with-a-match chance 60:
+  when F met G in the-houses-take-the-blood-price:
+    F to G: "Silver did not hold it. Perhaps blood will."
+  else:
+    G to F: "Let the children carry what we could not."
+
+dialogue the-vows-are-said chance 20:
+  when A met B in the-heads-make-a-match:
+    A to B: "They made this match. I will keep it better than they made it."
+  when B in the-betrothed-mourns:
+    B: "I did not think I would stand here twice."
+  else:
+    A to B: "There. It is done, and the whole village saw it."
+
+dialogue the-betrothed-mourns chance 50:
+  when B met A in the-vows-are-said:
+    B: "We had years. It was not enough."
+  else:
+    B: "The day is still marked. There will be nobody at it."
+
+# --- the jilting and what follows --------------------------------------------
+
+sub ranoff: Let them say what they like. I would not have had him. |
+            They will call me every name there is. Let them. |
+            I have done the one thing in my life that was mine to do. |
+            My father can keep his bargain. I am not part of it.
+
+dialogue she-runs-off-with-her-lover chance 45:
+  A to X: "<ranoff>"
+
+dialogue the-jilted-man-plots-against-the-lover chance 55:
+  when B met X in the-vows-are-said:
+    B to X: "I stood in that church for you. I will stand at your <grave>."
+  when B in the-jilted-nurse-a-grudge within 156:
+    B: "I have not forgotten. {X} will not keep {A}."
+  when B in the-jilted-man-plots-against-the-lover:
+    B: "Twice now. There will not be a third."
+  else:
+    B: "It should have been me, and everyone knows it."
+
+dialogue the-jilted-woman-plots-against-the-lover chance 55:
+  when B in the-jilted-nurse-a-grudge within 156:
+    B: "I have not forgotten. {X} will not keep {A}."
+  else:
+    B: "It should have been me, and everyone knows it."
+
+dialogue the-jilted-nurse-a-grudge chance 20:
+  B: "{A} may have {A:his} wedding. {A} will not have my good word."
+
+# --- friendship, betrayal, the warning ----------------------------------------
+
+dialogue a-friend-warns-his-friend chance 45:
+  when X met B in the-esteem-is-returned:
+    X to B: "You have been a friend to me. Sit down. {C} means you harm."
+  when X in a-friend-warns-his-friend:
+    X to B: "I have carried this kind of news before. It does not get lighter."
+  else:
+    X to B: "{C} is not the man you take {C:him} for. Watch the dark."
+
+dialogue the-accomplice-turns chance 50:
+  when X met C in the-esteem-is-returned:
+    X to B: "I gave {C} my word, and I am breaking it, because I will not do this."
+  else:
+    X to B: "I have no stomach for it. {C} is coming."
+
+dialogue a-friend-turns-on-a-killer chance 60:
+  X to A: "I called you friend. {C} is in the ground and you put {C:him} there."
+
+dialogue a-betrayed-friendship-is-over chance 40:
+  C to X: "Do not come to my door again."
+
+dialogue the-warned-strike-first chance 40:
+  when B in the-warned-strike-first:
+    B: "The same again. Well. I am still here and they are not."
+  else:
+    B: "If it is to be one of us, let it be {C}."
+
+# --- blood ---------------------------------------------------------------------
+
+dialogue the-widow-swears-vengeance chance 65:
+  when B met C in the-vows-are-said:
+    B: "I took him from that church and {A} took him from me. {A} will answer for it."
+  else:
+    B: "{A} did this. {A:He} will not be let alone for it."
+
+dialogue a-father-avenges-his-son chance 65:
+  X: "A man should not bury his {C:son}. {A} will learn what that costs."
+
+dialogue a-friend-avenges-a-friend chance 55:
+  X: "{C} had no son to do it. {C} has me."
+
+dialogue the-kin-name-a-price chance 45:
+  when X in the-price-is-refused:
+    X to A: "Silver, then. I have refused it before and got nothing for the refusing."
+  else:
+    X to A: "There is a price for {C}. Pay it, and we are done."
+
+dialogue the-price-is-refused chance 70:
+  when X met A in the-blood-price-is-paid:
+    X to A: "You bought me once. Not twice."
+  else:
+    X to A: "Keep your silver. It does not weigh what {C} weighed."
+
+dialogue the-houses-take-the-blood-price chance 45:
+  G to F: "Take it and let it be finished. I have no sons to spare either."
+
+sub wholeofit: That is the whole of it. | There is nothing else to say about it. | Say it is ambition if you like.
+
+# --- the crown -------------------------------------------------------------------
+
+dialogue a-claimant-plots-against-the-king chance 30:
+  when F met K in the-heads-make-a-match:
+    F: "I gave {K} a daughter of my house. {K} gave me nothing."
+  else:
+    F: "{K} sits where I should sit. <wholeofit>"
+
+sub banish: Out. Take the road and do not be found on it after dark. |
+            You have a day. After that any man may kill you and keep his hands clean. |
+            Go. The kingdom is closed to you, and so is my memory.
+
+dialogue the-crown-outlaws-the-traitor chance 40:
+  K to C: "<banish>"
+
+dialogue the-outlaw-is-pardoned chance 60:
+  when C in an-outlaw-is-hunted-down:
+    K to C: "You were lucky once. Do not be lucky twice."
+  else:
+    C to K: "I will not say I am grateful. I will say I am coming home."
+
+dialogue the-heir-takes-the-throne chance 50:
+  when A in a-claimant-plots-against-the-king:
+    A: "I wanted this. It is heavier than I wanted."
+  else:
+    A: "I did not ask for it, and I will not put it down."
+
+# --- blackmail ---------------------------------------------------------------------
+
+sub iknow: I know what you did to {B} | I saw what became of {B} | There is a thing about {B} I have not said aloud
+
+dialogue the-witness-asks-for-silence chance 25:
+  A to C: "<iknow>. I am not a greedy man - <silver>, and I forget it."
+
+dialogue the-blackmailer-is-silenced chance 35:
+  C: "{A} has bled me <enough>. There is a cheaper way to be quiet."
+
+sub lastofit: This is the last of it. | That is all of it, and there is no more. | You have had the last of me.
+sub never:    It is never the last of it. | You said that before. | Then we will see each other again.
+
+dialogue the-blackmail-is-paid chance 20:
+  C to A: "<lastofit>"
+  A to C: "<never>"
+
+# --- the confessional ----------------------------------------------------------
+#
+# The richest conditions in the book are here, because a priest has usually
+# heard the man before, and a killer usually has a history the chronicle can
+# reach back into.
+
+sub cannotcarry: I cannot carry it | I have not slept since | It is with me every hour |
+                 I have held it as long as I can
+
+dialogue a-killer-confesses chance 60:
+  when A met P in a-killer-confesses:
+    A to P: "You have heard me before, and you will hear me again. It was {C} this time."
+  when A in the-vows-are-said:
+    A to P: "<cannotcarry>, Father. I have a wife who does not know what she married."
+  when A in blood-for-blood:
+    A to P: "They took my blood first. I do not say that makes it nothing. I say it is why."
+  else:
+    A to P: "<cannotcarry>, Father. It was {C}, and it was my hand."
+
+dialogue the-priest-sets-a-penance chance 35:
+  when A in a-killer-confesses twice:
+    P to A: "A penance did not hold you last time. We will try a longer one."
+  else:
+    P to A: "You will keep to it until {Q'}, and you will tell nobody but me."
+
+dialogue a-penitent-gives-up-his-plot chance 55:
+  when A in a-penitent-gives-up-his-plot:
+    A: "Twice I have put this down. Perhaps that is what a man is."
+  else:
+    A: "{B} may live. It is not for {B}'s sake."
+
+dialogue the-priest-breaks-the-seal chance 70:
+  when P in the-priest-breaks-the-seal:
+    P to B: "I have damned myself for this before. It was {A}."
+  else:
+    P to B: "What I am about to say I have no right to say. It was {A} who killed {C}."
+
+dialogue the-priest-tells-the-son chance 65:
+  when X in blood-for-blood:
+    P to X: "You will do what you will do. But you should not do it to the wrong man. It was {A}."
+  when A met P in a-killer-confesses:
+    P to X: "{A} knelt where you are kneeling and told me {A:him}self. God forgive me for repeating it."
+  else:
+    P to X: "Your {C:father} was killed by {A}. I should not be telling you, and I am telling you."
+
+dialogue the-unshriven-are-refused-burial chance 55:
+  P: "Outside the wall. He had years to come to me about {C} and he never came."
+
+dialogue a-new-priest-is-ordained chance 40:
+  X: "I am not the man for it. There is nobody else."
+
+# --- suspicion -------------------------------------------------------------------
+
+sub noproof: I have no proof and I do not need any | Nobody has told me so and nobody has to |
+             Say I am wrong. Say it to my face
+
+dialogue the-son-looks-for-someone-to-blame chance 30:
+  X: "Somebody put my {C:father} in the ground, and {B} has not once looked me in the eye since."
+
+dialogue a-widow-suspects-the-other-house chance 35:
+  X: "It was that house, and it was {B} of it. <noproof>."
+
+dialogue the-suspicion-is-said-aloud chance 55:
+  when X met B in the-esteem-is-returned:
+    X to B: "I called you a friend and you killed him. <noproof>."
+  when B in a-killer-confesses:
+    X to B: "You have a guilty look on you, {B}, and I know what it is for."
+  when X in the-suspicion-is-said-aloud:
+    X to B: "I have said it about one man already and I was wrong. I am not wrong twice."
+  else:
+    X to B: "It was you. <noproof>."
+
+dialogue the-accused-strikes-back chance 70:
+  when B in a-killer-confesses:
+    B: "I have one death on me and they have named me for another. One more changes nothing."
+  when B met X in the-esteem-is-returned:
+    B: "{X} sat at my table and called me a murderer in the street. Very well."
+  else:
+    B: "I did not touch {X}'s dead. I am going to touch {X}."
+
+dialogue the-houses-fall-out-over-an-accusation chance 45:
+  X to B: "Say what you like. My house says it too now."
+
+# --- silver -----------------------------------------------------------------------
+
+sub terms: I will have it back by the day | I want it back on the day, not after |
+           You will not have to ask me twice
+
+dialogue the-head-borrows chance 35:
+  when F met G in the-heads-make-a-match:
+    F to G: "We are almost family. I would not ask otherwise."
+  when F in the-head-borrows:
+    G to F: "Again. <terms>."
+  else:
+    G to F: "You will have it. <terms>."
+
+dialogue the-note-comes-due chance 60:
+  when F met G in the-heads-make-a-match:
+    G to F: "I gave my son to your house and I still want my silver."
+  else:
+    F to G: "There is nothing. Take the roof if you want it; there is nothing else."
+
+dialogue a-ruined-house-marries-down chance 55:
+  when A in the-feeling-is-returned:
+    A to F: "You know where my heart is. You are selling me anyway."
+  else:
+    F to G: "She comes with nothing. I am not going to pretend otherwise."
+
+dialogue a-ruined-man-turns-on-his-creditor chance 60:
+  when F met G in the-esteem-is-returned:
+    F: "{G} was a friend before {G} was a creditor. {G} chose."
+  else:
+    F: "Dead men call in nothing."
+
+dialogue the-debt-is-settled chance 20:
+  F to G: "Counted twice. We are square."
+
+dialogue the-house-recovers chance 25:
+  F: "We are still here. That is the whole of the good news."
+
+# --- dialogue for a whole arc ----------------------------------------------------
+#
+# `dialogue chain a + b [+ c]` hangs off a chain the narration file folds into
+# one sentence. The dialogue for an arc is not the dialogue for either half of
+# it: a man asking his priest to keep a secret and the priest not keeping it
+# are one exchange, and told as one they can answer each other.
+#
+# A role names its part - `2.X` is the second rule's X - and a bare role means
+# the first rule's.
+
+dialogue chain a-killer-confesses + the-priest-sets-a-penance chance 45:
+  when A in a-killer-confesses:
+    A to P: "You know the road I am on, Father."
+    P to A: "I do. Until {2.Q'}, and no shortcuts this time."
+  else:
+    A to P: "Is there a penance for it?"
+    P to A: "There is. It runs until {2.Q'}, and it will not feel like enough."
+
+dialogue chain a-killer-confesses + the-priest-tells-the-son chance 85:
+  1.A to 1.P: "You will carry this to your grave, Father. You are bound."
+  2.P to 2.X: "I am bound, and I am telling you anyway. It was {1.A}."
+
+dialogue chain a-killer-confesses + the-priest-tells-the-son + blood-for-blood chance 90:
+  1.A to 1.P: "Nobody else will ever know. You are bound."
+  2.P to 2.X: "I am damned for saying it. It was {1.A} who killed your {2.C:father}."
+  3.X: "Then he is bound too, and so am I."
+
+dialogue chain the-son-looks-for-someone-to-blame + the-suspicion-is-said-aloud chance 60:
+  when because the-feud-claims-a-target:
+    2.X to 2.B: "Your house has been marking men for a year. Do not look surprised."
+  else:
+    1.X: "It has to have been somebody."
+    2.X to 2.B: "And I have decided it was you."
+
+dialogue chain the-suspicion-is-said-aloud + the-accused-strikes-back chance 80:
+  when 1.X met 1.B in the-esteem-is-returned:
+    1.X to 1.B: "You killed him. I know it the way I know my own name."
+    2.B: "He called me a friend for nine years and a murderer in one afternoon."
+  when 2.B in a-killer-confesses:
+    1.X to 1.B: "It was you."
+    2.B: "It was not. That is the joke of it - it was not this one."
+  else:
+    1.X to 1.B: "It was you, and everyone standing here heard me say it."
+    2.B: "Then everyone standing here can watch what happens next."
+
+dialogue chain the-suspicion-is-said-aloud + the-houses-fall-out-over-an-accusation chance 55:
+  1.X to 1.B: "It was you, and your whole house knows it."
+  2.B to 2.X: "You have just made this bigger than you or me."
+
+dialogue chain the-note-comes-due + a-ruined-man-turns-on-his-creditor chance 75:
+  when 1.F met 1.G in the-heads-make-a-match:
+    1.F to 1.G: "Our children are married. You will not do this."
+    2.G to 2.F: "The note does not know that."
+  else:
+    1.G to 1.F: "The day is today. Where is it?"
+    2.F: "He will find out where it is."
+
+dialogue chain a-hard-season + the-head-borrows chance 40:
+  2.F to 2.G: "I have never asked anyone for anything. I am asking."
+  2.G to 2.F: "By {2.D'}. I would rather not have to say it twice."
+
+dialogue chain the-plotter-finds-an-accomplice + the-accomplice-turns + the-warned-strike-first chance 85:
+  1.C to 1.X: "You have no more love for {1.B} than I do. One night's work."
+  2.X to 2.B: "I said yes to him. I am saying it to you instead."
+  3.B: "Then I will not wait to be got."
+
+dialogue chain the-heads-make-a-match + she-runs-off-with-her-lover chance 70:
+  1.F to 1.G: "Done, then. Our houses are joined."
+  2.A to 2.X: "They can join whatever they like. I am going with you."
+
+# --- consequence conditions --------------------------------------------------------
+#
+# `because <rule>` holds when something of that rule, touching one of these
+# people, happened earlier AND the programme's own edges say that rule can
+# bring this one about. It cannot claim a link the world does not have.
+
+dialogue blood-for-blood chance 70:
+  when because the-priest-tells-the-son:
+    X: "A priest told me. A priest. And now I am going to do what a priest would tell me not to."
+  when because the-blood-price-is-paid:
+    X: "They paid for him. As though he were a cow that got into the wrong field."
+  when X in blood-for-blood:
+    X: "My house has buried enough. {A} makes the last of them."
+  when X met A in the-esteem-is-returned:
+    X to A: "You sat at my father's table. That is what makes it unforgivable."
+  else:
+    X: "My {C:father} is dead by {A}'s hand, and I am the one left to answer it."
+
+dialogue poison chance 30:
+  when because the-note-comes-due:
+    C: "A dead man calls in nothing, and I have nothing to call in with."
+  when because the-suspicion-is-said-aloud:
+    C: "They have already decided what I am. I may as well be it."
+  else:
+    C: "Slowly. Nobody looks twice at a man who sickens."
+
+dialogue a-knife-in-the-dark chance 30:
+  when because the-accused-strikes-back:
+    C: "I was named for one I did not do. This one is mine."
+  else:
+    C: "Quiet, and close, and done."
+
+dialogue the-feud-claims-a-target chance 40:
+  when because the-houses-fall-out-over-an-accusation:
+    B: "It started with a word in the street. It does not end with one."
+  when B in the-feud-claims-a-target:
+    B: "Another of theirs. It does not end, so it may as well be {Y}."
+  else:
+    B: "{Y} is of that house, and that is reason enough now."

@@ -1,0 +1,373 @@
+{
+  "page": 505,
+  "source": "The Builder's Practical Director, Plates 114 and 115, description on PDF page 505",
+  "kind": "suburban villa with a staircase tower",
+  "storeys": 3,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "irregular about a staircase tower",
+    "features": [
+      {
+        "kind": "tower",
+        "count": 1
+      },
+      {
+        "kind": "staircase in the tower",
+        "count": 1
+      },
+      {
+        "kind": "cistern in the tower roof",
+        "count": 1
+      },
+      {
+        "kind": "veranda",
+        "count": 1
+      },
+      {
+        "kind": "porch",
+        "count": 1
+      },
+      {
+        "kind": "tradesmen's entrance",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "'This house is planned with studied irregularity, with the view of obtaining the greatest amount of external picturesque effect.' The tower here earns its keep differently from the one on page 474: it holds the staircase. 'The tower is a prominent feature, and is not, as is too often the case, a comparatively useless adjunct, but serves to contain an open and well lighted staircase, which, in general, should be its use in houses of this description; in the roof the cistern for water supply is placed.' Every door is stated in the prose. The coal cellar and the water closet 'are placed so as to be accessible without entering the Kitchen department', which is the same reasoning as the lobby under the stairs in the other villa. 1500 pounds.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "porch",
+          "raw": "a Porch"
+        },
+        {
+          "use": "hall",
+          "raw": "the Hall in the base of the tower"
+        },
+        {
+          "use": "staircase",
+          "raw": "an open and well lighted staircase, contained in the tower"
+        },
+        {
+          "use": "passage",
+          "qualifier": "corridor",
+          "raw": "a Corridor, which the Hall communicates with"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing Room"
+        },
+        {
+          "use": "dining_room",
+          "raw": "Dining Room"
+        },
+        {
+          "use": "veranda",
+          "raw": "a verandah may be placed at the back of the Dining Room"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "verandah",
+          "raw": "a lobby leading out to it from the main corridor"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "offices",
+          "raw": "the door cutting off the Kitchen Offices"
+        },
+        {
+          "use": "kitchen",
+          "raw": "a tolerably large Kitchen"
+        },
+        {
+          "use": "scullery",
+          "raw": "a Scullery"
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        },
+        {
+          "use": "closet",
+          "qualifier": "china",
+          "raw": "China Closet; the lower part will probably be appropriated for wine"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "Coal Cellar"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        },
+        {
+          "use": "porch",
+          "qualifier": "tradesmen's",
+          "raw": "a side entrance for tradesmen"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "hall",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "passage:corridor",
+          "link": "open"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "lobby:verandah",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "lobby:offices",
+          "link": "door"
+        },
+        {
+          "a": "lobby:verandah",
+          "b": "veranda",
+          "link": "door"
+        },
+        {
+          "a": "lobby:offices",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "lobby:offices",
+          "b": "closet:china",
+          "link": "door"
+        },
+        {
+          "a": "lobby:offices",
+          "b": "cellar:coal",
+          "link": "door"
+        },
+        {
+          "a": "lobby:offices",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "porch:tradesmen's",
+          "b": "lobby:offices",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "the landing in the tower"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 1",
+          "raw": "three Bed Rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 3",
+          "raw": "ditto"
+        },
+        {
+          "use": "wc",
+          "qualifier": "first floor",
+          "raw": "W. C."
+        },
+        {
+          "use": "closet",
+          "qualifier": "first floor",
+          "raw": "Closets"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:first 1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:first 2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:first 3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:first floor",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:first floor",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "second floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "second",
+          "raw": "the landing in the tower"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 1",
+          "raw": "a similar number of Bed Rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 3",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "second",
+          "raw": "and Closets"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 2",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 3",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "closet:second",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:second",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "name": "tower",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "tower",
+          "raw": "the head of the tower stair"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "tower",
+          "raw": "another Bed or Smoking Room may be placed at the summit of the tower"
+        },
+        {
+          "use": "store",
+          "qualifier": "cistern",
+          "raw": "above it the cistern for water supply"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:tower",
+          "b": "bedroom:tower",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:tower",
+          "b": "store:cistern",
+          "link": "open"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:tower",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "low",
+    "adjacency": "high"
+  }
+}

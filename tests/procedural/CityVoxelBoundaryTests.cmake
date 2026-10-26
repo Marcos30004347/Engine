@@ -1,0 +1,4 @@
+add_executable(CityVoxelBoundaryTests ${CMAKE_CURRENT_LIST_DIR}/CityVoxelBoundaryTests.cpp)
+target_link_libraries(CityVoxelBoundaryTests PRIVATE Engine)
+add_test(NAME CityVoxelBoundaryTests COMMAND CityVoxelBoundaryTests)
+set_tests_properties(CityVoxelBoundaryTests PROPERTIES LABELS "world-gen;voxel.phase3")

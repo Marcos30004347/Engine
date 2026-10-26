@@ -1,0 +1,366 @@
+{
+  "page": 143,
+  "source": "The Builder's Practical Director, Plate 39, PDF page 143; specification on PDF page 226",
+  "kind": "semi-detached nine-roomed villa residence with conservatory",
+  "storeys": 3,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "double-pile with conservatory",
+    "roof": "cross-gabled",
+    "storeysInRoof": 1,
+    "features": [
+      {
+        "kind": "gable",
+        "count": 4
+      },
+      {
+        "kind": "bay window",
+        "count": 2
+      },
+      {
+        "kind": "conservatory",
+        "count": 1,
+        "feet": [
+          17,
+          9
+        ]
+      },
+      {
+        "kind": "area",
+        "count": 2
+      },
+      {
+        "kind": "entrance steps",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "A mirrored pair; one half transcribed. The plate draws the ground and basement plans side by side, and the specification on page 226 names the same rooms with the same dimensions. Two open walls, both stated: 'The drawing, and dining rooms, communicate by means of folding doors, and the glass doors of the Conservatory being hung by lifting hinges, when they are removed and the folding doors thrown open, a very commodious suite of rooms is obtained.' 1800 pounds the pair, 150 more for the conservatory.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "breakfast_room",
+          "raw": "BREAKFAST ROOM",
+          "feet": [
+            15,
+            14
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "PANTRY",
+          "feet": [
+            8,
+            6
+          ]
+        },
+        {
+          "use": "passage",
+          "raw": "PASSAGE; 'a passage to area, and kitchen, entrance'",
+          "feet": [
+            15,
+            3
+          ]
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "COAL CELLAR",
+          "feet": [
+            8,
+            4.5
+          ]
+        },
+        {
+          "use": "cellar",
+          "qualifier": "wine",
+          "raw": "WINE CELLAR",
+          "feet": [
+            9,
+            4.5
+          ]
+        },
+        {
+          "use": "cellar",
+          "qualifier": "beer",
+          "raw": "BEER CELLAR",
+          "feet": [
+            9,
+            4
+          ]
+        },
+        {
+          "use": "wc",
+          "qualifier": "basement",
+          "raw": "a water closet, outside the main building"
+        },
+        {
+          "use": "area",
+          "raw": "AREA"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "breakfast_room",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "cellar:coal",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "cellar:wine",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "cellar:beer",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "area",
+          "link": "door"
+        },
+        {
+          "a": "area",
+          "b": "wc:basement",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "staircase",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "HALL; 'a spacious entrance hall'",
+          "feet": [
+            12,
+            6
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "staircase, drawn in the hall"
+        },
+        {
+          "use": "wc",
+          "raw": "W.C."
+        },
+        {
+          "use": "closet",
+          "qualifier": "under the stairs",
+          "raw": "a roomy closet under the stairs"
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM, clear of the bay window",
+          "feet": [
+            18,
+            15
+          ]
+        },
+        {
+          "use": "conservatory",
+          "raw": "CONSERVATORY",
+          "feet": [
+            17,
+            9
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "closet:under the stairs",
+          "link": "door"
+        },
+        {
+          "a": "dining_room",
+          "b": "drawing_room",
+          "link": "open"
+        },
+        {
+          "a": "drawing_room",
+          "b": "conservatory",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "principal bedroom floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "three large bed-rooms ten feet high"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto"
+        },
+        {
+          "use": "landing",
+          "raw": "landing"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "attic",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "attic 1",
+          "raw": "three very roomy attic bed-rooms in the roof"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 3",
+          "raw": "ditto"
+        },
+        {
+          "use": "landing",
+          "qualifier": "attic",
+          "raw": "landing"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 2",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 3",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:attic",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

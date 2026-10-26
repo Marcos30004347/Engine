@@ -1,0 +1,366 @@
+{
+  "page": 529,
+  "source": "The Builder's Practical Director, Plates 131 and 132: first and second floor plans on PDF page 543, description on PDF page 529",
+  "kind": "detached town house",
+  "storeys": 3,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1,
+    2
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "detached",
+    "plan": "double-pile with a service half",
+    "features": [
+      {
+        "kind": "red brick with cement",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "'There is no Basement to this residence' - so the kitchen and scullery are on the ground floor with the three principal rooms, which is what makes this a large house rather than a grand one. Ten bedrooms over two floors. 'Both this and the previously described design will be found most convenient residences for large families with also some pretension to architectural effect.' 1250 pounds. Plate 132 on page 543 draws both upper floors and dimensions every room on them, which confirms the description's count exactly: five bedrooms and two dressing rooms on the first, five bedrooms and one dressing room on the second. The ground floor is still a room list.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "the hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "the stair"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing Room"
+        },
+        {
+          "use": "dining_room",
+          "raw": "Dining Room"
+        },
+        {
+          "use": "breakfast_room",
+          "raw": "Breakfast Room"
+        },
+        {
+          "use": "kitchen",
+          "raw": "Kitchen"
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery"
+        },
+        {
+          "use": "pantry",
+          "raw": "Pantry"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "Coal Cellar"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "breakfast_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 1",
+          "raw": "five Bed Rooms",
+          "feet": [
+            15.25,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 2",
+          "raw": "ditto",
+          "feet": [
+            15.25,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 3",
+          "raw": "ditto",
+          "feet": [
+            15,
+            10.25
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 4",
+          "raw": "ditto",
+          "feet": [
+            15,
+            9.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first 5",
+          "raw": "ditto",
+          "feet": [
+            12.5,
+            15
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "first 1",
+          "raw": "two dressing Rooms",
+          "feet": [
+            10.75,
+            5.5
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "first 2",
+          "raw": "ditto",
+          "feet": [
+            10.25,
+            5.5
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "first floor",
+          "raw": "Closet"
+        },
+        {
+          "use": "wc",
+          "qualifier": "first floor",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:first 1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:first 2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:first 3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:first 4",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:first 5",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:first floor",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:first floor",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:first 1",
+          "b": "dressing_room:first 1",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:first 2",
+          "b": "dressing_room:first 2",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "second floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "second",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 1",
+          "raw": "five Bed Rooms",
+          "feet": [
+            15.25,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 2",
+          "raw": "ditto",
+          "feet": [
+            15.25,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 3",
+          "raw": "ditto",
+          "feet": [
+            15,
+            10.25
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 4",
+          "raw": "ditto",
+          "feet": [
+            12.5,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 5",
+          "raw": "ditto",
+          "feet": [
+            10.75,
+            5.5
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "second",
+          "raw": "one Dressing Room",
+          "feet": [
+            10.25,
+            5.5
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 2",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 3",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 4",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 5",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:second 1",
+          "b": "dressing_room:second",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:second",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "low"
+  }
+}

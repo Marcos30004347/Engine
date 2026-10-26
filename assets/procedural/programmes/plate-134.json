@@ -1,0 +1,424 @@
+{
+  "page": 134,
+  "source": "The Builder's Practical Director, Plates 46 and 47, specification on PDF pages 133 and 134",
+  "kind": "farm house and offices",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile with an office range",
+    "frontageFeet": 31,
+    "depthFeet": 32,
+    "features": [
+      {
+        "kind": "porch",
+        "count": 1
+      },
+      {
+        "kind": "granary loft",
+        "count": 1
+      },
+      {
+        "kind": "clock pediment",
+        "count": 1
+      },
+      {
+        "kind": "weathercock",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Frontage 31 feet by 32 deep for the principal building; the offices are a separate range reached from the kitchen by dropping four steps into a sixty-foot passage, so they are level 0 but a second block. The drawing-room is on the bedroom floor - unusual, and it is what is printed. Beyond the offices, and not transcribed because they are not rooms of a dwelling: a chaise house, stables, a cowhouse, a barn, cart sheds, fodder houses, a poultry house and pig-sties.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "porch",
+          "raw": "a neat porch with a stone landing, raised four steps"
+        },
+        {
+          "use": "passage",
+          "qualifier": "spine",
+          "raw": "a hall, or passage, thirty feet long by four feet six inches",
+          "feet": [
+            30,
+            4.5
+          ]
+        },
+        {
+          "use": "parlour",
+          "qualifier": "best",
+          "raw": "a best parlour",
+          "feet": [
+            12,
+            14.5
+          ]
+        },
+        {
+          "use": "breakfast_room",
+          "raw": "a breakfast parlour",
+          "feet": [
+            12,
+            12
+          ]
+        },
+        {
+          "use": "living_room",
+          "qualifier": "and dining parlour",
+          "raw": "the living room or dining parlour",
+          "feet": [
+            12,
+            14.5
+          ]
+        },
+        {
+          "use": "office",
+          "qualifier": "counting-house",
+          "raw": "a counting-house, seed room, or office",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "a kitchen",
+          "feet": [
+            12,
+            12
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "the stairs, between the kitchen and breakfast parlour"
+        },
+        {
+          "use": "wc",
+          "raw": "water-closet, with the stairs"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "passage:spine",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "parlour:best",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "breakfast_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "office",
+          "link": "door"
+        },
+        {
+          "a": "passage:spine",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "breakfast_room",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "wc",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "bedroom floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "drawing_room",
+          "raw": "A drawing-room",
+          "feet": [
+            16.5,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "A front bedroom",
+          "feet": [
+            14.5,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "One back ditto over kitchen",
+          "feet": [
+            12,
+            11
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the passage",
+          "raw": "A small room over the passage",
+          "feet": [
+            9,
+            6.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "Another back bedroom",
+          "feet": [
+            14.5,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the office",
+          "raw": "a private bedroom or young Ladies' or infants' room over the office",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen",
+          "raw": "A large linen closet formed on the landing of the staircase"
+        },
+        {
+          "use": "landing",
+          "raw": "the landing of the staircase"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:linen",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:back",
+          "b": "bedroom:over the passage",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:over the office",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "offices",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "passage",
+          "qualifier": "offices",
+          "raw": "a passage sixty feet long by three feet wide",
+          "feet": [
+            60,
+            3
+          ]
+        },
+        {
+          "use": "store",
+          "raw": "A store room",
+          "feet": [
+            11,
+            7
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "A larder, the same size",
+          "feet": [
+            11,
+            7
+          ]
+        },
+        {
+          "use": "scullery",
+          "qualifier": "back kitchen",
+          "raw": "A scullery or back kitchen",
+          "feet": [
+            10,
+            11
+          ]
+        },
+        {
+          "use": "brewhouse",
+          "qualifier": "and laundry",
+          "raw": "A brewhouse or laundry",
+          "feet": [
+            11,
+            10
+          ]
+        },
+        {
+          "use": "dairy",
+          "raw": "A dairy, the same size",
+          "feet": [
+            11,
+            10
+          ]
+        },
+        {
+          "use": "cellar",
+          "raw": "A cellar",
+          "feet": [
+            7,
+            11
+          ]
+        },
+        {
+          "use": "store",
+          "qualifier": "coal",
+          "raw": "A coal-house",
+          "feet": [
+            11,
+            6
+          ]
+        },
+        {
+          "use": "store",
+          "qualifier": "wood",
+          "raw": "and wood ditto",
+          "feet": [
+            11,
+            6
+          ]
+        },
+        {
+          "use": "wc",
+          "qualifier": "offices",
+          "raw": "a small inclosure with a water-closet"
+        },
+        {
+          "use": "yard",
+          "raw": "the paved yard"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "kitchen",
+          "b": "passage:offices",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "store",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "brewhouse",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "dairy",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "cellar",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "store:coal",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "store:wood",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "wc:offices",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "yard",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

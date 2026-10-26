@@ -1,0 +1,184 @@
+{
+  "page": 411,
+  "source": "The Builder's Practical Director, Plates 110 and 111: section and chamber plan on PDF page 411, description on PDF page 502",
+  "kind": "model cottage, detached, on two levels",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "rectangle with back addition",
+    "roof": "gabled",
+    "features": [
+      {
+        "kind": "gable",
+        "count": 1
+      },
+      {
+        "kind": "half-timbered gable",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "The last of the book's four model cottages, and the only detached one: 'The first is for a Pair, with two floors, the second for four, the third for one, with the rooms all on one level, and the last, that under description, for a detached cottage with rooms on two levels. There is thus a variety suitable for various circumstances.' Only the chamber floor is dimensioned; the ground floor is a room list. 180 pounds.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "lobby",
+          "qualifier": "entrance",
+          "raw": "an Entrance Lobby"
+        },
+        {
+          "use": "living_room",
+          "raw": "Living Room"
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery, with oven, copper, etc."
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "Coal Cellar"
+        },
+        {
+          "use": "closet",
+          "qualifier": "tools",
+          "raw": "Closet for Tools"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        },
+        {
+          "use": "staircase",
+          "raw": "the stair to the chamber floor"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "lobby:entrance",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "lobby:entrance",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "living_room",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar:coal",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "closet:tools",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "BED ROOM",
+          "feet": [
+            14,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM",
+          "feet": [
+            14,
+            7.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the scullery",
+          "raw": "BED ROOM",
+          "feet": [
+            11.5,
+            8
+          ]
+        },
+        {
+          "use": "closet",
+          "raw": "CLOSET"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the scullery",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "medium",
+    "adjacency": "medium"
+  }
+}

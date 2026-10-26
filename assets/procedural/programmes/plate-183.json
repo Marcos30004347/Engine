@@ -1,0 +1,245 @@
+{
+  "page": 183,
+  "source": "The Builder's Practical Director, 'Pair of second rate houses', PDF page 183",
+  "kind": "second-rate house",
+  "storeys": 2,
+  "basement": true,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "semi-detached",
+    "plan": "double-pile",
+    "features": [
+      {
+        "kind": "balcony",
+        "count": 1
+      },
+      {
+        "kind": "entrance steps",
+        "count": 2
+      },
+      {
+        "kind": "lobby",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "A mirrored pair; the left half transcribed - the two are not quite identical, the right house's dining room being 15 by 16 where the left's is 18 by 16. The drawing room is on the chamber floor at 26 by 16, with a balcony across the garden front: the London piano nobile, which is why the ground floor has a library and a breakfast room and no drawing room at all. A second-rate house keeps its kitchen, scullery and offices in a basement, and this plate does not draw one, so there is no kitchen in this record and that is the plate and not an omission.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "lobby",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "hall",
+          "raw": "HALL"
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn in the hall"
+        },
+        {
+          "use": "library",
+          "raw": "LIBRARY",
+          "feet": [
+            13,
+            13
+          ]
+        },
+        {
+          "use": "breakfast_room",
+          "raw": "BREAKFAST ROOM",
+          "feet": [
+            18,
+            13
+          ]
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            18,
+            16
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "W C"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "lobby",
+          "b": "hall",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "library",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "breakfast_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "breakfast_room",
+          "b": "dining_room",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            26,
+            16
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "BED ROOM",
+          "feet": [
+            13,
+            13
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "middle",
+          "raw": "BED ROOM",
+          "feet": [
+            13,
+            13
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM",
+          "feet": [
+            15,
+            16
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "DRESSING ROOM"
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen",
+          "raw": "Linen Closet"
+        },
+        {
+          "use": "closet",
+          "qualifier": "1",
+          "raw": "Closet"
+        },
+        {
+          "use": "closet",
+          "qualifier": "2",
+          "raw": "Closet"
+        },
+        {
+          "use": "closet",
+          "qualifier": "3",
+          "raw": "Closet"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:middle",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:linen",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:back",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:front",
+          "b": "closet:1",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:middle",
+          "b": "closet:2",
+          "link": "door"
+        },
+        {
+          "a": "drawing_room",
+          "b": "closet:3",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

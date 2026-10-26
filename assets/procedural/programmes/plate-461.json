@@ -1,0 +1,168 @@
+{
+  "page": 461,
+  "source": "The Builder's Practical Director, Plates 79 and 80, specification on PDF page 461",
+  "kind": "public school with master's residence",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "detached",
+    "plan": "school room with a residence wing",
+    "features": [
+      {
+        "kind": "belfry",
+        "count": 1
+      },
+      {
+        "kind": "open trussed roof",
+        "count": 1
+      },
+      {
+        "kind": "recess",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "'The Master's or Mistress's Residence attached to it, the whole forming one connected edifice.' Only the school room is dimensioned; the residence is a room list. The school room is to have an open trussed roof with a belfry above it, heated by stoves or fireplaces. 400 pounds for the whole. The doors between the residence and the school room are not stated and the passage that joins them is an inference from 'one connected edifice', which is why the adjacency confidence is low.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "school_room",
+          "raw": "a School Room, exclusive of recess",
+          "feet": [
+            39,
+            20
+          ]
+        },
+        {
+          "use": "parlour",
+          "raw": "a Parlour"
+        },
+        {
+          "use": "kitchen",
+          "raw": "Kitchen"
+        },
+        {
+          "use": "pantry",
+          "raw": "Pantry"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "Coal Cellar"
+        },
+        {
+          "use": "passage",
+          "raw": "the passage joining the residence to the school room"
+        },
+        {
+          "use": "staircase",
+          "raw": "the stair to the chamber plan"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage",
+          "b": "school_room",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "parlour",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "first",
+          "raw": "three Bed Rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "third",
+          "raw": "ditto"
+        },
+        {
+          "use": "wc",
+          "raw": "Water Closet"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:first",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:second",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:third",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "medium",
+    "adjacency": "low"
+  }
+}

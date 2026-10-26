@@ -1,0 +1,215 @@
+{
+  "page": 343,
+  "source": "The Builder's Practical Director, 'Lodges or small cottages', the two-storey design on PDF page 343",
+  "kind": "lodge, two storeys",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "L",
+    "roof": "gabled",
+    "features": [
+      {
+        "kind": "half-timbered gable",
+        "count": 1
+      },
+      {
+        "kind": "finial",
+        "count": 1
+      },
+      {
+        "kind": "porch",
+        "count": 1
+      },
+      {
+        "kind": "seat by the porch",
+        "count": 1
+      },
+      {
+        "kind": "arched doorway",
+        "count": 2
+      }
+    ]
+  },
+  "notes": "Half-timbered gable over a stone ground floor, with the entrance passage running through beside the living room. The children's bedroom opens off the principal one rather than the landing, which is what a cottage of this size can afford.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "passage",
+          "qualifier": "entrance",
+          "raw": "ENTRANCE PASSAGE"
+        },
+        {
+          "use": "porch",
+          "raw": "PORCH, with a SEAT"
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn off the passage"
+        },
+        {
+          "use": "living_room",
+          "raw": "LIVING ROOM",
+          "feet": [
+            10,
+            10
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            10,
+            7
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER"
+        },
+        {
+          "use": "store",
+          "qualifier": "coals or wood",
+          "raw": "COALS OR WOOD"
+        },
+        {
+          "use": "closet",
+          "qualifier": "tools",
+          "raw": "CLOSET FOR TOOLS"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "passage:entrance",
+          "link": "door"
+        },
+        {
+          "a": "passage:entrance",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:entrance",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "passage:entrance",
+          "b": "closet:tools",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "store:coals or wood",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "principal",
+          "raw": "BED ROOM",
+          "feet": [
+            13.75,
+            10.25
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM",
+          "feet": [
+            10.83,
+            7.67
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "children's",
+          "raw": "CHILDRENS BED ROOM",
+          "feet": [
+            14,
+            6.33
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the back bedroom",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the landing",
+          "raw": "CLOSET"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:principal",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:by the landing",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:principal",
+          "b": "bedroom:children's",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:back",
+          "b": "closet:by the back bedroom",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

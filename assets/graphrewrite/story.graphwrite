@@ -1,0 +1,1306 @@
+# A village that runs itself, one week at a time.
+#
+# There is no `fact` clause here: the starting cast lives in story.graphfacts,
+# one edge per line, and every capitalised name in that file becomes a node id.
+# A bare number there is a YEAR (`Aldric born in 962`), which the loader turns
+# into the week node of that year - the same node `week(x)` names in a clause.
+#
+# Three things about this language shape every rule below.
+#
+# 1. A WHEN edge the THEN clause does not RESTATE is REMOVED. That is the whole
+#    mechanism - there is no delete keyword. So "keep being alive" has to be
+#    written out in the THEN of every rule that is not trying to kill someone,
+#    and forgetting it is how a rule quietly unmakes the world it matched.
+#
+# 2. A variable that appears only in the THEN is a NEW node. It is written with a
+#    trailing quote - C' - purely so a reader can see it is being born rather
+#    than bound; the compiler already treats any THEN-only variable that way.
+#    A `'` variable may also be BOUND to a value: `D' = week(now() + 5)` makes D'
+#    the node for that week, so a date is an edge later rules can read.
+#
+# 3. A match is INJECTIVE: two variables never bind the same node. `A likes B,
+#    B likes A` is two people; and two people smitten in the same week share one
+#    week node, so a rule that matches `A smitten on D, B smitten on E` would
+#    silently never fire for them. Match a date only where it is read or removed.
+#
+# Lowercase words are literal. `A is woman` is the edge type "? is woman";
+# `A is Woman` would make Woman a second VARIABLE, which is not what you want.
+#
+# Time. One tick is one week. `now()` is the absolute week; `week(x)` names the
+# node for week x; `passed(D)`, `inTime(D)`, `weeksLeft(D, n)` compare a date
+# node to now; `olderThan(D, years)` is how an age is tested; `roll(lo, hi)` is
+# a seeded span so a promise can be "some months out" and still reproducible.
+
+let Person is alive.
+let Person is dead.
+let Person is man.
+let Person is woman.
+let Person born in Week.
+
+# There is no negation in this language, so "not married", "old enough", "not
+# already in love" cannot be tested - they have to be edges that exist, and that
+# a rule CONSUMES when the condition stops being true.
+let Person is young.
+let Person is an infant.
+let Person is of age.
+let Person is grown.
+let Person is unmarried.
+let Person is unattached.
+let Person is fertile.
+
+# Affection. `smitten on` is the week a liking formed: a liking must be a
+# fortnight old before it can be returned, which is the window the kin rules
+# use to kill one that should never have formed.
+let Person0 likes Person1.
+let Person smitten on Week.
+
+let Person0 is wife of Person1.
+let Person0 is husband of Person1.
+let Person0 is child of Person1.
+let Person0 is mother of Person1.
+let Person0 is father of Person1.
+
+let Person0 hates Person1.
+let Person0 killed Person1.
+let Person cries for vengeance.
+
+# Friendship. `esteems` is one-sided and dated, the way a liking is: returned
+# after a fortnight it becomes a friendship on both sides. A friend is who a
+# plotter recruits, who warns an intended victim, and who takes up a blood
+# debt when there is no son to take it.
+let Person0 esteems Person1.
+let Person esteemed on Week.
+let Person0 is friend of Person1.
+
+# The blood price. A killing can be paid for instead of answered: the kin
+# accept, or refuse and take it up themselves. A feud between houses can be
+# ended the same way.
+let Person0 owes for Person1.
+let Person0 paid weregild to Person1.
+
+# Betrothal. `is engaged to` is consumed when a date is set; `is to wed` marks
+# the couple between then and the wedding, and is what a rival plots against.
+# `is promised to` is the extra mark an ARRANGED match carries: it is what an
+# elopement breaks.
+let Person0 is engaged to Person1.
+let Person0 is to wed Person1.
+let Person0 is promised to Person1.
+let Place is a church in Place1.
+let Person wed in Place.
+let Person weds on Week.
+let Person0 was jilted by Person1.
+
+# Children take forty weeks.
+let Person is with child.
+let Person0 carries child of Person1.
+let Person is due on Week.
+
+# A plot has a target, a deadline, and a week before which it is not ripe. One
+# plot at a time: `keeps the peace` is consumed when a plot is hatched and comes
+# back when it is resolved, so a grievance does not hatch a fresh plot every
+# week. `plots alone` is consumed by the one accomplice a plot may gain. An
+# accomplice may turn.
+let Person keeps the peace.
+let Person0 plots against Person1.
+let Person plots before Week.
+let Person plots since Week.
+let Person plots alone.
+let Person0 conspires with Person1.
+let Person0 betrayed Person1.
+let Person0 was warned by Person1.
+let Person was poisoned.
+let Person was stabbed.
+let Person was drowned.
+
+# Grief, as a consumable, and a mourning period as a date.
+let Person0 mourns Person1.
+
+# What someone KNOWS. `blames` is not an opinion: it is the knowledge that
+# this man did that killing, and it is what every rule of vengeance consumes.
+# Nobody avenges a death they never learned of, which is why a killing with
+# no widow, no accomplice and no eavesdropper goes unanswered.
+let Person0 blames Person1.
+let Person0 blackmails Person1.
+let Person widowed on Week.
+
+# The realm. A king, his queen, an heir, and the houses sworn to him. A crown
+# with no king on it is an edge - `wants a king` - which the heir consumes by
+# taking it and a pretender consumes by seizing it; they compete for the same
+# edge, so the claim pass decides, and the heir's rule is an always-rule while
+# a pretender's is a chance.
+let Person is king of Realm.
+let Person is queen of Realm.
+let Person is heir to Realm.
+let House swears to Realm.
+let Realm wants a king.
+let Realm wants an heir.
+let Person claims Realm.
+let Person0 backs Person1.
+
+# Walls are thin. Someone who overhears a plot may warn its victim, denounce a
+# traitor to the crown, or say nothing; and the plotter may learn they were
+# heard.
+let Person0 overheard Person1.
+let Person0 denounced Person1.
+let Person is outlawed.
+let Person was of Place.
+
+# Houses. A house has a head, who arranges matches; a broken match sets houses
+# feuding, and a feud puts every man of one house against every soul of the
+# other. Peace is an edge because a feud cannot be tested for absence.
+let Person is of house House.
+let Person is head of House.
+let House0 is at peace with House1.
+let House0 feuds with House1.
+
+# Guilt, as a consumable. `A killed C` is permanent - it is what vengeance
+# and the blood price read - so it cannot be what sends a man to the priest,
+# or he would confess the same killing every week for the rest of his life.
+# This is laid on a killer by the rule that kills and taken off him by the
+# confession, and it names the VICTIM: a man who killed twice has two of them
+# and confesses twice, and - the reason it is not a one-place edge - two
+# killings cannot both spend the same one in the same week.
+let Person0 unshriven for Person1.
+
+# The church. A priest serves one, and what he is for is that a killing has
+# somewhere to go besides the grave: a man confesses, takes a penance, and is
+# absolved - or the priest carries what he was told to his own grave, or does
+# not. `holds the seal on` is deliberately NOT `blames`: it is knowledge that
+# cannot travel, until a rule makes it travel.
+let Person serves Place.
+let Person0 confessed to Person1.
+let Person0 holds the seal on Person1.
+let Person is under penance.
+let Person penance until Week.
+let Person was absolved.
+let Person lies unhallowed.
+
+# Suspicion is not knowledge. `blames` is only ever set by a rule that had the
+# killing in front of it; `suspects` is what a grieving man does with a feud
+# and no evidence, and `accuses` is saying it out loud. An accusation is
+# answered whether or not it was true, which is the point of keeping the two
+# apart.
+let Person0 suspects Person1.
+let Person0 accuses Person1.
+
+# Silver. A bad season puts a house in want, its head borrows from a
+# neighbour, and a debt that comes due unpaid ruins him. A ruined man marries
+# his daughter cheaply or goes after the man holding the note.
+let House is in want.
+let Person0 owes silver to Person1.
+let Person silver due on Week.
+let Person is ruined.
+
+# The village everyone lives in. A rule's WHEN edges must all lie on ONE path,
+# and "every man against every woman" has nothing joining A to B - it is a
+# cross join, which the matcher cannot express. Routing both through a shared
+# place makes the pattern connected, and bounds the quadratic.
+let Person lives in Place.
+
+
+# --- sets --------------------------------------------------------------------
+#
+# A named conjunction, expanded at its call site with its parameters renamed to
+# the caller's arguments. Restating is not optional here, so naming the group
+# means writing it once and using it twice, and the two copies cannot drift.
+
+set living(A...) = A is alive.
+set living-man(A) = A is alive, A is man.
+set living-woman(A) = A is alive, A is woman.
+set together(A, B) = A lives in V, B lives in V.
+
+set married(A, B) = A is wife of B, B is husband of A.
+set engaged(A, B) = A is engaged to B, B is engaged to A.
+set betrothed(A, B) = A is to wed B, B is to wed A.
+set promised(A, B) = A is promised to B, B is promised to A.
+set courting(A, B) = A likes B, B likes A.
+set friends(A, B) = A is friend of B, B is friend of A.
+set grown(A...) = A is grown.
+set single(A...) = A is unmarried.
+set free(A...) = A is unattached.
+
+
+# --- attraction --------------------------------------------------------------
+#
+# One heart at a time: `unattached` is consumed when a liking forms and comes
+# back when it dies, so nobody courts two people at once and a liking has one
+# date. These run once per PAIR of grown villagers every week - twenty people
+# is nearly two hundred pairs - so the chance is per pair, and small.
+
+rule he-notices-her maybe 1 of 60:
+when together(A, B), living-man(A), living-woman(B), grown(A, B), free(A)
+then together(A, B), living-man(A), living-woman(B), grown(A, B),
+     A likes B, A smitten on D' (D' = week(now() + 2)).
+
+rule she-notices-him maybe 1 of 60:
+when together(A, B), living-woman(A), living-man(B), grown(A, B), free(A)
+then together(A, B), living-woman(A), living-man(B), grown(A, B),
+     A likes B, A smitten on D' (D' = week(now() + 2)).
+
+# A fortnight on, if the other is free, it may be returned.
+
+rule the-feeling-is-returned maybe 2:
+when A likes B, A smitten on D (passed(D)), free(B), living(A, B)
+then A likes B, A smitten on D, living(A, B), B likes A, B smitten on E' (E' = week(now())).
+
+# An unreturned liking does not last forever.
+
+rule the-feeling-fades maybe 1 of 26:
+when A likes B, A smitten on D, living(A)
+then living(A), A is unattached.
+
+# --- blood -------------------------------------------------------------------
+#
+# A liking for one's own parent, child or sibling dies in the week it forms,
+# before it can be returned. These fire always; the fortnight in `smitten on`
+# is what guarantees they get there first.
+
+rule not-her-own-father:
+when A likes B, A smitten on D, A is child of B
+then A is child of B, A is unattached.
+
+rule not-his-own-child:
+when A likes B, A smitten on D, B is child of A
+then B is child of A, A is unattached.
+
+rule not-a-sibling:
+when A likes B, A smitten on D, A is child of P, B is child of P
+then A is child of P, B is child of P, A is unattached.
+
+
+# --- enmity ------------------------------------------------------------------
+#
+# Attraction forms freely, and hatred destroys it: while A hates B no liking
+# between them survives, which is the same as "if they do not hate each other"
+# from the outside and needs no absence check.
+
+rule strangers-take-against-each-other maybe 1 of 800:
+when together(A, B), living(A, B), grown(A, B)
+then together(A, B), living(A, B), grown(A, B), A hates B.
+
+rule hatred-poisons-affection:
+when A hates B, A likes B, A smitten on D
+then A hates B, A is unattached.
+
+rule the-suit-is-rebuffed maybe 3:
+when A hates B, B likes A, B smitten on D
+then A hates B, B is unattached.
+
+rule hatred-fades maybe 1 of 20:
+when A hates B, living(A), A keeps the peace
+then living(A), A keeps the peace.
+
+
+# --- friendship ---------------------------------------------------------------
+#
+# The same shape as attraction, and for the same reasons: one-sided first,
+# dated so that a rule which ACTS on it can require a fortnight's standing,
+# and consumed by whatever resolves it. Friendship is not exclusive - a person
+# may have several friends - so nothing like `unattached` gates it; the rate
+# is per pair per week and small.
+
+rule two-take-to-each-other maybe 1 of 500:
+when together(A, B), living(A, B), grown(A, B)
+then together(A, B), living(A, B), grown(A, B), A esteems B, A esteemed on D' (D' = week(now() + 2)).
+
+rule the-esteem-is-returned maybe 4:
+when A esteems B, A esteemed on D (passed(D)), living(A, B), grown(B)
+then living(A, B), grown(B), friends(A, B).
+
+rule the-esteem-comes-to-nothing maybe 1 of 20:
+when A esteems B, A esteemed on D, living(A)
+then living(A).
+
+# Hatred ends a friendship; so does time, slowly.
+
+rule hatred-ends-a-friendship:
+when A hates B, friends(A, B)
+then A hates B.
+
+rule friendship-cools maybe 1 of 150:
+when friends(A, B), living(A, B)
+then living(A, B).
+
+# A man who kills has no friend in the dead man's friends.
+
+rule a-friend-turns-on-a-killer maybe 4:
+when A killed C, X is friend of C, friends(A, X), living(A, X)
+then A killed C, X is friend of C, living(A, X), X hates A.
+
+
+# --- courtship to marriage ---------------------------------------------------
+#
+# `single` is consumed along with the courtship: getting engaged uses up being
+# unmarried, which is the whole reason the edge exists. The smitten dates are
+# swept up afterwards, one per person, because a rule matching both at once
+# would never fire for a couple smitten in the same week.
+
+rule they-get-engaged maybe 2:
+when living-woman(A), living-man(B), courting(A, B), single(A, B)
+then living-woman(A), living-man(B), engaged(A, B).
+
+rule the-courtship-is-over:
+when engaged(A, B), A smitten on D
+then engaged(A, B).
+
+# The wedding is weeks away, not days. Three rules, so some couples take
+# longer than others; the date is a node both read back.
+
+rule they-set-a-date maybe 3:
+when engaged(A, B), living(A, B)
+then living(A, B), betrothed(A, B), A weds on D' (D' = week(now() + 5)), B weds on D'.
+
+rule they-take-their-time maybe 2:
+when engaged(A, B), living(A, B)
+then living(A, B), betrothed(A, B), A weds on D' (D' = week(now() + 10)), B weds on D'.
+
+rule they-wait-for-a-better-season maybe 1:
+when engaged(A, B), living(A, B)
+then living(A, B), betrothed(A, B), A weds on D' (D' = week(now() + 20)), B weds on D'.
+
+# On the day, if both still live. `availableAt` books the church for THIS week
+# and refuses if another couple has it, so a second couple waits a week.
+
+rule the-vows-are-said:
+when betrothed(A, B), A weds on D (passed(D)), B weds on D, living-woman(A), living-man(B),
+     A lives in V, C is a church in V (availableAt(C, now()))
+then living-woman(A), living-man(B), A lives in V, C is a church in V,
+     married(A, B), A wed in C, B wed in C.
+
+# The bride joins her husband's house: a feud is between houses, and a man must
+# not find his own wife on the other side of it. Matching is injective, so this
+# only fires when the two houses differ - a couple of one house has nothing to
+# do - and it is its own rule for the same reason: a wedding rule that matched
+# both houses could never marry two cousins.
+
+rule a-wife-joins-her-husbands-house:
+when A is wife of B, A is of house H, B is of house K
+then A is wife of B, B is of house K, A is of house K.
+
+rule the-promise-is-spent:
+when married(A, B), promised(A, B)
+then married(A, B).
+
+rule the-wedding-night:
+when A is wife of B, A smitten on D
+then A is wife of B.
+
+rule the-wedding-morning:
+when A is husband of B, A smitten on D
+then A is husband of B.
+
+# A betrothal to the dead is over, and the survivor is free again.
+
+rule the-betrothed-mourns:
+when A is dead, betrothed(A, B), A weds on D, B weds on D, living(B)
+then A is dead, living(B), B is unmarried, B is unattached.
+
+rule the-engagement-dies-with-him:
+when A is dead, engaged(A, B), living(B)
+then A is dead, living(B), B is unmarried, B is unattached.
+
+rule the-promise-dies-with-him:
+when A is dead, promised(A, B)
+then A is dead.
+
+
+# --- arranged matches --------------------------------------------------------
+#
+# Two heads of house in one village promise a woman of one house to a man of
+# the other. The date is months or years out; the couple are betrothed AND promised, and neither is
+# `single` any longer, so no love match can claim them - but a liking can
+# still form, which is where elopements come from.
+
+rule the-heads-make-a-match maybe 1 of 25:
+when F is head of H, G is head of K, H is at peace with K, F lives in V, G lives in V, living(F, G),
+     A is of house H, B is of house K, living-woman(A), living-man(B), grown(A, B), single(A, B)
+then F is head of H, G is head of K, H is at peace with K, F lives in V, G lives in V, living(F, G),
+     A is of house H, B is of house K, living-woman(A), living-man(B), grown(A, B),
+     betrothed(A, B), promised(A, B), A weds on D' (D' = week(now() + roll(12, 110))), B weds on D'.
+
+# A feud can be ended the same way: the heads make peace with a match.
+
+rule the-heads-make-peace-with-a-match maybe 1 of 15:
+when K feuds with H, F is head of H, G is head of K, F lives in V, G lives in V, living(F, G),
+     A is of house H, B is of house K, living-woman(A), living-man(B), grown(A, B), single(A, B)
+then F is head of H, G is head of K, H is at peace with K, K is at peace with H, F lives in V, G lives in V, living(F, G),
+     A is of house H, B is of house K, living-woman(A), living-man(B), grown(A, B),
+     betrothed(A, B), promised(A, B), A weds on D' (D' = week(now() + roll(8, 30))), B weds on D'.
+
+# A match too near in blood is undone the week it is made. A widow carries her
+# late husband's house, so the heads can offer her to a brother or a son of
+# hers; the Church will not have it.
+
+rule the-church-forbids-the-match:
+when promised(A, B), betrothed(A, B), A weds on D, B weds on D, A is child of P, B is child of P
+then A is child of P, B is child of P, A is unmarried, B is unmarried.
+
+rule the-church-forbids-a-mother-and-son:
+when promised(A, B), betrothed(A, B), A weds on D, B weds on D, B is child of A
+then B is child of A, A is unmarried, B is unmarried.
+
+rule the-church-forbids-a-father-and-daughter:
+when promised(A, B), betrothed(A, B), A weds on D, B weds on D, A is child of B
+then A is child of B, A is unmarried, B is unmarried.
+
+
+# --- elopement ---------------------------------------------------------------
+#
+# A promised woman who has come to love another runs off with him while there
+# is still a week before the wedding. The jilted man is free again, and his
+# house takes against hers.
+
+rule she-runs-off-with-her-lover maybe 3:
+when promised(A, B), betrothed(A, B), A weds on D (inTime(D)), B weds on D, courting(A, X),
+     living-woman(A), living-man(X), living(B), single(X), A is of house H, B is of house K
+then living-woman(A), living-man(X), living(B), A is of house H, B is of house K,
+     married(A, X), B is unmarried, B was jilted by A, K feuds with H.
+
+rule he-runs-off-with-his-lover maybe 3:
+when promised(A, B), betrothed(B, A), A weds on D (inTime(D)), B weds on D, courting(A, X),
+     living-man(A), living-woman(X), living(B), single(X), A is of house H, B is of house K
+then living-man(A), living-woman(X), living(B), A is of house H, B is of house K,
+     married(X, A), B is unmarried, B was jilted by A, K feuds with H.
+
+rule a-feud-breaks-the-peace:
+when K feuds with H, K is at peace with H
+then K feuds with H.
+
+rule a-feud-breaks-the-peace-both-ways:
+when K feuds with H, H is at peace with K
+then K feuds with H.
+
+# The jilted: vengeance on the lover, a grudge, or letting it go.
+
+rule the-jilted-man-plots-against-the-lover maybe 2:
+when B was jilted by A, A is wife of X, living(A, B, X), grown(B), B keeps the peace
+then A is wife of X, living(A, B, X), grown(B), B hates X,
+     B plots against X, B plots before D' (D' = week(now() + roll(6, 20))), B plots since E' (E' = week(now() + roll(1, 4))), B plots alone.
+
+rule the-jilted-woman-plots-against-the-lover maybe 2:
+when B was jilted by A, A is husband of X, living(A, B, X), grown(B), B keeps the peace
+then A is husband of X, living(A, B, X), grown(B), B hates X,
+     B plots against X, B plots before D' (D' = week(now() + roll(6, 20))), B plots since E' (E' = week(now() + roll(1, 4))), B plots alone.
+
+rule the-jilted-nurse-a-grudge maybe 3:
+when B was jilted by A, living(B)
+then living(B), B hates A.
+
+rule the-jilted-let-it-go maybe 1:
+when B was jilted by A, living(B)
+then living(B).
+
+# --- the feud ----------------------------------------------------------------
+
+rule the-feud-claims-a-target maybe 1 of 400:
+when K feuds with H, B is of house K, Y is of house H, living-man(B), grown(B), living(Y), grown(Y), B keeps the peace
+then K feuds with H, B is of house K, Y is of house H, living-man(B), grown(B), living(Y), grown(Y),
+     B hates Y, B plots against Y, B plots before D' (D' = week(now() + roll(4, 16))), B plots since E' (E' = week(now() + roll(1, 4))), B plots alone.
+
+rule the-houses-take-the-blood-price maybe 1 of 25:
+when K feuds with H, F is head of H, G is head of K, living(F, G)
+then F is head of H, G is head of K, living(F, G), H is at peace with K, K is at peace with H, G paid weregild to F.
+
+rule the-feud-burns-out maybe 1 of 60:
+when K feuds with H, F is head of K
+then F is head of K, K is at peace with H.
+
+
+# --- the rival ----------------------------------------------------------------
+#
+# Someone who wants the bride, or the groom, plots against the other. A plot is
+# three edges: the target, the deadline, and the week it is ripe - a plot takes
+# weeks to come together, and a method fires only once it is ripe and while
+# there is still time. All the methods consume the plot, so one plot is one
+# attempt.
+#
+# Every rule that ACTS on a liking reads its date with `passed(W)`: a liking
+# must be a fortnight old. That is the window the blood rules use to kill one
+# for a parent, a child or a sibling, and without the guard a son could plot
+# against his father for his mother's sake in the week before it was killed.
+
+rule he-plots-against-the-groom maybe 3:
+when living-man(C), grown(C), living-woman(A), living-man(B), C likes A, C smitten on W (passed(W)), A is to wed B, B weds on D (weeksLeft(D, 3)), C keeps the peace
+then living-man(C), grown(C), living-woman(A), living-man(B), C likes A, C smitten on W, A is to wed B, B weds on D,
+     C plots against B, C plots before D, C plots since E' (E' = week(now() + roll(1, 3))), C plots alone.
+
+rule she-plots-against-the-bride maybe 3:
+when living-woman(C), grown(C), living-man(A), living-woman(B), C likes A, C smitten on W (passed(W)), A is to wed B, B weds on D (weeksLeft(D, 3)), C keeps the peace
+then living-woman(C), grown(C), living-man(A), living-woman(B), C likes A, C smitten on W, A is to wed B, B weds on D,
+     C plots against B, C plots before D, C plots since E' (E' = week(now() + roll(1, 3))), C plots alone.
+
+# Coveting someone already married: the husband, or the wife, is in the way.
+
+rule he-covets-another-mans-wife maybe 1 of 60:
+when living-man(A), grown(A), A likes B, A smitten on W (passed(W)), living-woman(B), married(B, C), living(C), A keeps the peace
+then living-man(A), grown(A), A likes B, A smitten on W, living-woman(B), married(B, C), living(C),
+     A plots against C, A plots before D' (D' = week(now() + roll(6, 20))), A plots since E' (E' = week(now() + roll(1, 4))), A plots alone.
+
+rule she-covets-another-womans-husband maybe 1 of 90:
+when living-woman(A), grown(A), A likes B, A smitten on W (passed(W)), living-man(B), married(C, B), living(C), A keeps the peace
+then living-woman(A), grown(A), A likes B, A smitten on W, living-man(B), married(C, B), living(C),
+     A plots against C, A plots before D' (D' = week(now() + roll(6, 20))), A plots since E' (E' = week(now() + roll(1, 4))), A plots alone.
+
+# --- accomplices and betrayal -------------------------------------------------
+#
+# A plotter may draw in someone with a reason of their own: one who hates the
+# target, or one who loves the plotter. An accomplice may turn, and warn the
+# target - who then hates the plotter, and may strike first.
+
+rule the-plotter-finds-an-accomplice maybe 2:
+when C plots against B, C plots before D (inTime(D)), C plots alone, X hates B, living(C, X, B), grown(X)
+then C plots against B, C plots before D, X hates B, living(C, X, B), grown(X), X conspires with C.
+
+rule a-friend-is-drawn-into-the-plot maybe 3:
+when C plots against B, C plots before D (inTime(D)), C plots alone, X is friend of C, living(C, X, B), grown(X)
+then C plots against B, C plots before D, X is friend of C, living(C, X, B), grown(X), X conspires with C.
+
+rule a-lover-is-drawn-into-the-plot maybe 2:
+when C plots against B, C plots before D (inTime(D)), C plots alone, X likes C, X smitten on W (passed(W)), living(C, X, B), grown(X)
+then C plots against B, C plots before D, X likes C, X smitten on W, living(C, X, B), grown(X), X conspires with C.
+
+# The accomplice who is the intended victim's friend warns him: one friendship
+# betrays another. `keeps the peace` goes back to the plotter here, as it does
+# wherever a plot ends - without it a plotter betrayed once could never plot
+# again.
+
+rule a-friend-warns-his-friend maybe 6:
+when X conspires with C, C plots against B, C plots before D, C plots since E, X is friend of B, living(X, C, B)
+then living(X, C, B), X is friend of B, C keeps the peace, X betrayed C, B was warned by X, B hates C.
+
+rule the-accomplice-turns maybe 1 of 5:
+when X conspires with C, C plots against B, C plots before D, C plots since E, living(X, C, B)
+then living(X, C, B), C keeps the peace, X betrayed C, B was warned by X, B hates C.
+
+rule the-accomplice-loses-heart maybe 1 of 10:
+when X conspires with C, living(X)
+then living(X).
+
+rule the-betrayed-man-learns-of-it maybe 3:
+when X betrayed C, living(C, X)
+then living(C, X), C hates X.
+
+rule a-betrayed-friendship-is-over:
+when C hates X, friends(C, X)
+then C hates X.
+
+rule the-betrayal-stays-secret maybe 1:
+when X betrayed C, living(C)
+then living(C).
+
+rule the-warned-strike-first maybe 3:
+when B was warned by X, B hates C, living(B, C), grown(B), B keeps the peace
+then living(B, C), grown(B), B hates C,
+     B plots against C, B plots before D' (D' = week(now() + roll(4, 12))), B plots since E' (E' = week(now() + roll(1, 3))), B plots alone.
+
+rule the-warned-keep-their-guard maybe 2:
+when B was warned by X, living(B)
+then living(B).
+
+# --- thin walls ---------------------------------------------------------------
+#
+# A plot is spoken aloud somewhere, and the village is small. The listener
+# does not consume the plot, so the same plot can be overheard by several
+# people; the insert is a duplicate after the first, which costs nothing.
+
+rule a-thin-wall maybe 1 of 90:
+when C plots against B, C plots before D, C plots since E, A lives in V, C lives in V, living(A, C), grown(A)
+then C plots against B, C plots before D, C plots since E, A lives in V, C lives in V, living(A, C), grown(A), A overheard C.
+
+rule the-eavesdropper-warns-the-victim maybe 3:
+when A overheard C, C plots against B, C plots before D, C plots since E, A is friend of B, living(A, B, C)
+then living(A, B, C), A is friend of B, C keeps the peace, B was warned by A, B hates C.
+
+rule the-eavesdropper-holds-his-tongue maybe 2:
+when A overheard C, living(A)
+then living(A).
+
+rule the-plotter-learns-he-was-heard maybe 1 of 6:
+when A overheard C, C plots against B, C plots before D, C plots since E, living(A, C)
+then C plots against B, C plots before D, C plots since E, living(A, C), C hates A.
+
+
+# --- the realm ------------------------------------------------------------------
+#
+# The court runs on the same machinery as the village: a pretender plots with
+# the plot rules, a denunciation is answered with outlawry, and a king who is
+# murdered cries for vengeance like any other man.
+
+rule the-king-takes-a-queen:
+when K is king of R, K is husband of A, A is wife of K, living(K, A)
+then K is king of R, K is husband of A, A is wife of K, living(K, A), A is queen of R.
+
+rule the-heir-is-named maybe 5:
+when R wants an heir, K is king of R, A is child of K, living-man(A), grown(A), living(K)
+then K is king of R, A is child of K, living-man(A), grown(A), living(K), A is heir to R.
+
+# The crown's authority over a house IS that house's oath, so a house has to
+# be able to swear again: a king's house swears to nobody while he reigns, and
+# without this it stayed outside the king's peace forever after he died - and
+# a former royal house could not be outlawed however openly it plotted.
+
+rule the-crown-is-vacant:
+when K is dead, K is king of R, K is of house H
+then K is dead, K is of house H, R wants a king, H swears to R.
+
+rule the-heir-takes-the-throne:
+when R wants a king, A is heir to R, living(A)
+then living(A), A is king of R, R wants an heir.
+
+rule a-sworn-house-seizes-the-throne maybe 3:
+when R wants a king, H swears to R, F is head of H, living-man(F), grown(F)
+then H swears to R, F is head of H, living-man(F), grown(F), F is king of R, R wants an heir.
+
+rule the-pretender-seizes-the-throne maybe 5:
+when R wants a king, F claims R, living(F)
+then living(F), F is king of R, R wants an heir.
+
+# A head of a sworn house who wants the crown. The plot is an ordinary plot:
+# the methods, the accomplices and the eavesdroppers all apply to it.
+
+rule a-claimant-plots-against-the-king maybe 1 of 15:
+when K is king of R, H swears to R, F is head of H, living-man(F), grown(F), living(K), F keeps the peace
+then K is king of R, H swears to R, F is head of H, living-man(F), grown(F), living(K), F claims R, F hates K,
+     F plots against K, F plots before D' (D' = week(now() + roll(6, 30))), F plots since E' (E' = week(now() + roll(2, 6))), F plots alone.
+
+rule the-kings-house-swears-to-no-one:
+when K is king of R, K is of house H, H swears to R
+then K is king of R, K is of house H.
+
+# Declaring for a pretender does NOT dissolve the oath - and that matters,
+# because the crown's authority over a man IS his house's oath. While backing
+# consumed it, every house in a realm had declared for somebody within a year
+# and the king could outlaw nobody: 724 denunciations, not one outlawry.
+
+# Once per house per pretender, so the rate is per (claimant x house) per
+# week and has to be small: at 1 in 10 a year of two hundred thousand people
+# produced a million declarations, one from every house for every claimant.
+rule a-house-backs-the-pretender maybe 1 of 300:
+when F claims R, G is head of H, H swears to R, living(F, G), grown(G)
+then F claims R, G is head of H, H swears to R, living(F, G), grown(G), G backs F.
+
+rule the-claim-is-abandoned maybe 1 of 40:
+when F claims R, living(F)
+then living(F).
+
+rule a-claim-dies-with-the-claimant:
+when F is dead, F claims R
+then F is dead.
+
+rule the-backers-fall-away:
+when F is dead, G backs F
+then F is dead.
+
+rule the-queen-is-no-more:
+when A is dead, A is queen of R
+then A is dead.
+
+rule an-heir-who-does-not-live:
+when A is dead, A is heir to R
+then A is dead.
+
+# Denunciation. A plot against the king overheard is a plot the crown hears
+# about, and the crown answers by outlawry: the traitor loses the village he
+# lived in, and may be hunted down or pardoned.
+
+rule the-eavesdropper-denounces-a-traitor maybe 4:
+when A overheard C, C plots against K, C plots before D, C plots since E, K is king of R, living(A, C, K)
+then K is king of R, living(A, C, K), A denounced C, C keeps the peace.
+
+rule the-crown-outlaws-the-traitor maybe 5:
+when A denounced C, C is of house H, H swears to R, K is king of R, living(C, K), C lives in V
+then C is of house H, H swears to R, K is king of R, living(C, K), C is outlawed, C was of V.
+
+rule the-denunciation-is-ignored maybe 1:
+when A denounced C, living(A)
+then living(A).
+
+rule an-outlaw-is-hunted-down maybe 1 of 10:
+when C is outlawed, C was of V, living(C)
+then C is dead, C was of V.
+
+rule the-outlaw-is-pardoned maybe 1 of 50:
+when C is outlawed, C was of V, C is of house H, H swears to R, K is king of R, living(C)
+then C is of house H, H swears to R, K is king of R, living(C), C lives in V.
+
+rule an-outlaw-in-his-grave:
+when C is dead, C is outlawed, C was of V
+then C is dead.
+
+
+# --- the deed -----------------------------------------------------------------
+#
+# The death is SCHEDULED: the victim goes on living until the poison takes, so a
+# plotter who dies first leaves no one in limbo, and `is alive` leaves the week
+# `is dead` lands. Every method fits inside the deadline - a slow poison needs
+# two weeks in hand, a knife one.
+
+rule poison maybe 1:
+when C plots against B, C plots before D (weeksLeft(D, 2)), C plots since E (passed(E)), living(B, C)
+then living(B, C), C keeps the peace,
+     B is dead (occurAt(now() + 2)), C killed B (occurAt(now() + 2)), B was poisoned (occurAt(now() + 2)),
+     C unshriven for B (occurAt(now() + 2)), B cries for vengeance (occurAt(now() + 2)).
+
+rule a-knife-in-the-dark maybe 1:
+when C plots against B, C plots before D (weeksLeft(D, 1)), C plots since E (passed(E)), living(B, C)
+then living(B, C), C keeps the peace,
+     B is dead (occurAt(now() + 1)), C killed B (occurAt(now() + 1)), B was stabbed (occurAt(now() + 1)),
+     C unshriven for B (occurAt(now() + 1)), B cries for vengeance (occurAt(now() + 1)).
+
+rule the-river maybe 1:
+when C plots against B, C plots before D (weeksLeft(D, 1)), C plots since E (passed(E)), living(B, C)
+then living(B, C), C keeps the peace,
+     B is dead (occurAt(now() + 1)), C killed B (occurAt(now() + 1)), B was drowned (occurAt(now() + 1)),
+     C unshriven for B (occurAt(now() + 1)), B cries for vengeance (occurAt(now() + 1)).
+
+rule the-plot-comes-to-nothing maybe 2:
+when C plots against B, C plots before D, C plots since E (passed(E)), living(C)
+then living(C), C keeps the peace (occurAt(now() + roll(8, 30))).
+
+# A plot still pending when its day arrives is over: nothing to stop any more.
+
+rule the-moment-passes:
+when C plots against B, C plots before D (passed(D)), C plots since E, living(C)
+then living(C), C keeps the peace.
+
+rule the-target-dies-anyway:
+when B is dead, C plots against B, C plots before D, C plots since E, living(C)
+then B is dead, living(C), C keeps the peace.
+
+# Once a plot is resolved, the mark that it had no accomplice is meaningless.
+
+rule the-plot-is-over:
+when C plots alone, C keeps the peace
+then C keeps the peace.
+
+rule the-plotter-dies-first:
+when C is dead, C plots against B, C plots before D, C plots since E
+then C is dead.
+
+rule the-accomplice-shares-the-guilt:
+when X conspires with C, C killed B, B cries for vengeance
+then C killed B, B cries for vengeance, X killed B, X unshriven for B.
+
+# `is dead` arrives on a schedule; `is alive` leaves the moment they meet.
+
+rule the-dead-are-dead:
+when A is alive, A is dead
+then A is dead.
+
+# --- vengeance ---------------------------------------------------------------
+#
+# A killing cries out once: whoever answers - a son, the widow, a man of the
+# house - consumes the cry, so one murder gets one avenger, and that avenger's
+# killing cries out in turn. That is how a feud goes on without a feud edge.
+
+rule blood-for-blood maybe 1 of 12:
+when C cries for vengeance, A killed C, X blames A, X is child of C, living-man(X), grown(X), living(A), X keeps the peace
+then A killed C, X is child of C, living-man(X), grown(X), living(A), X hates A,
+     X plots against A, X plots before D' (D' = week(now() + roll(8, 30))), X plots since E' (E' = week(now() + roll(2, 6))), X plots alone.
+
+rule a-father-avenges-his-son maybe 1 of 12:
+when C cries for vengeance, A killed C, X blames A, C is child of X, living-man(X), grown(X), living(A), X keeps the peace
+then A killed C, C is child of X, living-man(X), grown(X), living(A), X hates A,
+     X plots against A, X plots before D' (D' = week(now() + roll(8, 30))), X plots since E' (E' = week(now() + roll(2, 6))), X plots alone.
+
+rule the-widow-swears-vengeance maybe 1 of 15:
+when C cries for vengeance, A killed C, B blames A, living(A, B), grown(B), B keeps the peace
+then A killed C, living(A, B), grown(B), B hates A,
+     B plots against A, B plots before D' (D' = week(now() + roll(8, 30))), B plots since E' (E' = week(now() + roll(2, 6))), B plots alone.
+
+rule a-kinsman-takes-up-the-blood-debt maybe 1 of 40:
+when C cries for vengeance, A killed C, X blames A, C is of house H, X is of house H, living-man(X), grown(X), living(A), X keeps the peace
+then A killed C, C is of house H, X is of house H, living-man(X), grown(X), living(A), X hates A,
+     X plots against A, X plots before D' (D' = week(now() + roll(8, 30))), X plots since E' (E' = week(now() + roll(2, 6))), X plots alone.
+
+rule a-friend-avenges-a-friend maybe 1 of 15:
+when C cries for vengeance, A killed C, X blames A, X is friend of C, living-man(X), grown(X), living(A), X keeps the peace
+then A killed C, living-man(X), grown(X), living(A), X hates A,
+     X plots against A, X plots before D' (D' = week(now() + roll(8, 30))), X plots since E' (E' = week(now() + roll(2, 6))), X plots alone.
+
+# Or the kin name a price instead. A debt named is a debt that can be paid, or
+# refused - and a refusal is a plot like any other.
+
+rule the-kin-name-a-price maybe 1 of 10:
+when C cries for vengeance, A killed C, X blames A, X is child of C, living(A, X), grown(X)
+then A killed C, X is child of C, living(A, X), grown(X), A owes for C.
+
+rule the-blood-price-is-paid maybe 3:
+when A owes for C, X is child of C, living(A, X)
+then X is child of C, living(A, X), A paid weregild to X.
+
+rule the-price-is-refused maybe 1:
+when A owes for C, X is child of C, living(A, X), grown(X), X keeps the peace
+then X is child of C, living(A, X), grown(X), X hates A,
+     X plots against A, X plots before D' (D' = week(now() + roll(8, 30))), X plots since E' (E' = week(now() + roll(2, 6))), X plots alone.
+
+rule the-debt-dies-with-the-debtor:
+when A is dead, A owes for C
+then A is dead.
+
+rule the-killing-goes-unavenged maybe 1 of 12:
+when C cries for vengeance, C is dead
+then C is dead.
+
+# --- how a killing becomes known ----------------------------------------------
+#
+# Four ways: the widow is told, an accomplice was there, someone overheard the
+# plot beforehand, or word travels between friends and kin. Each of these only
+# ADDS knowledge, so a second telling is a duplicate and costs nothing.
+
+rule the-accomplice-knew-all-along:
+when X conspires with C, C killed B, living(X)
+then X conspires with C, C killed B, living(X), X blames C.
+
+rule the-eavesdropper-knew-the-plot:
+when A overheard C, C killed B, living(A)
+then A overheard C, C killed B, living(A), A blames C.
+
+rule word-gets-around maybe 2:
+when A blames C, friends(A, X), living(A, X)
+then A blames C, friends(A, X), living(A, X), X blames C.
+
+rule the-kin-are-told maybe 3:
+when A blames C, C killed B, X is child of B, living(A, X)
+then A blames C, C killed B, X is child of B, living(A, X), X blames C.
+
+rule what-is-known-dies-with-the-knower:
+when A is dead, A blames B
+then A is dead.
+
+# Knowing who did it is leverage as well as grief.
+
+rule the-witness-asks-for-silence maybe 1 of 40:
+when A blames C, C killed B, living(A, C), grown(A)
+then C killed B, living(A, C), grown(A), A blackmails C.
+
+rule the-blackmail-is-paid maybe 2:
+when A blackmails C, living(A, C)
+then living(A, C), C paid weregild to A.
+
+rule the-blackmailer-is-silenced maybe 2:
+when A blackmails C, living(A, C), grown(C), C keeps the peace
+then living(A, C), grown(C), C hates A,
+     C plots against A, C plots before D' (D' = week(now() + roll(4, 16))), C plots since E' (E' = week(now() + roll(1, 4))), C plots alone.
+
+rule blackmail-dies-with-the-blackmailer:
+when A is dead, A blackmails B
+then A is dead.
+
+rule the-blackmailed-in-his-grave:
+when B is dead, A blackmails B, living(A)
+then B is dead, living(A).
+
+rule the-widow-learns-who-killed-him maybe 5:
+when B mourns C, A killed C, living(A, B)
+then A killed C, living(A, B), B hates A, B blames A.
+
+rule the-widow-forgoes-vengeance maybe 1:
+when B blames A, living(B)
+then living(B).
+
+rule the-dead-blame-nobody:
+when B is dead, B blames A
+then B is dead.
+
+
+# --- children ----------------------------------------------------------------
+#
+# Forty weeks. `fertile` is consumed at conception and comes back some months
+# after the birth, so no woman bears twice in a year. The father is recorded at
+# conception so a widow still bears his child.
+
+rule she-conceives maybe 1 of 10:
+when married(A, B), living(A, B), A is fertile
+then married(A, B), living(A, B), A is with child, A carries child of B, A is due on D' (D' = week(now() + 40)).
+
+# `or` expands this into two rules, one per gender; both match the same row and
+# both consume `with child`, so the claim pass lets exactly one fire.
+
+rule a-child-is-born:
+when A is with child, A carries child of B, A is due on D (passed(D)), living(A), A lives in V, B is of house H
+then living(A), A lives in V, B is of house H,
+     C' is alive, C' is young, C' is an infant, C' is woman or C' is man, C' lives in V, C' is of house H,
+     C' is child of A, C' is child of B, A is mother of C', B is father of C', C' born in W' (W' = week(now())),
+     A is fertile (occurAt(now() + roll(30, 80))).
+
+rule she-dies-in-childbed maybe 1 of 30:
+when A is with child, A carries child of B, A is due on D (passed(D)), A is alive
+then A is dead.
+
+# Growing up is what makes someone eligible: at sixteen `young` is consumed,
+# `grown`, `unmarried` and `unattached` appear, and only then do the attraction
+# rules see them.
+
+rule comes-of-age:
+when A is young, A born in D (olderThan(D, 16)), living(A)
+then A born in D, living(A), A is of age.
+
+rule a-young-man-grown:
+when A is of age, A is man
+then A is man, A is grown, A is unmarried, A is unattached, A keeps the peace.
+
+rule a-young-woman-grown:
+when A is of age, A is woman
+then A is woman, A is grown, A is unmarried, A is unattached, A is fertile, A keeps the peace.
+
+rule her-childbearing-years-end:
+when A is fertile, A born in D (olderThan(D, 45))
+then A born in D.
+
+
+# --- the confessional ---------------------------------------------------------
+#
+# A killing has three ends in this world: it is avenged, it is paid for, or it
+# is confessed. The third is the only one that touches the killer rather than
+# the corpse, and it is the only channel that can go either way - a priest who
+# keeps the seal takes the knowledge out of the world, and a priest who breaks
+# it puts a name in the widow's mouth.
+#
+# `holds the seal on` is deliberately not `blames`, so it does not travel:
+# word-gets-around matches friends of someone who BLAMES, and the priest
+# never does.
+
+rule a-killer-confesses maybe 1 of 30:
+when A unshriven for C, A killed C, A lives in V, K is a church in V, P serves K, living(A, P), grown(A)
+then A killed C, A lives in V, K is a church in V, P serves K, living(A, P), grown(A),
+     A confessed to P, P holds the seal on A.
+
+rule the-priest-sets-a-penance maybe 4:
+when A confessed to P, living(A, P)
+then living(A, P), A is under penance, A penance until Q' (Q' = week(now() + roll(10, 60))).
+
+# A man doing penance puts down whatever he was planning. It is the only thing
+# in this world that ends a plot without a death or a betrayal.
+
+rule a-penitent-gives-up-his-plot maybe 3:
+when A is under penance, A plots against B, A plots before D, A plots since E, A plots alone, living(A)
+then A is under penance, living(A), A keeps the peace.
+
+rule the-penance-is-done:
+when A is under penance, A penance until Q (passed(Q)), living(A)
+then living(A), A was absolved.
+
+# The priest's own decision, and it is a coin: he takes it to his grave, or the
+# widow gets a name.
+
+rule the-priest-keeps-the-seal maybe 1 of 60:
+when P holds the seal on A, living(P)
+then living(P).
+
+rule the-priest-breaks-the-seal maybe 1 of 40:
+when P holds the seal on A, A killed C, B mourns C, living(P, A, B), grown(B)
+then A killed C, B mourns C, living(P, A, B), grown(B), B blames A, B hates A.
+
+# A widow only exists if the dead man was married, and mourning fades, so on
+# its own the rule above almost never found anyone to tell. A child is
+# permanent.
+
+rule the-priest-tells-the-son maybe 1 of 50:
+when P holds the seal on A, A killed C, X is child of C, living(P, A, X), grown(X)
+then A killed C, X is child of C, living(P, A, X), grown(X), X blames A, X hates A.
+
+# A killer who never confessed is refused hallowed ground, which is the
+# village's last word on him.
+
+rule the-unshriven-are-refused-burial maybe 2:
+when A unshriven for C, A is dead, A lives in V, K is a church in V, P serves K, living(P)
+then A is dead, A lives in V, K is a church in V, P serves K, living(P), A lies unhallowed.
+
+# A parish does not stay empty: a grown man of the village takes the living.
+
+rule a-new-priest-is-ordained maybe 2:
+when P is dead, P serves K, K is a church in V, X lives in V, living-man(X), grown(X)
+then P is dead, K is a church in V, X lives in V, living-man(X), grown(X), X serves K.
+
+rule the-seal-dies-with-the-priest:
+when P is dead, P holds the seal on A
+then P is dead.
+
+rule the-penitent-in-his-grave:
+when A is dead, A is under penance, A penance until Q
+then A is dead.
+
+rule a-confession-dies-with-the-confessor:
+when A is dead, A confessed to P
+then A is dead.
+
+rule nothing-is-held-against-a-corpse:
+when A is dead, P holds the seal on A, living(P)
+then A is dead, living(P).
+
+rule guilt-outlives-nobody:
+when A is dead, A unshriven for C
+then A is dead.
+
+rule absolution-outlives-nobody:
+when A is dead, A was absolved
+then A is dead.
+
+
+# --- suspicion ------------------------------------------------------------------
+#
+# Grief wants a name and a feud supplies one. Nothing here consults who
+# actually did the killing, and that is deliberate: `suspects` and `accuses`
+# are what a man believes, `blames` is what the world has shown him, and the
+# point of keeping them apart is that an accusation can be wrong and still be
+# answered.
+
+rule suspicion-falls-on-the-other-house maybe 1 of 8:
+when C cries for vengeance, C is of house H, K feuds with H, B is of house K, X is child of C,
+     living(B, X), grown(X), living-man(B)
+then C cries for vengeance, C is of house H, K feuds with H, B is of house K, X is child of C,
+     living(B, X), grown(X), living-man(B), X suspects B.
+
+rule a-widow-suspects-the-other-house maybe 1 of 10:
+when X mourns C, C is of house H, K feuds with H, B is of house K, living(B, X), grown(X), living-man(B)
+then X mourns C, C is of house H, K feuds with H, B is of house K, living(B, X), grown(X), living-man(B),
+     X suspects B.
+
+# And a son with nobody to blame looks around the village. There is no feud
+# behind this one and no evidence in it either; it is the plainest way this
+# world produces a wrong answer.
+
+rule the-son-looks-for-someone-to-blame maybe 1 of 50:
+when C cries for vengeance, X is child of C, C lives in V, B lives in V, B is of house K,
+     living(B, X), grown(X), living-man(B)
+then C cries for vengeance, X is child of C, C lives in V, B lives in V, B is of house K,
+     living(B, X), grown(X), living-man(B), X suspects B.
+
+rule the-suspicion-spreads maybe 2:
+when X suspects B, friends(X, Y), living(X, Y, B)
+then X suspects B, friends(X, Y), living(X, Y, B), Y suspects B.
+
+rule the-suspicion-is-said-aloud maybe 1 of 5:
+when X suspects B, living(X, B), grown(X)
+then living(X, B), grown(X), X accuses B, X hates B.
+
+rule the-suspicion-comes-to-nothing maybe 1 of 6:
+when X suspects B, living(X)
+then living(X).
+
+# An accusation is answered whether or not it was true. Either the houses fall
+# out over it, or the man named decides the only answer left to him is the one
+# he was accused of.
+
+rule the-houses-fall-out-over-an-accusation maybe 3:
+when X accuses B, X is of house H, B is of house K, H is at peace with K, K is at peace with H,
+     living(X, B)
+then X accuses B, X is of house H, B is of house K, living(X, B), H feuds with K, K feuds with H.
+
+rule the-accused-strikes-back maybe 1 of 4:
+when X accuses B, living(B, X), grown(B), B keeps the peace
+then X accuses B, living(B, X), grown(B), B hates X,
+     B plots against X, B plots before D' (D' = week(now() + roll(6, 24))), B plots since E' (E' = week(now() + roll(1, 4))), B plots alone.
+
+rule the-accuser-thinks-better-of-it maybe 1 of 8:
+when X accuses B, living(X)
+then living(X).
+
+rule the-dead-suspect-nobody:
+when X is dead, X suspects B
+then X is dead.
+
+rule nobody-suspects-a-corpse:
+when B is dead, X suspects B, living(X)
+then B is dead, living(X).
+
+rule an-accusation-dies-with-the-accuser:
+when X is dead, X accuses B
+then X is dead.
+
+rule the-accused-in-his-grave:
+when B is dead, X accuses B, living(X)
+then B is dead, living(X).
+
+
+# --- silver ----------------------------------------------------------------------
+#
+# A house has a bad season, its head borrows from a neighbour, and the note
+# comes due. What ruin does is push a head into the two things he would not
+# otherwise do: marry a daughter off cheap, or go after the man holding the
+# note. It is the only pressure in this world that comes from outside the
+# people in it.
+
+rule a-hard-season maybe 1 of 90:
+when F is head of H, living(F)
+then F is head of H, living(F), H is in want.
+
+rule the-head-borrows maybe 4:
+when H is in want, F is head of H, G is head of K, F lives in V, G lives in V, living(F, G)
+then F is head of H, G is head of K, F lives in V, G lives in V, living(F, G),
+     F owes silver to G, F silver due on D' (D' = week(now() + roll(12, 40))).
+
+rule the-house-comes-through maybe 1 of 20:
+when H is in want, F is head of H, living(F)
+then F is head of H, living(F).
+
+rule the-debt-is-settled maybe 1 of 60:
+when F owes silver to G, F silver due on D, living(F, G)
+then living(F, G).
+
+rule the-note-comes-due:
+when F owes silver to G, F silver due on D (passed(D)), living(F, G)
+then F owes silver to G, living(F, G), F is ruined.
+
+# A ruined head marries his daughter to whoever will have her. It is the match
+# rule with the bargaining taken out of it, which is why the dates are short.
+
+rule a-ruined-house-marries-down maybe 3:
+when F is ruined, F is head of H, A is of house H, living-woman(A), grown(A), single(A),
+     G is head of K, B is of house K, living-man(B), grown(B), single(B), F lives in V, G lives in V
+then F is ruined, F is head of H, A is of house H, living-woman(A), grown(A),
+     G is head of K, B is of house K, living-man(B), grown(B), F lives in V, G lives in V,
+     betrothed(A, B), promised(A, B), A weds on M' (M' = week(now() + roll(4, 20))), B weds on M'.
+
+rule a-ruined-man-turns-on-his-creditor maybe 1 of 6:
+when F is ruined, F owes silver to G, living(F, G), grown(F), F keeps the peace
+then F is ruined, F owes silver to G, living(F, G), grown(F), F hates G,
+     F plots against G, F plots before M' (M' = week(now() + roll(6, 26))), F plots since N' (N' = week(now() + roll(2, 5))), F plots alone.
+
+rule the-house-recovers maybe 1 of 30:
+when F is ruined, living(F)
+then living(F).
+
+rule silver-dies-with-the-debtor:
+when F is dead, F owes silver to G, F silver due on D
+then F is dead.
+
+rule a-note-dies-with-the-lender:
+when G is dead, F owes silver to G, F silver due on D, living(F)
+then G is dead, living(F).
+
+rule ruin-outlives-nobody:
+when F is dead, F is ruined
+then F is dead.
+
+rule want-outlives-its-head:
+when F is dead, F is head of H, H is in want
+then F is dead, F is head of H.
+
+
+# --- death -------------------------------------------------------------------
+#
+# The rules whose THEN deliberately drops `is alive`. `death-comes` is scaled by
+# the driver with the population: a tenth of its chance below the cap - which
+# at one in five hundred rounds to nothing - and rising with the excess above
+# it, so the cap is the only thing it does. Natural death is by age: infants
+# under five, the middle-aged past forty-five, and the old past sixty-five.
+
+rule death-comes maybe 1 of 500:
+when A is alive
+then A is dead.
+
+rule a-child-sickens maybe 1 of 1000:
+when A is alive, A is an infant
+then A is dead, A is an infant.
+
+rule out-of-swaddling:
+when A is an infant, A born in D (olderThan(D, 5))
+then A born in D.
+
+rule a-sudden-illness maybe 1 of 1000:
+when A is alive, A born in D (olderThan(D, 45))
+then A is dead, A born in D.
+
+rule old-age maybe 1 of 100:
+when A is alive, A born in D (olderThan(D, 65))
+then A is dead, A born in D.
+
+# Death does not dissolve a marriage by itself - `death-comes` never matched the
+# marriage, so it could not remove it. These do the tidying, and fire always so
+# no corpse stays married for a week longer than it has to. Widowhood gives
+# `unmarried` back only once the mourning is done.
+
+rule the-widow-mourns:
+when A is dead, A is husband of B, B is wife of A
+then A is dead, B mourns A, B widowed on D' (D' = week(now() + roll(8, 40))).
+
+rule the-widower-mourns:
+when A is dead, A is wife of B, B is husband of A
+then A is dead, B mourns A, B widowed on D' (D' = week(now() + roll(8, 40))).
+
+rule the-mourning-ends:
+when B widowed on D (passed(D)), living(B)
+then living(B), B is unmarried, B is unattached.
+
+rule grief-fades maybe 1 of 30:
+when B mourns C, living(B)
+then living(B).
+
+# A house whose head has died passes to a son, or failing that to any grown man
+# of the house.
+
+rule the-house-passes-to-a-son maybe 5:
+when F is dead, F is head of H, X is child of F, living-man(X), grown(X)
+then F is dead, X is child of F, living-man(X), grown(X), X is head of H.
+
+rule the-house-passes-to-a-kinsman maybe 1:
+when F is dead, F is head of H, X is of house H, living-man(X), grown(X)
+then F is dead, X is of house H, living-man(X), grown(X), X is head of H.
+
+# A dead man's affections, hatreds and plots stop being anyone's problem.
+
+rule the-dead-stop-wanting:
+when A is dead, A likes B, A smitten on D
+then A is dead.
+
+rule the-heart-lets-go-of-the-dead:
+when A likes B, A smitten on D, B is dead, living(A)
+then B is dead, living(A), A is unattached.
+
+rule the-dead-stop-hating:
+when A is dead, A hates B
+then A is dead.
+
+rule nobody-hates-a-corpse:
+when B is dead, A hates B, living(A)
+then B is dead, living(A).
+
+rule grief-outlives-nobody:
+when A is dead, A mourns B
+then A is dead.
+
+rule the-dead-are-not-widowed:
+when A is dead, A widowed on D
+then A is dead.
+
+rule the-dead-bear-nothing:
+when A is dead, A is with child, A carries child of B, A is due on D
+then A is dead.
+
+rule the-dead-have-no-friends:
+when A is dead, A is friend of B
+then A is dead.
+
+rule nobody-befriends-a-corpse:
+when B is dead, A is friend of B, living(A)
+then B is dead, living(A).
+
+rule the-dead-stop-esteeming:
+when A is dead, A esteems B, A esteemed on D
+then A is dead.
+
+rule esteem-dies-with-the-esteemed:
+when B is dead, A esteems B, A esteemed on D, living(A)
+then B is dead, living(A).
+
+rule the-dead-hear-nothing:
+when A is dead, A overheard B
+then A is dead.
+
+rule nobody-overhears-a-corpse:
+when B is dead, A overheard B, living(A)
+then B is dead, living(A).
+
+rule a-denunciation-dies-with-the-accuser:
+when A is dead, A denounced B
+then A is dead.
+
+rule the-dead-back-nobody:
+when A is dead, A backs B
+then A is dead.
+
+rule the-dead-conspire-with-nobody:
+when X is dead, X conspires with C
+then X is dead.

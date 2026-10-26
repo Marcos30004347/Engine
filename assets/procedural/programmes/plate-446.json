@@ -1,0 +1,288 @@
+{
+  "page": 446,
+  "source": "The Builder's Practical Director, Plate 78, specification on PDF page 446",
+  "kind": "shop and residence on a twenty-foot allotment",
+  "storeys": 3,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0,
+    1,
+    2
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "row",
+    "plan": "shop with living over",
+    "plotFrontageFeet": 20,
+    "features": [
+      {
+        "kind": "shop front",
+        "count": 1
+      },
+      {
+        "kind": "plate glass sash",
+        "count": 1
+      },
+      {
+        "kind": "stall board",
+        "count": 1
+      },
+      {
+        "kind": "entablature and cornice",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Three shops in a row, each on a twenty-foot frontage, with the living accommodation stacked over the shop and the kitchen offices in the basement. 'The second floor plan will be the same as that for the first floor, omitting the small bed room.' Storey heights are given and not recorded as rooms: shop and parlour 11 feet, warehouse 8, drawing room and the bedroom adjoining 10, the back bed room 8, the second floor 9. 500 pounds for each shop and residence.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "The kitchen ... will form the Basement"
+        },
+        {
+          "use": "scullery",
+          "raw": "scullery"
+        },
+        {
+          "use": "pantry",
+          "raw": "pantry"
+        },
+        {
+          "use": "cellar",
+          "raw": "cellars etc."
+        },
+        {
+          "use": "yard",
+          "qualifier": "back",
+          "raw": "entrance into the back yard or garden"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "yard:back",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "shop",
+          "raw": "A Shop",
+          "feet": [
+            19.25,
+            17.67
+          ]
+        },
+        {
+          "use": "parlour",
+          "raw": "a parlour, communicating with the shop",
+          "feet": [
+            11.5,
+            10
+          ]
+        },
+        {
+          "use": "passage",
+          "raw": "a passage with stairs",
+          "feet": [
+            10,
+            5.75
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "the stairs in the passage"
+        },
+        {
+          "use": "staircase",
+          "qualifier": "basement",
+          "raw": "under the ground floor staircase are the stairs to the Basement"
+        },
+        {
+          "use": "workshop",
+          "qualifier": "or warehouse",
+          "raw": "a warehouse or workshop",
+          "feet": [
+            10,
+            10
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "shop",
+          "b": "parlour",
+          "link": "door"
+        },
+        {
+          "a": "shop",
+          "b": "passage",
+          "link": "door"
+        },
+        {
+          "a": "parlour",
+          "b": "passage",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "workshop:or warehouse",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "staircase",
+          "b": "staircase:basement",
+          "link": "door"
+        },
+        {
+          "a": "staircase:basement",
+          "b": "kitchen",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "A Drawing room",
+          "feet": [
+            18,
+            17.67
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "adjoining the drawing room",
+          "raw": "a bed room",
+          "feet": [
+            11.5,
+            10
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "servant's",
+          "raw": "a servant's or back bed room",
+          "feet": [
+            10,
+            10
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:servant's",
+          "link": "door"
+        },
+        {
+          "a": "drawing_room",
+          "b": "bedroom:adjoining the drawing room",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "second floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "second floor",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second front",
+          "raw": "A Front bed room",
+          "feet": [
+            18,
+            17.67
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second back",
+          "raw": "a back bed room",
+          "feet": [
+            11.5,
+            10
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:second floor",
+          "b": "bedroom:second front",
+          "link": "door"
+        },
+        {
+          "a": "landing:second floor",
+          "b": "bedroom:second back",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:second floor",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

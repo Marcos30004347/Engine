@@ -1,0 +1,6 @@
+let Person follows Person1.
+let Person blocks Person1.
+
+rule mutual-block:
+when A follows B, B blocks A
+then A follows B.

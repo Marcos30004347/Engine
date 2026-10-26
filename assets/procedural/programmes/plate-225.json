@@ -1,0 +1,253 @@
+{
+  "page": 225,
+  "source": "The Builder's Practical Director, Plate 38, specification on PDF pages 225 and 226",
+  "kind": "semi-detached seven-roomed house",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "semi-detached",
+    "plan": "double-pile with back addition",
+    "roof": "cross-gabled",
+    "features": [
+      {
+        "kind": "porch",
+        "count": 1
+      },
+      {
+        "kind": "saddle-ridge tiles",
+        "count": 1
+      },
+      {
+        "kind": "lead valley",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "'These two rooms are connected by means of folding doors' - the front parlour and the drawing room, so an open wall. 700 pounds the pair.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "porch",
+          "raw": "An entrance porch",
+          "feet": [
+            5.5,
+            3.5
+          ]
+        },
+        {
+          "use": "passage",
+          "raw": "Passage, and staircase",
+          "feet": [
+            22,
+            5.5
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "staircase"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "A coal cellar under the stairs"
+        },
+        {
+          "use": "parlour",
+          "qualifier": "front",
+          "raw": "A front parlor",
+          "feet": [
+            15,
+            14
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "A drawing room",
+          "feet": [
+            15.5,
+            14
+          ]
+        },
+        {
+          "use": "store",
+          "raw": "A store room",
+          "feet": [
+            6,
+            4.5
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "A kitchen",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "Pantry",
+          "feet": [
+            6,
+            5.5
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "A water closet"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "passage",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "parlour:front",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "store",
+          "link": "door"
+        },
+        {
+          "a": "parlour:front",
+          "b": "drawing_room",
+          "link": "open"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "bed-room floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "A front bed-room",
+          "feet": [
+            15,
+            14
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "A back bed-room",
+          "feet": [
+            15.5,
+            14
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "A bed-room over the kitchen",
+          "feet": [
+            10.5,
+            10
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second over the kitchen",
+          "raw": "Ditto. Ditto",
+          "feet": [
+            10.5,
+            10
+          ]
+        },
+        {
+          "use": "store",
+          "qualifier": "linen",
+          "raw": "A linen room over the porch"
+        },
+        {
+          "use": "landing",
+          "raw": "landing"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:second over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "store:linen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

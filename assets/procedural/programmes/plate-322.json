@@ -1,0 +1,462 @@
+{
+  "page": 322,
+  "source": "The Builder's Practical Director, Plates 50 and 51, specification on PDF page 322",
+  "kind": "detached town house",
+  "storeys": 2,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0,
+    1,
+    2
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile with a conservatory",
+    "storeysInRoof": 1,
+    "features": [
+      {
+        "kind": "conservatory",
+        "count": 1
+      },
+      {
+        "kind": "veranda",
+        "count": 1
+      },
+      {
+        "kind": "garden steps",
+        "count": 1
+      },
+      {
+        "kind": "dormer",
+        "count": 4
+      },
+      {
+        "kind": "area",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Four levels: a basement of offices, a ground floor of three rooms and a conservatory, a first floor of bedrooms, and an attic of four secondary bedrooms with the roof sloping into them. Three open walls are stated rather than inferred: the dining room communicates with the drawing room by folding doors, and the conservatory with both the library and the dining room. 'The ground is not to be excavated under the Library and Conservatory except for the heating apparatus (if requisite)' - so the basement is smaller than the ground floor. Storey heights given and not recorded as rooms: ground 11'3, basement 9'0, first 10'6, attic 7'6, the ground floor raised 3 feet above the ground.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "a Kitchen"
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery; the door to the heating apparatus will be in the Scullery"
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        },
+        {
+          "use": "pantry",
+          "raw": "Pantry"
+        },
+        {
+          "use": "wc",
+          "qualifier": "basement",
+          "raw": "W. C."
+        },
+        {
+          "use": "closet",
+          "qualifier": "basement",
+          "raw": "Closets"
+        },
+        {
+          "use": "store",
+          "qualifier": "coal",
+          "raw": "the Coals, kept in the scullery"
+        },
+        {
+          "use": "area",
+          "raw": "Area at back, with steps up to Garden"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "store:coal",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "area",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc:basement",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "closet:basement",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "kitchen",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "qualifier": "entrance",
+          "raw": "an Entrance Hall"
+        },
+        {
+          "use": "hall",
+          "raw": "and Hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "open Staircase with Stairs to Basement, well lighted and roomy"
+        },
+        {
+          "use": "lobby",
+          "raw": "a lobby leading to W. C. and covered Verandah"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        },
+        {
+          "use": "veranda",
+          "raw": "covered Verandah, with steps to the Garden"
+        },
+        {
+          "use": "closet",
+          "qualifier": "china",
+          "raw": "A China Closet, placed five steps up the stairs"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "A Drawing Room with three windows",
+          "feet": [
+            20.5,
+            12
+          ]
+        },
+        {
+          "use": "dining_room",
+          "raw": "A Dining Room, communicating by means of folding doors with the Drawing Room",
+          "feet": [
+            14,
+            10.5
+          ]
+        },
+        {
+          "use": "library",
+          "qualifier": "or breakfast parlour",
+          "raw": "A Library, or Breakfast Parlour",
+          "feet": [
+            12.5,
+            7.5
+          ]
+        },
+        {
+          "use": "conservatory",
+          "raw": "A Conservatory, communicating with the Library and Dining Room",
+          "feet": [
+            10.75,
+            8
+          ]
+        },
+        {
+          "use": "yard",
+          "qualifier": "garden",
+          "raw": "the Garden"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall:entrance",
+          "b": "hall",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "library:or breakfast parlour",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "lobby",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "veranda",
+          "link": "door"
+        },
+        {
+          "a": "veranda",
+          "b": "yard:garden",
+          "link": "open"
+        },
+        {
+          "a": "staircase",
+          "b": "closet:china",
+          "link": "door"
+        },
+        {
+          "a": "drawing_room",
+          "b": "dining_room",
+          "link": "open"
+        },
+        {
+          "a": "library:or breakfast parlour",
+          "b": "conservatory",
+          "link": "open"
+        },
+        {
+          "a": "dining_room",
+          "b": "conservatory",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front principal",
+          "raw": "A Front Bed Room",
+          "feet": [
+            14,
+            12
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "A Dressing Room",
+          "feet": [
+            12,
+            5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "A Back Bed Room",
+          "feet": [
+            10.75,
+            10.75
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front small",
+          "raw": "A Front Bed Room",
+          "feet": [
+            9,
+            8.5
+          ]
+        },
+        {
+          "use": "nursery",
+          "qualifier": "or dressing room",
+          "raw": "A Nursery, or Dressing Room",
+          "feet": [
+            12.5,
+            7.5
+          ]
+        },
+        {
+          "use": "wc",
+          "qualifier": "first floor",
+          "raw": "W. C."
+        },
+        {
+          "use": "closet",
+          "qualifier": "first floor",
+          "raw": "Closets"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front principal",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:front small",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "nursery:or dressing room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:first floor",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:first floor",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:front principal",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "attic",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "attic",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 1",
+          "raw": "four good secondary Bed Rooms, the roof sloping into them, lighted by small dormer windows"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 4",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 1",
+          "raw": "two large Closets"
+        },
+        {
+          "use": "closet",
+          "qualifier": "attic 2",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 2",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 3",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 4",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "closet:attic 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "closet:attic 2",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:attic",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

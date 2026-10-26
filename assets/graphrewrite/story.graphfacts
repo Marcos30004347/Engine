@@ -1,0 +1,360 @@
+# The starting cast. One edge per line - this file replaces the `fact` clause.
+#
+# Every capitalised word is a NAME, not a variable: the loader matches each line
+# against the edge types declared in story.graphwrite, and each distinct name it
+# finds in a `?` position gets a node id. The same name anywhere in this file is
+# always the same node, which is what makes the graph connect up.
+#
+# A bare NUMBER in a `?` position is a YEAR. The story opens in the first week
+# of the year 1000, so `Aldric born in 962` makes him thirty-eight, and the age
+# guards (`olderThan`) read that straight off the graph. Two people born in one
+# year share the week node; that is fine, nothing matches two birth weeks at once.
+#
+# Blank lines and # comments are skipped. A line that matches no declared pattern
+# is an error rather than a silently ignored edge - a typo here is otherwise
+# invisible until a rule mysteriously never fires.
+#
+# Someone who is grown and single needs `is unmarried` AND `is unattached`; a
+# woman who may bear needs `is fertile`. Someone who already likes another must
+# NOT be unattached, and needs a `smitten on` year in the past.
+
+# --- Wealdholt ---------------------------------------------------------------
+
+StMaerwyn is a church in Wealdholt
+
+# The priest. He belongs to no house and takes no wife, so the match and
+# courtship rules pass him by, and he is given no `keeps the peace`, which is
+# what a rule consumes to hatch a plot - so he cannot start one. He can still
+# be drawn into somebody else's as an accomplice, and share the guilt, and
+# have to take that to the other parish himself. That is deliberate.
+
+Father_Oswin serves StMaerwyn
+Father_Oswin is man
+Father_Oswin is alive
+Father_Oswin born in 958
+Father_Oswin is grown
+Father_Oswin lives in Wealdholt
+
+# The house of Aldring: Aldric, his wife, and three children.
+
+Aldric_Aldring is head of Aldring
+Aldric_Aldring is of house Aldring
+Aldric_Aldring is man
+Aldric_Aldring is alive
+Aldric_Aldring born in 962
+Aldric_Aldring is grown
+Aldric_Aldring lives in Wealdholt
+
+Maerwyn_Aldring is of house Aldring
+Maerwyn_Aldring is woman
+Maerwyn_Aldring is alive
+Maerwyn_Aldring born in 968
+Maerwyn_Aldring is grown
+Maerwyn_Aldring is fertile
+Maerwyn_Aldring lives in Wealdholt
+
+Aldric_Aldring is husband of Maerwyn_Aldring
+Maerwyn_Aldring is wife of Aldric_Aldring
+
+Cenric_Aldring is of house Aldring
+Cenric_Aldring is man
+Cenric_Aldring is alive
+Cenric_Aldring born in 982
+Cenric_Aldring is grown
+Cenric_Aldring is unmarried
+Cenric_Aldring lives in Wealdholt
+Cenric_Aldring is child of Aldric_Aldring
+Cenric_Aldring is child of Maerwyn_Aldring
+Aldric_Aldring is father of Cenric_Aldring
+Maerwyn_Aldring is mother of Cenric_Aldring
+
+Eadgyth_Aldring is of house Aldring
+Eadgyth_Aldring is woman
+Eadgyth_Aldring is alive
+Eadgyth_Aldring born in 985
+Eadgyth_Aldring is young
+Eadgyth_Aldring lives in Wealdholt
+Eadgyth_Aldring is child of Aldric_Aldring
+Eadgyth_Aldring is child of Maerwyn_Aldring
+Aldric_Aldring is father of Eadgyth_Aldring
+Maerwyn_Aldring is mother of Eadgyth_Aldring
+
+Wulfric_Aldring is of house Aldring
+Wulfric_Aldring is man
+Wulfric_Aldring is alive
+Wulfric_Aldring born in 990
+Wulfric_Aldring is young
+Wulfric_Aldring lives in Wealdholt
+Wulfric_Aldring is child of Aldric_Aldring
+Wulfric_Aldring is child of Maerwyn_Aldring
+Aldric_Aldring is father of Wulfric_Aldring
+Maerwyn_Aldring is mother of Wulfric_Aldring
+
+# The house of Wulfing: Bertwald, his wife, three children, and his widowed
+# sister with her daughter.
+
+Bertwald_Wulfing is head of Wulfing
+Bertwald_Wulfing is of house Wulfing
+Bertwald_Wulfing is man
+Bertwald_Wulfing is alive
+Bertwald_Wulfing born in 958
+Bertwald_Wulfing is grown
+Bertwald_Wulfing lives in Wealdholt
+
+Sunniva_Wulfing is of house Wulfing
+Sunniva_Wulfing is woman
+Sunniva_Wulfing is alive
+Sunniva_Wulfing born in 966
+Sunniva_Wulfing is grown
+Sunniva_Wulfing is fertile
+Sunniva_Wulfing lives in Wealdholt
+
+Bertwald_Wulfing is husband of Sunniva_Wulfing
+Sunniva_Wulfing is wife of Bertwald_Wulfing
+
+Dunstan_Wulfing is of house Wulfing
+Dunstan_Wulfing is man
+Dunstan_Wulfing is alive
+Dunstan_Wulfing born in 980
+Dunstan_Wulfing is grown
+Dunstan_Wulfing is unmarried
+Dunstan_Wulfing is unattached
+Dunstan_Wulfing lives in Wealdholt
+Dunstan_Wulfing is child of Bertwald_Wulfing
+Dunstan_Wulfing is child of Sunniva_Wulfing
+Bertwald_Wulfing is father of Dunstan_Wulfing
+Sunniva_Wulfing is mother of Dunstan_Wulfing
+
+Aelfwyn_Wulfing is of house Wulfing
+Aelfwyn_Wulfing is woman
+Aelfwyn_Wulfing is alive
+Aelfwyn_Wulfing born in 983
+Aelfwyn_Wulfing is grown
+Aelfwyn_Wulfing is unmarried
+Aelfwyn_Wulfing is unattached
+Aelfwyn_Wulfing is fertile
+Aelfwyn_Wulfing lives in Wealdholt
+Aelfwyn_Wulfing is child of Bertwald_Wulfing
+Aelfwyn_Wulfing is child of Sunniva_Wulfing
+Bertwald_Wulfing is father of Aelfwyn_Wulfing
+Sunniva_Wulfing is mother of Aelfwyn_Wulfing
+
+Osric_Wulfing is of house Wulfing
+Osric_Wulfing is man
+Osric_Wulfing is alive
+Osric_Wulfing born in 992
+Osric_Wulfing is young
+Osric_Wulfing lives in Wealdholt
+Osric_Wulfing is child of Bertwald_Wulfing
+Osric_Wulfing is child of Sunniva_Wulfing
+Bertwald_Wulfing is father of Osric_Wulfing
+Sunniva_Wulfing is mother of Osric_Wulfing
+
+Frideswide_Wulfing is of house Wulfing
+Frideswide_Wulfing is woman
+Frideswide_Wulfing is alive
+Frideswide_Wulfing born in 970
+Frideswide_Wulfing is grown
+Frideswide_Wulfing is unmarried
+Frideswide_Wulfing is unattached
+Frideswide_Wulfing is fertile
+Frideswide_Wulfing lives in Wealdholt
+
+Leofrun_Wulfing is of house Wulfing
+Leofrun_Wulfing is woman
+Leofrun_Wulfing is alive
+Leofrun_Wulfing born in 984
+Leofrun_Wulfing is grown
+Leofrun_Wulfing is unmarried
+Leofrun_Wulfing is unattached
+Leofrun_Wulfing is fertile
+Leofrun_Wulfing lives in Wealdholt
+Leofrun_Wulfing is child of Frideswide_Wulfing
+Frideswide_Wulfing is mother of Leofrun_Wulfing
+
+# Cenric has had his eye on Aelfwyn since last year. He is not unattached.
+
+Cenric_Aldring likes Aelfwyn_Wulfing
+Cenric_Aldring smitten on 999
+
+Aldring is at peace with Wulfing
+Wulfing is at peace with Aldring
+
+# --- Stanmere ----------------------------------------------------------------
+
+StBeorn is a church in Stanmere
+
+Father_Eadwig serves StBeorn
+Father_Eadwig is man
+Father_Eadwig is alive
+Father_Eadwig born in 966
+Father_Eadwig is grown
+Father_Eadwig lives in Stanmere
+
+# The house of Godring: Godric, his wife, three children, and a cousin.
+
+Godric_Godring is head of Godring
+Godric_Godring is of house Godring
+Godric_Godring is man
+Godric_Godring is alive
+Godric_Godring born in 960
+Godric_Godring is grown
+Godric_Godring lives in Stanmere
+
+Hildeburh_Godring is of house Godring
+Hildeburh_Godring is woman
+Hildeburh_Godring is alive
+Hildeburh_Godring born in 967
+Hildeburh_Godring is grown
+Hildeburh_Godring is fertile
+Hildeburh_Godring lives in Stanmere
+
+Godric_Godring is husband of Hildeburh_Godring
+Hildeburh_Godring is wife of Godric_Godring
+
+Leofric_Godring is of house Godring
+Leofric_Godring is man
+Leofric_Godring is alive
+Leofric_Godring born in 981
+Leofric_Godring is grown
+Leofric_Godring is unmarried
+Leofric_Godring lives in Stanmere
+Leofric_Godring is child of Godric_Godring
+Leofric_Godring is child of Hildeburh_Godring
+Godric_Godring is father of Leofric_Godring
+Hildeburh_Godring is mother of Leofric_Godring
+
+Fridburh_Godring is of house Godring
+Fridburh_Godring is woman
+Fridburh_Godring is alive
+Fridburh_Godring born in 986
+Fridburh_Godring is young
+Fridburh_Godring lives in Stanmere
+Fridburh_Godring is child of Godric_Godring
+Fridburh_Godring is child of Hildeburh_Godring
+Godric_Godring is father of Fridburh_Godring
+Hildeburh_Godring is mother of Fridburh_Godring
+
+Hildstan_Godring is of house Godring
+Hildstan_Godring is man
+Hildstan_Godring is alive
+Hildstan_Godring born in 989
+Hildstan_Godring is young
+Hildstan_Godring lives in Stanmere
+Hildstan_Godring is child of Godric_Godring
+Hildstan_Godring is child of Hildeburh_Godring
+Godric_Godring is father of Hildstan_Godring
+Hildeburh_Godring is mother of Hildstan_Godring
+
+Godgifu_Godring is of house Godring
+Godgifu_Godring is woman
+Godgifu_Godring is alive
+Godgifu_Godring born in 978
+Godgifu_Godring is grown
+Godgifu_Godring is unmarried
+Godgifu_Godring is unattached
+Godgifu_Godring is fertile
+Godgifu_Godring lives in Stanmere
+
+# The house of Ceolring: Ceolwulf, a widower, three children, and a kinsman
+# who has never got on with the eldest son.
+
+Ceolwulf_Ceolring is head of Ceolring
+Ceolwulf_Ceolring is of house Ceolring
+Ceolwulf_Ceolring is man
+Ceolwulf_Ceolring is alive
+Ceolwulf_Ceolring born in 955
+Ceolwulf_Ceolring is grown
+Ceolwulf_Ceolring is unmarried
+Ceolwulf_Ceolring is unattached
+Ceolwulf_Ceolring lives in Stanmere
+
+Wighelm_Ceolring is of house Ceolring
+Wighelm_Ceolring is man
+Wighelm_Ceolring is alive
+Wighelm_Ceolring born in 979
+Wighelm_Ceolring is grown
+Wighelm_Ceolring is unmarried
+Wighelm_Ceolring is unattached
+Wighelm_Ceolring lives in Stanmere
+Wighelm_Ceolring is child of Ceolwulf_Ceolring
+Ceolwulf_Ceolring is father of Wighelm_Ceolring
+
+Cuthswith_Ceolring is of house Ceolring
+Cuthswith_Ceolring is woman
+Cuthswith_Ceolring is alive
+Cuthswith_Ceolring born in 983
+Cuthswith_Ceolring is grown
+Cuthswith_Ceolring is unmarried
+Cuthswith_Ceolring is fertile
+Cuthswith_Ceolring lives in Stanmere
+Cuthswith_Ceolring is child of Ceolwulf_Ceolring
+Ceolwulf_Ceolring is father of Cuthswith_Ceolring
+
+Aethelric_Ceolring is of house Ceolring
+Aethelric_Ceolring is man
+Aethelric_Ceolring is alive
+Aethelric_Ceolring born in 988
+Aethelric_Ceolring is young
+Aethelric_Ceolring lives in Stanmere
+Aethelric_Ceolring is child of Ceolwulf_Ceolring
+Ceolwulf_Ceolring is father of Aethelric_Ceolring
+
+Hereward_Ceolring is of house Ceolring
+Hereward_Ceolring is man
+Hereward_Ceolring is alive
+Hereward_Ceolring born in 975
+Hereward_Ceolring is grown
+Hereward_Ceolring is unmarried
+Hereward_Ceolring is unattached
+Hereward_Ceolring lives in Stanmere
+
+# Leofric and Cuthswith are already sweet on each other; neither is unattached.
+
+Leofric_Godring likes Cuthswith_Ceolring
+Leofric_Godring smitten on 999
+Cuthswith_Ceolring likes Leofric_Godring
+Cuthswith_Ceolring smitten on 999
+
+Hereward_Ceolring hates Wighelm_Ceolring
+
+Godring is at peace with Ceolring
+Ceolring is at peace with Godring
+
+# Everyone grown starts with no plot in hand.
+
+Aldric_Aldring keeps the peace
+Maerwyn_Aldring keeps the peace
+Cenric_Aldring keeps the peace
+Bertwald_Wulfing keeps the peace
+Sunniva_Wulfing keeps the peace
+Dunstan_Wulfing keeps the peace
+Aelfwyn_Wulfing keeps the peace
+Frideswide_Wulfing keeps the peace
+Leofrun_Wulfing keeps the peace
+Godric_Godring keeps the peace
+Hildeburh_Godring keeps the peace
+Leofric_Godring keeps the peace
+Godgifu_Godring keeps the peace
+Ceolwulf_Ceolring keeps the peace
+Wighelm_Ceolring keeps the peace
+Cuthswith_Ceolring keeps the peace
+Hereward_Ceolring keeps the peace
+
+# --- the realm ----------------------------------------------------------------
+#
+# One king, his queen, and every house sworn to him. `wants an heir` is the
+# edge the naming of an heir consumes; a king's death inserts `wants a king`,
+# which the heir takes by an always-rule and a pretender by a chance - they
+# compete for the same edge, so the claim pass decides between them.
+
+Aldric_Aldring is king of Wessex
+Maerwyn_Aldring is queen of Wessex
+Wessex wants an heir
+
+# The king's own house swears to nobody: `the-kings-house-swears-to-no-one`
+# would take the oath back anyway, and while it stood the king could be found
+# declaring for a pretender against himself.
+Wulfing swears to Wessex
+Godring swears to Wessex
+Ceolring swears to Wessex

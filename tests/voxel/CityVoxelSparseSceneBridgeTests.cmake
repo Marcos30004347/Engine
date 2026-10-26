@@ -1,0 +1,5 @@
+add_executable(CityVoxelSparseSceneBridgeTests
+    ${CMAKE_CURRENT_LIST_DIR}/CityVoxelSparseSceneBridgeTests.cpp)
+target_link_libraries(CityVoxelSparseSceneBridgeTests PRIVATE Engine)
+add_test(NAME CityVoxelSparseSceneBridgeTests COMMAND CityVoxelSparseSceneBridgeTests)
+set_tests_properties(CityVoxelSparseSceneBridgeTests PROPERTIES LABELS "svraster.cityvoxel.pipeline")

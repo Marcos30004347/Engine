@@ -1,0 +1,5 @@
+add_executable(CityVoxelDwellingCompilerTests
+    ${CMAKE_CURRENT_LIST_DIR}/CityVoxelDwellingCompilerTests.cpp)
+target_link_libraries(CityVoxelDwellingCompilerTests PRIVATE Engine)
+add_test(NAME CityVoxelDwellingCompilerTests COMMAND CityVoxelDwellingCompilerTests)
+set_tests_properties(CityVoxelDwellingCompilerTests PROPERTIES LABELS "svraster.cityvoxel.dwelling")

@@ -1,0 +1,264 @@
+{
+  "page": 191,
+  "source": "The Builder's Practical Director, 'Plan and elevation of two 3rd rate semi-detached seven roomed cottages adapted for two or more small allotments', PDF page 191",
+  "kind": "third-rate semi-detached seven-roomed cottage",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "double-pile with back addition",
+    "roof": "hipped",
+    "features": [
+      {
+        "kind": "porch",
+        "count": 2
+      },
+      {
+        "kind": "pedimented window",
+        "count": 2
+      },
+      {
+        "kind": "shared stack",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "A mirrored pair; one half transcribed, with ground plan, bed room plan, elevation and a section. Seven rooms: two parlours, kitchen, scullery and three bedrooms. Closets are cut into the party wall in pairs, one to each house, which is why they come two to a floor.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "porch",
+          "raw": "PORCH",
+          "feet": [
+            5,
+            3
+          ]
+        },
+        {
+          "use": "hall",
+          "raw": "HALL",
+          "feet": [
+            9,
+            5
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn beside the hall"
+        },
+        {
+          "use": "parlour",
+          "qualifier": "front",
+          "raw": "PARLOR",
+          "feet": [
+            15,
+            13
+          ]
+        },
+        {
+          "use": "parlour",
+          "qualifier": "back",
+          "raw": "PARLOR",
+          "feet": [
+            14,
+            12
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            9,
+            10
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        },
+        {
+          "use": "wc",
+          "raw": "W.C."
+        },
+        {
+          "use": "closet",
+          "qualifier": "front parlour",
+          "raw": "Closet, in the party wall"
+        },
+        {
+          "use": "closet",
+          "qualifier": "back parlour",
+          "raw": "Closet, in the party wall"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "hall",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "parlour:front",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "parlour:back",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "parlour:back",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "parlour:front",
+          "b": "closet:front parlour",
+          "link": "door"
+        },
+        {
+          "a": "parlour:back",
+          "b": "closet:back parlour",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "bed room floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "BED ROOM",
+          "feet": [
+            14,
+            13
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "middle",
+          "raw": "BED ROOM",
+          "feet": [
+            14,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM",
+          "feet": [
+            15,
+            10
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "DRESSING ROOM",
+          "feet": [
+            8,
+            6
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "front bedroom",
+          "raw": "Closet"
+        },
+        {
+          "use": "closet",
+          "qualifier": "middle bedroom",
+          "raw": "Closet"
+        },
+        {
+          "use": "landing",
+          "raw": "landing"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:middle",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:front",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:front",
+          "b": "closet:front bedroom",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:middle",
+          "b": "closet:middle bedroom",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

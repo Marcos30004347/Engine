@@ -1,0 +1,220 @@
+{
+  "page": 110,
+  "source": "The Builder's Practical Director, Plate 21: elevation, section, roof plan, ground and first floor plans on PDF page 31; specification and details table on PDF page 110",
+  "kind": "fourth-rate house on a freehold allotment",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "semi-detached",
+    "plan": "double-pile with back addition",
+    "plotFrontageFeet": 25
+  },
+  "notes": "Built in pairs, 'fit for the accomodation of foremen, or managers of factories, mills, or other works, clerks'. Transcribed from the specification rather than the plate: it names every room with its dimensions and says which door leads where. 220 pounds each. The plate is on page 31 and draws both houses of the pair with a roof plan and a section; its room dimensions are the specification's, and it adds the landing at seven by five.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "qualifier": "entrance",
+          "raw": "Entrance Hall",
+          "feet": [
+            4,
+            3
+          ]
+        },
+        {
+          "use": "passage",
+          "raw": "Staircase and passage",
+          "feet": [
+            11,
+            5
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "staircase"
+        },
+        {
+          "use": "parlour",
+          "qualifier": "front",
+          "raw": "Front parlor",
+          "feet": [
+            14.5,
+            12
+          ]
+        },
+        {
+          "use": "parlour",
+          "qualifier": "back",
+          "raw": "Back parlor",
+          "feet": [
+            11,
+            9
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "Kitchen",
+          "feet": [
+            10,
+            7.5
+          ]
+        },
+        {
+          "use": "washhouse",
+          "raw": "Washhouse",
+          "feet": [
+            7.5,
+            5
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "Water-closet",
+          "feet": [
+            4,
+            3
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "a pantry, by a door under the stairs",
+          "feet": [
+            8,
+            4
+          ]
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "a coal-cellar under the stairs"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall:entrance",
+          "b": "parlour:front",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "passage",
+          "link": "open"
+        },
+        {
+          "a": "passage",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "passage",
+          "b": "parlour:back",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "washhouse",
+          "link": "door"
+        },
+        {
+          "a": "washhouse",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "upper floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "front room",
+          "feet": [
+            14.5,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "back room",
+          "feet": [
+            11,
+            9
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "one over the kitchen, entered from the landing",
+          "feet": [
+            10,
+            7.5
+          ]
+        },
+        {
+          "use": "landing",
+          "raw": "landing of stairs",
+          "feet": [
+            7,
+            5
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

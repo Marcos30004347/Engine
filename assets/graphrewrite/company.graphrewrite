@@ -1,0 +1,833 @@
+let C evaluates proposal.
+let C configured proposalcontext.
+let C configured proposaltechnical.
+let E marks proposal-context.
+let E marks proposal-technical.
+# Company simulation rules. One query snapshots the current decision graph.
+# First matching rule in source order wins within a domain.
+# @effect: id|cost|days|trust loss|customer cost per 100|breach|action
+# C++ owns input, accounting and numeric work; causal pattern selection lives here.
+
+let C configured video.
+let C configured game.
+let C configured reviewweek.
+let N configured idle.
+let E marks intro-video.
+let E marks chapter-review.
+let C evaluates review.
+let E marks review-public.
+let E marks review-model.
+let E marks review-copy.
+let E marks review-pooling.
+let E marks review-idle.
+let E marks review-single-zone.
+let E marks review-observation.
+let C exposes Api.
+let Api runs on Compute.
+let Api uses Data.
+let Data stored in Backend.
+let N configured designpending.
+let N configured designunresolved.
+let N configured undecided.
+let N configured lambda.
+let N configured singlezone.
+let N configured server.
+let N configured dynamo.
+let N configured sql.
+let N configured publicdata.
+let N configured pooled.
+let N configured direct.
+let N configured relational.
+let N configured keyed.
+let N configured unverified.
+let N configured unmodeled.
+let E marks chapter-design.
+let E marks chapter-refine.
+let E marks topology-unverified.
+let C evaluates topology.
+let E marks topology-query-model.
+let E marks topology-connections.
+let E marks topology-private.
+let E marks topology-quiet.
+let E marks partner-origin-mismatch.
+let C evaluates intro.
+let C evaluates monday.
+let E marks intro-game.
+let E marks monday-0.
+let E marks monday-1.
+let E marks monday-2.
+let E marks monday-3.
+let C evaluates week.
+let C configured scene0.
+let E marks week-development-0.
+let C configured scene4.
+let E marks week-development-4.
+let C configured scene1.
+let E marks week-development-1.
+let C configured scene5.
+let E marks week-development-5.
+let C configured scene2.
+let E marks week-development-2.
+let C configured scene6.
+let E marks week-development-6.
+let C configured scene3.
+let E marks week-development-3.
+let C configured scene7.
+let E marks week-development-7.
+let E marks week-launch.
+let C configured alienweek.
+let E marks week-aliens-0-0.
+let E marks week-aliens-0-1.
+let E marks week-aliens-1-0.
+let E marks week-aliens-1-1.
+let E marks week-aliens-2-0.
+let E marks week-aliens-2-1.
+let E marks week-aliens-3-0.
+let E marks week-aliens-3-1.
+let E marks week-aliens-4-0.
+let E marks week-aliens-4-1.
+let E marks week-live-0.
+let E marks week-live-1.
+let E marks week-live-2.
+let E marks week-live-3.
+let E marks week-live-4.
+let E marks week-live-5.
+let E marks week-live-6.
+let E marks week-live-7.
+let C evaluates market.
+let C configured week10.
+let E marks market-model-10.
+let C configured week18.
+let E marks market-model-18.
+let C configured renewal.
+let E marks market-price.
+let C configured week0.
+let C configured week1.
+let C configured week2.
+let C configured week3.
+let C configured week4.
+let C configured week5.
+let C configured week6.
+let C configured week7.
+let C configured week8.
+let C configured week9.
+let C configured week11.
+let C configured week12.
+let C configured week13.
+let C configured week14.
+let C configured week15.
+let C configured week16.
+let C configured week17.
+let C configured week19.
+let C configured week20.
+let C configured week21.
+let C configured week22.
+let C configured week23.
+let C configured week24.
+let C configured week25.
+let C configured week26.
+let C configured week27.
+let C configured week28.
+let C configured week29.
+let C configured week30.
+let C configured week31.
+let C configured week32.
+let C configured week33.
+let C configured week34.
+let C configured week35.
+let C configured week36.
+let C configured week37.
+let C configured week38.
+let C configured week39.
+let C configured week40.
+let C configured week41.
+let C configured week42.
+let C configured week43.
+let C configured week44.
+let C configured week45.
+let C configured week46.
+let C configured week47.
+let C configured week48.
+let C configured week49.
+let C configured week50.
+let C configured week51.
+let C configured week52.
+let C records E.
+let E marks surge-0-0.
+let E marks surge-0-1.
+let E marks surge-0-2.
+let E marks surge-bounded-invoice.
+let E marks surge-1-0.
+let E marks surge-2-0.
+let E marks leak-3-0.
+let E marks leak-4-0.
+let E marks leak-5-0.
+let E marks leak-6-0.
+let E marks leak-7-0.
+let E marks archive-8-0.
+let E marks archive-9-0.
+let E marks archive-10-0.
+let E marks archive-11-0.
+let E marks zone-12-0.
+let E marks zone-12-1.
+let E marks zone-12-2.
+let E marks zone-13-0.
+let E marks restore-14-0.
+let E marks restore-15-0.
+let E marks restore-16-0.
+let E marks bill-17-0.
+let E marks bill-18-0.
+let E marks bill-19-0.
+let E marks bill-20-0.
+let E marks jobs-21-0.
+let E marks jobs-22-0.
+let E marks database-23-0.
+let E marks database-24-0.
+let E marks partner-public-catalogue.
+let E marks partner-archived-premiere.
+let E marks partner-job-timeout.
+let E marks chapter-launch.
+let E marks chapter-develop.
+let E marks chapter-rival.
+let E marks chapter-slot-0.
+let E marks chapter-slot-1.
+let E marks chapter-slot-2.
+let E marks chapter-slot-3.
+let E marks chapter-slot-4.
+let E marks chapter-slot-5.
+let E marks chapter-slot-6.
+let E marks chapter-slot-7.
+let E marks chapter-slot-8.
+let E marks chapter-slot-9.
+let E marks chapter-slot-10.
+let E marks chapter-slot-11.
+let E marks chapter-slot-12.
+let E marks chapter-slot-13.
+let E marks chapter-slot-14.
+let E marks chapter-slot-15.
+let E marks hire-backlog.
+let E marks development-overrun.
+
+
+let Api configured api0.
+let C configured development.
+let C configured early.
+let C configured intel.
+let C configured launch.
+let C configured licensed.
+let C configured maintenance.
+let C configured overdue.
+let C configured ready.
+let C configured slot0.
+let C configured slot1.
+let C configured slot10.
+let C configured slot11.
+let C configured slot12.
+let C configured slot13.
+let C configured slot14.
+let C configured slot15.
+let C configured slot2.
+let C configured slot3.
+let C configured slot4.
+let C configured slot5.
+let C configured slot6.
+let C configured slot7.
+let C configured slot8.
+let C configured slot9.
+let C configured understaffed.
+let C evaluates D.
+let C evaluates archive.
+let C evaluates bill.
+let C evaluates chapter.
+let C evaluates database.
+let C evaluates deadline.
+let C evaluates hiring.
+let C evaluates jobs.
+let C evaluates leak.
+let C evaluates partner.
+let C evaluates restore.
+let C evaluates surge.
+let C evaluates zone.
+let C owns Store.
+let Data configured database2.
+let Edge calls Store.
+let Edge configured delivery0.
+let Edge configured delivery1.
+let Edge configured delivery2.
+let Identity configured identity0.
+let N configured V.
+let N configured api1.
+let N configured api2.
+let N configured api3.
+let N configured database0.
+let N configured database1.
+let N configured encoding0.
+let N configured encoding1.
+let N configured encoding2.
+let N configured identity1.
+let N configured recovery1.
+let N configured recovery2.
+let N configured recovery3.
+let N configured recovery4.
+let N configured scaling0.
+let N configured scaling1.
+let N configured storage0.
+let N configured storage1.
+let N configured storage2.
+let N configured storage3.
+let N configured storage4.
+let N configured tested0.
+let N configured tested1.
+let Observe configured monitoring0.
+let Observe configured monitoring1.
+let Observe configured monitoring2.
+let Policy configured scaling2.
+let Policy configured scaling3.
+let Recovery configured recovery0.
+
+# @effect surge-0-0|4500|2|10|0|0|
+rule surge-0-0:
+when C evaluates surge, C owns Policy, Policy configured scaling1
+then C evaluates surge, C owns Policy, Policy configured scaling1, C records Event', Event' marks surge-0-0.
+
+# @effect surge-0-1|4500|2|10|0|0|
+rule surge-0-1:
+when C evaluates surge, C exposes Endpoint, Endpoint runs on Api, Api configured singlezone
+then C evaluates surge, C exposes Endpoint, Endpoint runs on Api, Api configured singlezone, C records Event', Event' marks surge-0-1.
+
+# @effect surge-0-2|4500|2|10|0|0|
+rule surge-0-2:
+when C evaluates surge, C owns Edge, Edge configured delivery2
+then C evaluates surge, C owns Edge, Edge configured delivery2, C records Event', Event' marks surge-0-2.
+
+# @effect surge-bounded-invoice|3200|0|2|0|0|
+rule surge-bounded-invoice:
+when C evaluates surge, C owns Policy, Policy configured scaling2, C owns Observe, Observe configured monitoring0
+then C evaluates surge, C owns Policy, Policy configured scaling2, C owns Observe, Observe configured monitoring0, C records Event', Event' marks surge-bounded-invoice.
+
+# @effect surge-1-0|11000|0|2|0|0|
+rule surge-1-0:
+when C evaluates surge, C owns Policy, Policy configured scaling2
+then C evaluates surge, C owns Policy, Policy configured scaling2, C records Event', Event' marks surge-1-0.
+
+# @effect surge-2-0|0|0|0|0|0|
+rule surge-2-0:
+when C evaluates surge
+then C evaluates surge, C records Event', Event' marks surge-2-0.
+
+# @effect leak-3-0|9000|1|22|200|1|
+rule leak-3-0:
+when C evaluates leak, C owns Identity, Identity configured identity0
+then C evaluates leak, C owns Identity, Identity configured identity0, C records Event', Event' marks leak-3-0.
+
+# @effect leak-4-0|11000|2|20|100|1|
+rule leak-4-0:
+when C evaluates leak, C exposes Endpoint, Endpoint uses Record, Record stored in Data, Data configured publicdata
+then C evaluates leak, C exposes Endpoint, Endpoint uses Record, Record stored in Data, Data configured publicdata, C records Event', Event' marks leak-4-0.
+
+# @effect leak-5-0|8500|1|20|100|1|
+rule leak-5-0:
+when C evaluates leak, C owns Observe, Observe configured monitoring1
+then C evaluates leak, C owns Observe, Observe configured monitoring1, C records Event', Event' marks leak-5-0.
+
+# @effect leak-6-0|7000|0|18|100|1|
+rule leak-6-0:
+when C evaluates leak, C owns Edge, Edge configured delivery1, Edge calls Store, Store configured licensed
+then C evaluates leak, C owns Edge, Edge configured delivery1, Edge calls Store, Store configured licensed, C records Event', Event' marks leak-6-0.
+
+# @effect leak-7-0|0|0|0|0|0|
+rule leak-7-0:
+when C evaluates leak
+then C evaluates leak, C records Event', Event' marks leak-7-0.
+
+# @effect archive-8-0|4800|2|12|0|0|
+rule archive-8-0:
+when C evaluates archive, C owns Store, Store configured storage3
+then C evaluates archive, C owns Store, Store configured storage3, C records Event', Event' marks archive-8-0.
+
+# @effect archive-9-0|1600|0|2|50|0|
+rule archive-9-0:
+when C evaluates archive, C owns Store, Store configured storage2
+then C evaluates archive, C owns Store, Store configured storage2, C records Event', Event' marks archive-9-0.
+
+# @effect archive-10-0|2500|3|14|0|0|
+rule archive-10-0:
+when C evaluates archive, C owns Edge, Edge configured delivery1, Edge calls Store, Store configured storage4
+then C evaluates archive, C owns Edge, Edge configured delivery1, Edge calls Store, Store configured storage4, C records Event', Event' marks archive-10-0.
+
+# @effect archive-11-0|0|0|0|0|0|
+rule archive-11-0:
+when C evaluates archive
+then C evaluates archive, C records Event', Event' marks archive-11-0.
+
+# @effect zone-12-0|3800|3|12|0|0|
+rule zone-12-0:
+when C evaluates zone, C owns Store, Store configured storage4
+then C evaluates zone, C owns Store, Store configured storage4, C records Event', Event' marks zone-12-0.
+
+# @effect zone-12-1|3800|3|12|0|0|
+rule zone-12-1:
+when C evaluates zone, C exposes Endpoint, Endpoint runs on Api, Api configured singlezone
+then C evaluates zone, C exposes Endpoint, Endpoint runs on Api, Api configured singlezone, C records Event', Event' marks zone-12-1.
+
+# @effect zone-12-2|3800|3|12|0|0|
+rule zone-12-2:
+when C evaluates zone, C exposes Endpoint, Endpoint uses Record, Record stored in Data, Data configured publicdata
+then C evaluates zone, C exposes Endpoint, Endpoint uses Record, Record stored in Data, Data configured publicdata, C records Event', Event' marks zone-12-2.
+
+# @effect zone-13-0|0|0|0|0|0|
+rule zone-13-0:
+when C evaluates zone
+then C evaluates zone, C records Event', Event' marks zone-13-0.
+
+# @effect restore-14-0|6500|10|14|0|0|
+rule restore-14-0:
+when C evaluates restore, C owns Recovery, Recovery configured recovery0
+then C evaluates restore, C owns Recovery, Recovery configured recovery0, C records Event', Event' marks restore-14-0.
+
+# @effect restore-15-0|2200|3|8|0|0|
+rule restore-15-0:
+when C evaluates restore, C owns Recovery, Recovery configured tested0
+then C evaluates restore, C owns Recovery, Recovery configured tested0, C records Event', Event' marks restore-15-0.
+
+# @effect restore-16-0|0|0|0|0|0|
+rule restore-16-0:
+when C evaluates restore
+then C evaluates restore, C records Event', Event' marks restore-16-0.
+
+# @effect bill-17-0|3800|0|2|0|0|
+rule bill-17-0:
+when C evaluates bill, C owns Observe, Observe configured monitoring1
+then C evaluates bill, C owns Observe, Observe configured monitoring1, C records Event', Event' marks bill-17-0.
+
+# @effect bill-18-0|0|0|0|0|0|
+rule bill-18-0:
+when C evaluates bill, C owns Policy, Policy configured scaling3
+then C evaluates bill, C owns Policy, Policy configured scaling3, C records Event', Event' marks bill-18-0.
+
+# @effect bill-19-0|5000|0|3|0|0|
+rule bill-19-0:
+when C evaluates bill, C owns Observe, Observe configured monitoring2
+then C evaluates bill, C owns Observe, Observe configured monitoring2, C records Event', Event' marks bill-19-0.
+
+# @effect bill-20-0|0|0|0|0|0|
+rule bill-20-0:
+when C evaluates bill
+then C evaluates bill, C records Event', Event' marks bill-20-0.
+
+# @effect jobs-21-0|3000|1|9|0|0|
+rule jobs-21-0:
+when C evaluates jobs, C owns Worker, Worker configured encoding1
+then C evaluates jobs, C owns Worker, Worker configured encoding1, C records Event', Event' marks jobs-21-0.
+
+# @effect jobs-22-0|0|0|0|0|0|
+rule jobs-22-0:
+when C evaluates jobs
+then C evaluates jobs, C records Event', Event' marks jobs-22-0.
+
+# @effect database-23-0|11000|2|20|100|1|
+rule database-23-0:
+when C evaluates database, C exposes Endpoint, Endpoint uses Record, Record stored in Data, Data configured publicdata
+then C evaluates database, C exposes Endpoint, Endpoint uses Record, Record stored in Data, Data configured publicdata, C records Event', Event' marks database-23-0.
+
+# @effect database-24-0|0|0|0|0|0|
+rule database-24-0:
+when C evaluates database
+then C evaluates database, C records Event', Event' marks database-24-0.
+
+# @effect partner-origin-mismatch|0|0|6|0|0|
+rule partner-origin-mismatch:
+when C evaluates partner, C owns Edge, Edge configured delivery1, Edge calls Store, Store configured storage4
+then C evaluates partner, C owns Edge, Edge configured delivery1, Edge calls Store, Store configured storage4, C records Event', Event' marks partner-origin-mismatch.
+
+# @effect partner-public-catalogue|0|0|6|0|0|
+rule partner-public-catalogue:
+when C evaluates partner, C owns Edge, Edge configured delivery1, Edge calls Store, Store configured licensed
+then C evaluates partner, C owns Edge, Edge configured delivery1, Edge calls Store, Store configured licensed, C records Event', Event' marks partner-public-catalogue.
+
+# @effect partner-archived-premiere|0|0|6|0|0|
+rule partner-archived-premiere:
+when C evaluates partner, C owns Edge, Edge configured delivery0, Edge calls Store, Store configured storage3
+then C evaluates partner, C owns Edge, Edge configured delivery0, Edge calls Store, Store configured storage3, C records Event', Event' marks partner-archived-premiere.
+
+# @effect partner-job-timeout|0|0|6|0|0|
+rule partner-job-timeout:
+when C evaluates partner, C owns Api, Api calls Worker, Worker configured encoding1
+then C evaluates partner, C owns Api, Api calls Worker, Worker configured encoding1, C records Event', Event' marks partner-job-timeout.
+
+
+
+
+# @effect chapter-design|0|0|0|0|0|design
+rule chapter-design:
+when C evaluates chapter, C configured development, C configured designpending
+then C evaluates chapter, C configured development, C configured designpending, C records Event', Event' marks chapter-design.
+
+# @effect chapter-refine|0|0|0|0|0|design:next
+rule chapter-refine:
+when C evaluates chapter, C configured development, C configured designunresolved
+then C evaluates chapter, C configured development, C configured designunresolved, C records Event', Event' marks chapter-refine.
+
+# @effect chapter-launch|0|0|0|0|0|launch
+rule chapter-launch:
+when C evaluates chapter, C configured development, C configured ready
+then C evaluates chapter, C configured development, C configured ready, C records Event', Event' marks chapter-launch.
+
+
+# @effect chapter-review|0|0|0|0|0|architecture_review
+rule chapter-review:
+when C evaluates chapter, C configured development, C configured reviewweek
+then C evaluates chapter, C configured development, C configured reviewweek, C records Event', Event' marks chapter-review.
+
+# @effect chapter-develop|0|0|0|0|0|scope
+rule chapter-develop:
+when C evaluates chapter, C configured development
+then C evaluates chapter, C configured development, C records Event', Event' marks chapter-develop.
+
+
+# @effect chapter-rival|0|0|0|0|0|rival
+rule chapter-rival:
+when C evaluates chapter, C configured intel
+then C evaluates chapter, C configured intel, C records Event', Event' marks chapter-rival.
+
+# @effect chapter-slot-0|0|0|0|0|0|growth
+rule chapter-slot-0:
+when C evaluates chapter, C configured slot0
+then C evaluates chapter, C configured slot0, C records Event', Event' marks chapter-slot-0.
+
+# @effect chapter-slot-1|0|0|0|0|0|rest
+rule chapter-slot-1:
+when C evaluates chapter, C configured slot1
+then C evaluates chapter, C configured slot1, C records Event', Event' marks chapter-slot-1.
+
+# @effect chapter-slot-2|0|0|0|0|0|storage
+rule chapter-slot-2:
+when C evaluates chapter, C configured slot2
+then C evaluates chapter, C configured slot2, C records Event', Event' marks chapter-slot-2.
+
+# @effect chapter-slot-3|0|0|0|0|0|recovery
+rule chapter-slot-3:
+when C evaluates chapter, C configured slot3
+then C evaluates chapter, C configured slot3, C records Event', Event' marks chapter-slot-3.
+
+# @effect chapter-slot-4|0|0|0|0|0|drill
+rule chapter-slot-4:
+when C evaluates chapter, C configured slot4
+then C evaluates chapter, C configured slot4, C records Event', Event' marks chapter-slot-4.
+
+# @effect chapter-slot-5|0|0|0|0|0|scaling
+rule chapter-slot-5:
+when C evaluates chapter, C configured slot5
+then C evaluates chapter, C configured slot5, C records Event', Event' marks chapter-slot-5.
+
+# @effect chapter-slot-6|0|0|0|0|0|architecture_review
+rule chapter-slot-6:
+when C evaluates chapter, C configured slot6
+then C evaluates chapter, C configured slot6, C records Event', Event' marks chapter-slot-6.
+
+# @effect chapter-slot-7|0|0|0|0|0|database
+rule chapter-slot-7:
+when C evaluates chapter, C configured slot7
+then C evaluates chapter, C configured slot7, C records Event', Event' marks chapter-slot-7.
+
+# @effect chapter-slot-8|0|0|0|0|0|retention
+rule chapter-slot-8:
+when C evaluates chapter, C configured slot8
+then C evaluates chapter, C configured slot8, C records Event', Event' marks chapter-slot-8.
+
+# @effect chapter-slot-9|0|0|0|0|0|architecture_review
+rule chapter-slot-9:
+when C evaluates chapter, C configured slot9
+then C evaluates chapter, C configured slot9, C records Event', Event' marks chapter-slot-9.
+
+# @effect chapter-slot-10|0|0|0|0|0|monitoring
+rule chapter-slot-10:
+when C evaluates chapter, C configured slot10
+then C evaluates chapter, C configured slot10, C records Event', Event' marks chapter-slot-10.
+
+# @effect chapter-slot-11|0|0|0|0|0|promotion
+rule chapter-slot-11:
+when C evaluates chapter, C configured slot11
+then C evaluates chapter, C configured slot11, C records Event', Event' marks chapter-slot-11.
+
+# @effect chapter-slot-12|0|0|0|0|0|architecture_review
+rule chapter-slot-12:
+when C evaluates chapter, C configured slot12
+then C evaluates chapter, C configured slot12, C records Event', Event' marks chapter-slot-12.
+
+# @effect chapter-slot-13|0|0|0|0|0|api
+rule chapter-slot-13:
+when C evaluates chapter, C configured slot13
+then C evaluates chapter, C configured slot13, C records Event', Event' marks chapter-slot-13.
+
+# @effect chapter-slot-14|0|0|0|0|0|encoding
+rule chapter-slot-14:
+when C evaluates chapter, C configured slot14
+then C evaluates chapter, C configured slot14, C records Event', Event' marks chapter-slot-14.
+
+# @effect chapter-slot-15|0|0|0|0|0|delivery
+rule chapter-slot-15:
+when C evaluates chapter, C configured slot15
+then C evaluates chapter, C configured slot15, C records Event', Event' marks chapter-slot-15.
+
+# @effect hire-backlog|0|0|0|0|0|
+rule hire-backlog:
+when C evaluates hiring, C configured understaffed
+then C evaluates hiring, C configured understaffed, C records Event', Event' marks hire-backlog.
+
+# @effect development-overrun|1000|0|0|0|0|
+rule development-overrun:
+when C evaluates deadline, C configured development, C configured overdue
+then C evaluates deadline, C configured development, C configured overdue, C records Event', Event' marks development-overrun.
+
+
+# @effect week-development-0|0|0|0|0|0|
+rule week-development-0:
+when C evaluates week, C configured development, C configured scene0
+then C evaluates week, C configured development, C configured scene0, C records Event', Event' marks week-development-0.
+
+# @effect week-development-4|0|0|0|0|0|
+rule week-development-4:
+when C evaluates week, C configured development, C configured scene4
+then C evaluates week, C configured development, C configured scene4, C records Event', Event' marks week-development-4.
+
+# @effect week-development-1|0|0|0|0|0|
+rule week-development-1:
+when C evaluates week, C configured development, C configured scene1
+then C evaluates week, C configured development, C configured scene1, C records Event', Event' marks week-development-1.
+
+# @effect week-development-5|0|0|0|0|0|
+rule week-development-5:
+when C evaluates week, C configured development, C configured scene5
+then C evaluates week, C configured development, C configured scene5, C records Event', Event' marks week-development-5.
+
+# @effect week-development-2|0|0|0|0|0|
+rule week-development-2:
+when C evaluates week, C configured development, C configured scene2
+then C evaluates week, C configured development, C configured scene2, C records Event', Event' marks week-development-2.
+
+# @effect week-development-6|0|0|0|0|0|
+rule week-development-6:
+when C evaluates week, C configured development, C configured scene6
+then C evaluates week, C configured development, C configured scene6, C records Event', Event' marks week-development-6.
+
+# @effect week-development-3|0|0|0|0|0|
+rule week-development-3:
+when C evaluates week, C configured development, C configured scene3
+then C evaluates week, C configured development, C configured scene3, C records Event', Event' marks week-development-3.
+
+# @effect week-development-7|0|0|0|0|0|
+rule week-development-7:
+when C evaluates week, C configured development, C configured scene7
+then C evaluates week, C configured development, C configured scene7, C records Event', Event' marks week-development-7.
+
+# @effect week-launch|0|0|0|0|0|
+rule week-launch:
+when C evaluates week, C configured launch
+then C evaluates week, C configured launch, C records Event', Event' marks week-launch.
+
+# @effect week-aliens-0-0|5760|18|18|0|0|aliens
+rule week-aliens-0-0:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery0, R configured tested0
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery0, R configured tested0, C records Event', Event' marks week-aliens-0-0.
+
+# @effect week-aliens-0-1|5760|18|18|0|0|aliens
+rule week-aliens-0-1:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery0, R configured tested1
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery0, R configured tested1, C records Event', Event' marks week-aliens-0-1.
+
+# @effect week-aliens-1-0|4220|11|11|0|0|aliens
+rule week-aliens-1-0:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery1, R configured tested0
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery1, R configured tested0, C records Event', Event' marks week-aliens-1-0.
+
+# @effect week-aliens-1-1|3560|8|8|0|0|aliens
+rule week-aliens-1-1:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery1, R configured tested1
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery1, R configured tested1, C records Event', Event' marks week-aliens-1-1.
+
+# @effect week-aliens-2-0|3120|6|6|0|0|aliens
+rule week-aliens-2-0:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery2, R configured tested0
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery2, R configured tested0, C records Event', Event' marks week-aliens-2-0.
+
+# @effect week-aliens-2-1|2460|3|3|0|0|aliens
+rule week-aliens-2-1:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery2, R configured tested1
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery2, R configured tested1, C records Event', Event' marks week-aliens-2-1.
+
+# @effect week-aliens-3-0|2680|4|4|0|0|aliens
+rule week-aliens-3-0:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery3, R configured tested0
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery3, R configured tested0, C records Event', Event' marks week-aliens-3-0.
+
+# @effect week-aliens-3-1|2020|1|1|0|0|aliens
+rule week-aliens-3-1:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery3, R configured tested1
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery3, R configured tested1, C records Event', Event' marks week-aliens-3-1.
+
+# @effect week-aliens-4-0|2460|3|3|0|0|aliens
+rule week-aliens-4-0:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery4, R configured tested0
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery4, R configured tested0, C records Event', Event' marks week-aliens-4-0.
+
+# @effect week-aliens-4-1|1800|0|0|0|0|aliens
+rule week-aliens-4-1:
+when C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery4, R configured tested1
+then C evaluates week, C configured maintenance, C configured alienweek, C owns R, R configured recovery4, R configured tested1, C records Event', Event' marks week-aliens-4-1.
+
+# @effect week-live-0|0|0|0|0|0|leak
+rule week-live-0:
+when C evaluates week, C configured maintenance, C configured scene0
+then C evaluates week, C configured maintenance, C configured scene0, C records Event', Event' marks week-live-0.
+
+# @effect week-live-1|0|0|0|0|0|surge
+rule week-live-1:
+when C evaluates week, C configured maintenance, C configured scene1
+then C evaluates week, C configured maintenance, C configured scene1, C records Event', Event' marks week-live-1.
+
+# @effect week-live-2|0|0|0|0|0|zone
+rule week-live-2:
+when C evaluates week, C configured maintenance, C configured scene2
+then C evaluates week, C configured maintenance, C configured scene2, C records Event', Event' marks week-live-2.
+
+# @effect week-live-3|0|0|0|0|0|jobs
+rule week-live-3:
+when C evaluates week, C configured maintenance, C configured scene3
+then C evaluates week, C configured maintenance, C configured scene3, C records Event', Event' marks week-live-3.
+
+# @effect week-live-4|0|0|0|0|0|
+rule week-live-4:
+when C evaluates week, C configured maintenance, C configured scene4
+then C evaluates week, C configured maintenance, C configured scene4, C records Event', Event' marks week-live-4.
+
+# @effect week-live-5|0|0|0|0|0|bill
+rule week-live-5:
+when C evaluates week, C configured maintenance, C configured scene5
+then C evaluates week, C configured maintenance, C configured scene5, C records Event', Event' marks week-live-5.
+
+# @effect week-live-6|0|0|0|0|0|
+rule week-live-6:
+when C evaluates week, C configured maintenance, C configured scene6
+then C evaluates week, C configured maintenance, C configured scene6, C records Event', Event' marks week-live-6.
+
+# @effect week-live-7|0|0|0|0|0|
+rule week-live-7:
+when C evaluates week, C configured maintenance, C configured scene7
+then C evaluates week, C configured maintenance, C configured scene7, C records Event', Event' marks week-live-7.
+
+# @effect market-model-10|0|0|0|0|0|model6
+rule market-model-10:
+when C evaluates market, C configured week10
+then C evaluates market, C configured week10, C records Event', Event' marks market-model-10.
+
+# @effect market-model-18|0|0|0|0|0|model7
+rule market-model-18:
+when C evaluates market, C configured week18
+then C evaluates market, C configured week18, C records Event', Event' marks market-model-18.
+
+# @effect market-price|0|0|0|0|0|price
+rule market-price:
+when C evaluates market, C configured renewal
+then C evaluates market, C configured renewal, C records Event', Event' marks market-price.
+
+
+# @effect intro-game|0|0|0|0|0|
+rule intro-game:
+when C evaluates intro, C configured development, C configured game
+then C evaluates intro, C configured development, C configured game, C records Event', Event' marks intro-game.
+
+# @effect monday-0|0|0|0|0|0|
+rule monday-0:
+when C evaluates monday, C configured scene0
+then C evaluates monday, C configured scene0, C records Event', Event' marks monday-0.
+
+# @effect monday-1|0|0|0|0|0|
+rule monday-1:
+when C evaluates monday, C configured scene1
+then C evaluates monday, C configured scene1, C records Event', Event' marks monday-1.
+
+# @effect monday-2|0|0|0|0|0|
+rule monday-2:
+when C evaluates monday, C configured scene2
+then C evaluates monday, C configured scene2, C records Event', Event' marks monday-2.
+
+# @effect monday-3|0|0|0|0|0|
+rule monday-3:
+when C evaluates monday, C configured scene3
+then C evaluates monday, C configured scene3, C records Event', Event' marks monday-3.
+
+# @effect topology-private|7000|1|15|0|1|
+rule topology-private:
+when C evaluates topology, C exposes Api, Api uses Data, Data stored in Backend, Backend configured publicdata
+then C evaluates topology, C exposes Api, Api uses Data, Data stored in Backend, Backend configured publicdata, C records Event', Event' marks topology-private.
+
+# @effect topology-query-model|1900|1|5|0|0|
+rule topology-query-model:
+when C evaluates topology, C exposes Api, Api uses Data, Data stored in Backend, Data configured relational, Data configured unmodeled, Backend configured dynamo
+then C evaluates topology, C exposes Api, Api uses Data, Data stored in Backend, Data configured relational, Data configured unmodeled, Backend configured dynamo, C records Event', Event' marks topology-query-model.
+
+# @effect topology-unverified|2400|1|8|0|0|
+rule topology-unverified:
+when C evaluates topology, C exposes Api, Api uses Data, Data stored in Backend, Data configured unverified
+then C evaluates topology, C exposes Api, Api uses Data, Data stored in Backend, Data configured unverified, C records Event', Event' marks topology-unverified.
+
+# @effect topology-connections|1800|1|5|0|0|
+rule topology-connections:
+when C evaluates topology, C exposes Api, Api runs on Compute, Compute configured lambda, Api uses Data, Data stored in Backend, Backend configured sql, Backend configured direct
+then C evaluates topology, C exposes Api, Api runs on Compute, Compute configured lambda, Api uses Data, Data stored in Backend, Backend configured sql, Backend configured direct, C records Event', Event' marks topology-connections.
+
+# @effect topology-quiet|0|0|0|0|0|
+rule topology-quiet:
+when C evaluates topology
+then C evaluates topology, C records Event', Event' marks topology-quiet.
+
+# @effect intro-video|0|0|0|0|0|
+rule intro-video:
+when C evaluates intro, C configured video
+then C evaluates intro, C configured video, C records Event', Event' marks intro-video.
+
+# @effect review-public|0|0|0|0|0|design:database:{Backend}
+rule review-public:
+when C evaluates review, C exposes Api, Api uses Data, Data stored in Backend, Backend configured publicdata
+then C evaluates review, C exposes Api, Api uses Data, Data stored in Backend, Backend configured publicdata, C records Event', Event' marks review-public.
+
+# @effect review-model|0|0|0|0|0|design:verify:{Data}
+rule review-model:
+when C evaluates review, C exposes Api, Api uses Data, Data stored in Backend, Data configured unmodeled
+then C evaluates review, C exposes Api, Api uses Data, Data stored in Backend, Data configured unmodeled, C records Event', Event' marks review-model.
+
+# @effect review-copy|0|0|0|0|0|design:verify:{Data}
+rule review-copy:
+when C evaluates review, C exposes Api, Api uses Data, Data stored in Backend, Data configured unverified
+then C evaluates review, C exposes Api, Api uses Data, Data stored in Backend, Data configured unverified, C records Event', Event' marks review-copy.
+
+# @effect review-pooling|0|0|0|0|0|design:pool:{Backend}
+rule review-pooling:
+when C evaluates review, C exposes Api, Api runs on Compute, Compute configured lambda, Api uses Data, Data stored in Backend, Backend configured sql, Backend configured direct
+then C evaluates review, C exposes Api, Api runs on Compute, Compute configured lambda, Api uses Data, Data stored in Backend, Backend configured sql, Backend configured direct, C records Event', Event' marks review-pooling.
+
+# @effect review-idle|0|0|0|0|0|design:retire:{Node}
+rule review-idle:
+when C evaluates review, C owns Node, Node configured idle
+then C evaluates review, C owns Node, Node configured idle, C records Event', Event' marks review-idle.
+
+# @effect review-single-zone|0|0|0|0|0|design:compute:{Compute}
+rule review-single-zone:
+when C evaluates review, C exposes Api, Api runs on Compute, Compute configured singlezone
+then C evaluates review, C exposes Api, Api runs on Compute, Compute configured singlezone, C records Event', Event' marks review-single-zone.
+
+# @effect review-observation|0|0|0|0|0|monitoring
+rule review-observation:
+when C evaluates review
+then C evaluates review, C records Event', Event' marks review-observation.
+
+# @effect proposal-context|0|0|0|0|0|
+rule proposal-context:
+when C evaluates proposal, C configured proposalcontext
+then C evaluates proposal, C configured proposalcontext, C records Event', Event' marks proposal-context.
+
+# @effect proposal-technical|0|0|0|0|0|
+rule proposal-technical:
+when C evaluates proposal, C configured proposaltechnical
+then C evaluates proposal, C configured proposaltechnical, C records Event', Event' marks proposal-technical.

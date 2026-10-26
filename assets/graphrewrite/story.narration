@@ -1,0 +1,613 @@
+# How the village's events are told.
+#
+#   rule-title: sentence          one sentence per firing of that rule
+#   chain a + b within N: ...     two firings within N weeks sharing a person,
+#                                 told once; {1.X} is a's X, {2.X} is b's X
+#   silent <pattern>              never read this edge type out in a fallback
+#   rule-title:                   (nothing after the colon) say nothing at all
+#
+# {A} is a name. {A:he} {A:him} {A:his} {A:man} {A:son} {A:husband} {A:father}
+# pick the word by gender; {A:He} capitalises it. A week node reads as a
+# calendar phrase: "late March", "early June of the following year".
+# A rule with no line here has its inserted edges read out plainly, minus the
+# silent ones.
+
+# --- what matters ------------------------------------------------------------
+#
+# `important <rule> <rule> ...`: with --important only these are told (a
+# released or cancelled schedule counts under its rule). Courtship, grudges
+# and pregnancies are the weather; these are the events.
+
+important they-get-engaged the-vows-are-said the-betrothed-mourns
+important the-heads-make-a-match the-heads-make-peace-with-a-match the-church-forbids-the-match
+important she-runs-off-with-her-lover he-runs-off-with-his-lover
+important the-jilted-man-plots-against-the-lover the-jilted-woman-plots-against-the-lover the-jilted-nurse-a-grudge
+important the-feud-claims-a-target the-feud-burns-out the-houses-take-the-blood-price
+# Friendships FORMING are weather - hundreds a year in a large world. What
+# friends do is the story.
+important a-friend-is-drawn-into-the-plot a-friend-warns-his-friend
+important a-friend-turns-on-a-killer a-betrayed-friendship-is-over a-friend-avenges-a-friend
+important the-kin-name-a-price the-blood-price-is-paid the-price-is-refused
+important he-plots-against-the-groom she-plots-against-the-bride he-covets-another-mans-wife she-covets-another-womans-husband
+important the-plotter-finds-an-accomplice a-lover-is-drawn-into-the-plot the-accomplice-turns the-betrayed-man-learns-of-it
+important the-warned-strike-first poison a-knife-in-the-dark the-river the-moment-passes
+important blood-for-blood a-father-avenges-his-son the-widow-swears-vengeance a-kinsman-takes-up-the-blood-debt
+important the-widow-learns-who-killed-him she-dies-in-childbed
+important the-eavesdropper-warns-the-victim the-eavesdropper-denounces-a-traitor
+important the-crown-outlaws-the-traitor an-outlaw-is-hunted-down the-outlaw-is-pardoned
+important the-heir-is-named the-heir-takes-the-throne a-sworn-house-seizes-the-throne the-pretender-seizes-the-throne
+# Overhearing and declaring are weather at scale - tens of thousands a year.
+# What a listener DOES with what he heard is the story.
+important a-claimant-plots-against-the-king the-crown-is-vacant
+important the-witness-asks-for-silence the-blackmail-is-paid the-blackmailer-is-silenced
+important old-age a-sudden-illness death-comes the-house-passes-to-a-son the-house-passes-to-a-kinsman
+important a-killer-confesses the-priest-breaks-the-seal the-priest-tells-the-son the-unshriven-are-refused-burial
+important the-suspicion-is-said-aloud the-houses-fall-out-over-an-accusation the-accused-strikes-back
+important the-note-comes-due a-ruined-house-marries-down a-ruined-man-turns-on-his-creditor
+
+# --- how much each thing counts ----------------------------------------------
+#
+# `weight N <rule> ...` ranks a firing when a month has more events than the
+# chronicle has room to tell at length. Without a line, an `important` rule is
+# worth 10 and everything else 1. A death and a wedding outrank a betrothal;
+# a betrothal outranks a friendship.
+
+weight 40 death-comes old-age a-sudden-illness a-child-sickens she-dies-in-childbed
+weight 40 released:poison released:a-knife-in-the-dark released:the-river
+weight 38 an-outlaw-is-hunted-down
+weight 36 the-vows-are-said
+weight 34 the-heir-takes-the-throne a-sworn-house-seizes-the-throne the-pretender-seizes-the-throne the-crown-is-vacant
+weight 30 she-runs-off-with-her-lover he-runs-off-with-his-lover
+weight 28 the-crown-outlaws-the-traitor the-outlaw-is-pardoned
+weight 26 blood-for-blood a-father-avenges-his-son the-widow-swears-vengeance a-kinsman-takes-up-the-blood-debt
+weight 26 a-friend-avenges-a-friend the-feud-claims-a-target
+weight 24 poison a-knife-in-the-dark the-river
+weight 22 the-heads-make-peace-with-a-match the-houses-take-the-blood-price the-feud-burns-out
+weight 20 they-get-engaged the-heads-make-a-match the-betrothed-mourns the-heir-is-named
+weight 18 he-plots-against-the-groom she-plots-against-the-bride the-blackmailer-is-silenced
+weight 16 the-jilted-man-plots-against-the-lover the-jilted-woman-plots-against-the-lover
+weight 16 a-claimant-plots-against-the-king the-eavesdropper-denounces-a-traitor
+weight 14 the-warned-strike-first the-accomplice-turns a-friend-warns-his-friend a-friend-turns-on-a-killer
+weight 14 the-widow-learns-who-killed-him the-kin-name-a-price the-price-is-refused the-blood-price-is-paid
+weight 12 a-child-is-born the-house-passes-to-a-son the-house-passes-to-a-kinsman
+weight 10 the-plotter-finds-an-accomplice a-friend-is-drawn-into-the-plot a-lover-is-drawn-into-the-plot
+weight 10 the-witness-asks-for-silence the-blackmail-is-paid a-thin-wall a-house-backs-the-pretender
+weight  8 she-conceives comes-of-age the-jilted-nurse-a-grudge a-betrayed-friendship-is-over
+weight  6 the-esteem-is-returned the-feeling-is-returned strangers-take-against-each-other
+weight  4 hatred-fades the-moment-passes the-suit-is-rebuffed
+
+# The three new arcs. A confession outranks the penance it earns; a public
+# accusation outranks the muttering behind it; the note coming due outranks
+# the borrowing that led to it - in each case the consequence is the event
+# and the setup is the weather.
+weight 30 the-priest-breaks-the-seal the-priest-tells-the-son
+weight 26 a-killer-confesses the-unshriven-are-refused-burial
+weight 24 the-accused-strikes-back a-ruined-man-turns-on-his-creditor
+weight 22 the-houses-fall-out-over-an-accusation the-note-comes-due
+weight 20 a-ruined-house-marries-down
+weight 16 the-suspicion-is-said-aloud
+weight 14 a-new-priest-is-ordained
+weight 12 the-priest-sets-a-penance a-penitent-gives-up-his-plot
+weight 10 the-penance-is-done
+weight  8 suspicion-falls-on-the-other-house a-widow-suspects-the-other-house the-son-looks-for-someone-to-blame
+weight  6 the-head-borrows the-debt-is-settled the-suspicion-spreads
+weight  4 a-hard-season the-house-recovers
+
+# --- what a dropped event counts as ------------------------------------------
+#
+# Anything the month has no room to tell at length is counted into its
+# category and read out at the end: "Elsewhere that month: two deaths and
+# four quarrels." A rule with no category falls under `other`.
+
+category death:      death-comes old-age a-sudden-illness a-child-sickens she-dies-in-childbed
+category death:      released:poison released:a-knife-in-the-dark released:the-river an-outlaw-is-hunted-down
+category birth:      a-child-is-born she-conceives comes-of-age
+category marriage:   they-get-engaged they-set-a-date they-take-their-time they-wait-for-a-better-season
+category marriage:   the-vows-are-said the-heads-make-a-match the-heads-make-peace-with-a-match
+category marriage:   the-betrothed-mourns the-church-forbids-the-match the-engagement-dies-with-him
+category courtship:  the-feeling-is-returned he-notices-her she-notices-him the-suit-is-rebuffed
+category friendship: the-esteem-is-returned a-betrayed-friendship-is-over
+category quarrel:    strangers-take-against-each-other hatred-fades hatred-poisons-affection
+category quarrel:    the-jilted-nurse-a-grudge the-jilted-let-it-go
+category plot:       he-plots-against-the-groom she-plots-against-the-bride he-covets-another-mans-wife
+category plot:       she-covets-another-womans-husband the-plotter-finds-an-accomplice poison
+category plot:       a-knife-in-the-dark the-river the-moment-passes a-lover-is-drawn-into-the-plot
+category plot:       the-jilted-man-plots-against-the-lover the-jilted-woman-plots-against-the-lover
+category vengeance:  blood-for-blood a-father-avenges-his-son the-widow-swears-vengeance
+category vengeance:  a-kinsman-takes-up-the-blood-debt a-friend-avenges-a-friend the-feud-claims-a-target
+category vengeance:  the-kin-name-a-price the-blood-price-is-paid the-price-is-refused
+category crown:      the-heir-is-named the-heir-takes-the-throne the-crown-is-vacant a-house-backs-the-pretender
+category crown:      a-claimant-plots-against-the-king the-crown-outlaws-the-traitor the-outlaw-is-pardoned
+category crown:      a-sworn-house-seizes-the-throne the-pretender-seizes-the-throne
+
+category church:    a-killer-confesses the-priest-sets-a-penance a-penitent-gives-up-his-plot
+category church:    the-penance-is-done the-priest-breaks-the-seal the-priest-tells-the-son
+category church:    the-unshriven-are-refused-burial a-new-priest-is-ordained
+category suspicion: suspicion-falls-on-the-other-house a-widow-suspects-the-other-house
+category suspicion: the-son-looks-for-someone-to-blame the-suspicion-spreads the-suspicion-is-said-aloud
+category suspicion: the-houses-fall-out-over-an-accusation the-accused-strikes-back
+category silver:    a-hard-season the-head-borrows the-debt-is-settled the-note-comes-due
+category silver:    a-ruined-house-marries-down a-ruined-man-turns-on-his-creditor the-house-recovers
+
+summary death:      a death / {n} deaths
+summary birth:      a birth / {n} births
+summary marriage:   a match made / {n} matches made
+summary courtship:  a courtship begun / {n} courtships begun
+summary friendship: a friendship / {n} friendships
+summary quarrel:    a quarrel / {n} quarrels
+summary plot:       a plot laid / {n} plots laid
+summary vengeance:  a debt of blood / {n} debts of blood
+summary crown:      a move on the crown / {n} moves on the crown
+summary church:     a matter for the priest / {n} matters for the priest
+summary suspicion:  a suspicion voiced / {n} suspicions voiced
+summary silver:     a debt / {n} debts
+summary other:      one smaller matter / {n} smaller matters
+
+# --- words the prose reaches for ---------------------------------------------
+#
+# `<name>` in any sentence here, or in a dialogue line, expands to one of the
+# alternatives. `*N` weights one. The choice is a hash of the seed and the
+# firing, so a run repeats exactly and two firings of one rule in one month do
+# not reach for the same word.
+
+sub then:    Then  *3 | Soon after,  | Before the month was out,  | That same month,  | Not long after,
+
+# Used instead of `<then>` when the programme's own rules say the later thing
+# could have been brought about by the earlier one, and the two share a
+# person. Nothing declares which pairs those are - see ConsequenceGraph.
+sub therefore: And so *2 | Which is why | It followed that | The upshot was that | For that reason
+
+# `incidental <pattern>`: a real edge that is nonetheless not a reason to say
+# one thing led to another. A plot resolving hands `keeps the peace` back to
+# the plotter, which would make every killing in the village the cause of
+# every plot that came after it; the same is true of being alive and of
+# being grown.
+incidental ? keeps the peace
+incidental ? is alive
+incidental ? is grown
+incidental ? is unattached
+incidental ? is unmarried
+incidental ? lives in ?
+incidental ? is of age
+sub anger:   fury | a cold rage | something that would not cool | a grudge he would not set down
+sub quietly: quietly | without raising his voice | flatly | with no heat at all
+
+# --- bookkeeping that is not story ------------------------------------------
+
+silent ? is alive
+silent ? is man
+silent ? is woman
+silent ? born in ?
+silent ? is young
+silent ? is an infant
+silent ? is of age
+silent ? is grown
+silent ? is unmarried
+silent ? is unattached
+silent ? is fertile
+silent ? smitten on ?
+silent ? lives in ?
+silent ? is child of ?
+silent ? is mother of ?
+silent ? is father of ?
+silent ? is to wed ?
+silent ? is promised to ?
+silent ? is a church in ?
+silent ? wed in ?
+silent ? weds on ?
+silent ? carries child of ?
+silent ? is due on ?
+silent ? esteems ?
+silent ? overheard ?
+silent ? denounced ?
+silent ? was of ?
+silent ? swears to ?
+silent ? wants a king
+silent ? wants an heir
+silent ? claims ?
+silent ? blackmails ?
+silent ? esteemed on ?
+silent ? is friend of ?
+silent ? owes for ?
+silent ? plots against ?
+silent ? plots before ?
+silent ? plots since ?
+silent ? conspires with ?
+silent ? mourns ?
+silent ? blames ?
+silent ? keeps the peace
+silent ? plots alone
+silent ? widowed on ?
+silent ? is of house ?
+silent ? is head of ?
+silent ? is at peace with ?
+silent ? cries for vengeance
+silent ? killed ?
+silent ? unshriven for ?
+silent ? serves ?
+silent ? confessed to ?
+silent ? holds the seal on ?
+silent ? is under penance
+silent ? penance until ?
+silent ? was absolved
+silent ? lies unhallowed
+silent ? suspects ?
+silent ? accuses ?
+silent ? is in want
+silent ? owes silver to ?
+silent ? silver due on ?
+silent ? is ruined
+
+he-notices-her:
+she-notices-him:
+the-feeling-fades:
+two-take-to-each-other:
+the-esteem-comes-to-nothing:
+friendship-cools:
+hatred-ends-a-friendship:
+the-dead-have-no-friends:
+nobody-befriends-a-corpse:
+the-dead-stop-esteeming:
+esteem-dies-with-the-esteemed:
+the-debt-dies-with-the-debtor:
+the-eavesdropper-holds-his-tongue:
+the-accomplice-knew-all-along:
+the-eavesdropper-knew-the-plot:
+word-gets-around:
+the-kin-are-told:
+what-is-known-dies-with-the-knower:
+blackmail-dies-with-the-blackmailer:
+the-blackmailed-in-his-grave:
+the-king-takes-a-queen:
+the-claim-is-abandoned:
+a-claim-dies-with-the-claimant:
+the-backers-fall-away:
+the-queen-is-no-more:
+an-heir-who-does-not-live:
+the-denunciation-is-ignored:
+an-outlaw-in-his-grave:
+the-dead-hear-nothing:
+nobody-overhears-a-corpse:
+a-denunciation-dies-with-the-accuser:
+the-dead-back-nobody:
+not-her-own-father:
+not-his-own-child:
+not-a-sibling:
+the-courtship-is-over:
+the-promise-is-spent:
+the-wedding-night:
+the-wedding-morning:
+the-promise-dies-with-him:
+a-wife-joins-her-husbands-house:
+the-church-forbids-the-match: The match of {A} and {B} was forbidden: they were too near in blood.
+the-church-forbids-a-mother-and-son: The match of {A} and {B} was forbidden: they were too near in blood.
+the-church-forbids-a-father-and-daughter: The match of {A} and {B} was forbidden: they were too near in blood.
+a-feud-breaks-the-peace:
+a-feud-breaks-the-peace-both-ways:
+the-accomplice-loses-heart:
+the-betrayal-stays-secret:
+the-plotter-dies-first:
+the-target-dies-anyway:
+the-accomplice-shares-the-guilt:
+the-dead-are-dead:
+her-childbearing-years-end:
+out-of-swaddling:
+a-young-man-grown:
+a-young-woman-grown:
+the-widow-mourns:
+the-widower-mourns:
+the-mourning-ends:
+grief-fades:
+the-dead-stop-wanting:
+the-heart-lets-go-of-the-dead:
+the-dead-stop-hating:
+grief-outlives-nobody:
+the-dead-are-not-widowed:
+the-dead-bear-nothing:
+the-dead-conspire-with-nobody:
+the-plot-is-over:
+the-widow-forgoes-vengeance:
+the-dead-blame-nobody:
+nobody-hates-a-corpse:
+
+# --- chains: one event, not two ----------------------------------------------
+#
+# Earlier chains win, and a firing is used by at most one chain.
+
+chain he-notices-her + the-feeling-is-returned within 6:
+  {1.A} began to notice {1.B}, and before long {1.B} returned the feeling.
+
+chain she-notices-him + the-feeling-is-returned within 6:
+  {1.A} found herself drawn to {1.B}, and {1.B} soon felt the same.
+
+chain they-get-engaged + they-set-a-date within 3:
+  {1.A} and {1.B} were engaged, and set their wedding for {2.D'}.
+
+chain they-get-engaged + they-take-their-time within 3:
+  {1.A} and {1.B} were engaged, and in no great hurry set their wedding for {2.D'}.
+
+chain they-get-engaged + they-wait-for-a-better-season within 3:
+  {1.A} and {1.B} were engaged, and would wait for a better season: the wedding was set for {2.D'}.
+
+chain strangers-take-against-each-other + hatred-fades within 8:
+  {1.A} took against {1.B} for a while, then let it go.
+
+chain a-friend-warns-his-friend + the-warned-strike-first within 4:
+  {1.X} would not see {1.B} come to harm and told {1.B:him} what {1.C} intended; forewarned, {1.B} resolved to strike first.
+
+chain the-kin-name-a-price + the-blood-price-is-paid within 12:
+  {1.X} named a price for {1.C}'s death, and {1.A} paid it.
+
+chain the-kin-name-a-price + the-price-is-refused within 12:
+  {1.X} named a price for {1.C}'s death, then would not be paid, and swore {1.A} would answer for it.
+
+chain the-accomplice-turns + the-warned-strike-first within 4:
+  {1.X} lost {1.X:his} nerve and warned {1.B} what {1.C} intended; forewarned, {1.B} resolved to strike first.
+
+chain the-widow-learns-who-killed-him + the-widow-swears-vengeance within 4:
+  {1.B} learned it was {1.A} who had killed {1.C}, and swore {1.A:he} would pay for it.
+
+chain the-jilted-nurse-a-grudge + the-feud-claims-a-target within 12:
+  {1.B} never forgave {1.A}, and with the houses at feud marked {2.Y} for death.
+
+chain the-widow-learns-who-killed-him + the-widow-forgoes-vengeance within 6:
+  {1.B} learned it was {1.A} who had killed {1.C}, and hated {1.A:him} for it, but did nothing.
+
+# --- chains for the three new arcs -------------------------------------------
+#
+# A chain is where the long sentences come from: several firings that are one
+# event told once, with the connective tissue written in. A chain only forms
+# when every letter the two rules SHARE is bound to the same node, so the
+# rules below were written with their letters lined up on purpose.
+
+chain a-killer-confesses + the-priest-sets-a-penance within 8:
+  {1.A} could not carry it alone, and told {1.P} what {1.A:he} had done to {1.C}; {2.P} heard {2.A:him}
+  out, and laid a penance on {2.A:him} that had {2.Q'} at the end of it.
+
+chain a-killer-confesses + the-priest-tells-the-son + blood-for-blood within 60:
+  {1.A} confessed the killing of {1.C} to {1.P} under the seal; {2.P}, who should have carried it to
+  {2.P:his} own grave, let {2.X} know whose hand it had been, and {3.X} swore that {3.A} would answer
+  for {3.C:his} {3.C:father}'s death.
+
+chain a-killer-confesses + the-priest-tells-the-son within 60:
+  {1.A} confessed the killing of {1.C} to {1.P} under the seal, and {2.P}, who should have carried it
+  to {2.P:his} own grave, let {2.X} know whose hand it had been.
+
+chain the-priest-tells-the-son + blood-for-blood within 10:
+  It was from {1.P}, who had it under the seal, that {1.X} learned it was {1.A} who killed {1.C}, and
+  {2.X} swore as a son must that {2.A} would answer for it.
+
+chain a-penitent-gives-up-his-plot + the-penance-is-done within 70:
+  {1.A}, with a penance to serve, put aside whatever {1.A:he} had meant to do to {1.B}; when the time
+  was served {2.A} was absolved, and the thing was never spoken of again.
+
+chain the-son-looks-for-someone-to-blame + the-suspicion-is-said-aloud within 16:
+  {1.X}, with a grave to stand at and nobody to lay it against, settled on {1.B} for no better reason
+  than that {1.B} was there, and before long was saying so where the village could hear it.
+
+chain a-widow-suspects-the-other-house + the-suspicion-is-said-aloud within 16:
+  {1.X} had no doubt where to look for {1.C}'s death, and said the name of {1.B} aloud, with the
+  houses already at each other and nothing but that to go on.
+
+chain suspicion-falls-on-the-other-house + the-suspicion-is-said-aloud within 16:
+  {1.X} decided that {1.C}'s death lay at the door of the other house, and named {1.B} for it in
+  front of the village.
+
+chain the-suspicion-is-said-aloud + the-accused-strikes-back within 10:
+  {1.X} named {1.B} for it where the whole village could hear, and {2.B}, who had done nothing,
+  resolved that if {2.B:he} was to be hanged for a killing it might as well be one {2.B:he} had done.
+
+chain the-suspicion-is-said-aloud + the-houses-fall-out-over-an-accusation within 8:
+  {1.X} named {1.B} for it in front of the village, and the houses of {2.H} and {2.K}, at peace that
+  morning, were not at peace by the evening.
+
+chain the-suspicion-spreads + the-suspicion-is-said-aloud within 12:
+  What {1.X} thought of {1.B} had got as far as {1.Y} by then, and it was not long before somebody
+  said it out loud.
+
+chain a-hard-season + the-head-borrows within 16:
+  The season went badly for the house of {1.H}, and {2.F} went to {2.G} for silver, with {2.D'} set
+  on the note.
+
+chain the-head-borrows + the-note-comes-due within 45:
+  {1.F} had gone to {1.G} for silver against {1.D'}, and when the day came there was nothing to meet
+  it with: the house of {1.H} was ruined.
+
+chain the-note-comes-due + a-ruined-man-turns-on-his-creditor within 12:
+  The note came due and {1.F} could not meet it; ruined, {2.F} began to think that {2.G} would be
+  easier to be rid of than to pay.
+
+chain the-note-comes-due + a-ruined-house-marries-down within 20:
+  {1.F} could not meet the note, and with the house ruined {2.A} was promised to {2.B} on terms
+  nobody pretended were good, the wedding set for {2.M'}.
+
+# --- chains among the older arcs ----------------------------------------------
+#
+# Three firings told as one sentence is the longest thing the narrator makes,
+# and a plot that is found out and turned around is exactly that shape.
+
+chain the-plotter-finds-an-accomplice + the-accomplice-turns + the-warned-strike-first within 10:
+  {1.C} found {1.X}, who had no love for {1.B}, willing to help; {2.X} lost {2.X:his} nerve before it
+  came to anything and told {2.B} what was intended, and {3.B}, forewarned, resolved to be the first
+  to move.
+
+chain the-plotter-finds-an-accomplice + a-friend-warns-his-friend within 10:
+  {1.C} found {1.X} willing to help against {1.B}, and it was {2.X}, who counted {2.B} a friend, who
+  could not go through with it and said so.
+
+chain the-widow-learns-who-killed-him + the-witness-asks-for-silence within 10:
+  {1.B} learned it was {1.A} who had killed {1.C}, and rather than take it to anyone else, named a
+  price for keeping it quiet.
+
+chain the-heads-make-a-match + she-runs-off-with-her-lover within 80:
+  {1.F} and {1.G} came to terms and {1.A} was promised to {1.B}, and for all the terms they came to,
+  {2.A} ran off with {2.X} and married him instead, and the houses have not spoken since.
+
+# --- one sentence per rule ---------------------------------------------------
+
+the-feeling-is-returned: {B} came to return {A}'s affection.
+
+the-esteem-is-returned: {A} and {B} became friends.
+a-friend-turns-on-a-killer: {X} would not call a killer of {C} a friend, and turned on {A}.
+a-betrayed-friendship-is-over: The friendship of {C} and {X} did not survive it.
+a-friend-is-drawn-into-the-plot: {X}, who counted {C} a friend, agreed to help.
+a-friend-warns-his-friend: {X} would not see {B} come to harm, and told {B:him} what {C} intended.
+a-friend-avenges-a-friend: {X} swore that {A} would answer for {C}'s death, as a friend should.
+
+a-thin-wall: {A} heard {C} through the wall, and knew what {C:he} intended.
+the-eavesdropper-warns-the-victim: {A}, who had heard it all through the wall, told {B} what {C} intended.
+the-plotter-learns-he-was-heard: {C} learned that {A} had been listening.
+the-eavesdropper-denounces-a-traitor: {A} carried what {A:he} had heard to the king: {C} had designs on {K}.
+
+the-crown-is-vacant: The throne of {R} stood empty.
+the-heir-is-named: {A} was named heir to {R}.
+the-heir-takes-the-throne: {A} took the throne of {R}.
+a-sworn-house-seizes-the-throne: {F}, sworn though {F:he} was, took the throne of {R} for {F:him}self.
+the-pretender-seizes-the-throne: {F} pressed {F:his} claim and took the throne of {R}.
+a-claimant-plots-against-the-king: {F} wanted the crown of {R}, and resolved that {K} should not keep it.
+a-house-backs-the-pretender: {G} declared for {F}.
+the-crown-outlaws-the-traitor: {K} outlawed {C}, who fled {V}.
+an-outlaw-is-hunted-down: {C} was run down and killed, an outlaw.
+the-outlaw-is-pardoned: {K} pardoned {C}, who came home to {V}.
+
+the-witness-asks-for-silence: {A}, who knew what {C} had done to {B}, asked a price for silence.
+the-blackmail-is-paid: {C} paid {A} to keep quiet.
+the-blackmailer-is-silenced: {C} would not be bled by {A}, and resolved to be rid of {A:him}.
+
+the-kin-name-a-price: {X} named a price for {C}'s death, and {A} owed it.
+the-blood-price-is-paid: {A} paid {X} the price of {C}'s death.
+the-price-is-refused: {X} would not be paid for {C}, and swore {A} would answer for it.
+the-houses-take-the-blood-price: {G} paid {F} to end the feud between {K} and {H}.
+
+strangers-take-against-each-other: {A} took against {B}.
+hatred-poisons-affection: Whatever {A} had felt for {B} curdled into resentment.
+the-suit-is-rebuffed: {A} made it plain that {B}'s attentions were unwelcome.
+hatred-fades: {A} let {A:his} grudge against {B} go.
+
+they-get-engaged: {A} and {B} were engaged.
+they-set-a-date: {A} and {B} set their wedding for {D'}.
+they-take-their-time: {A} and {B}, in no great hurry, set their wedding for {D'}.
+they-wait-for-a-better-season: {A} and {B} would wait for a better season, and set their wedding for {D'}.
+the-vows-are-said: {A} and {B} were married at {C}.
+the-betrothed-mourns: The wedding of {B} and {A}, set for {D}, never took place.
+the-engagement-dies-with-him: {B}'s engagement to {A} died with {A:him}.
+
+the-heads-make-a-match: {F} and {G} came to terms: {A} was promised to {B}, to be wed in {D'}.
+the-heads-make-peace-with-a-match: To end the feud between {H} and {K}, {F} and {G} promised {A} to {B}, to be wed in {D'}.
+
+she-runs-off-with-her-lover: {A}, promised to {B}, ran off with {X} and married him instead; the house of {K} took against the house of {H}.
+he-runs-off-with-his-lover: {A}, promised to {B}, ran off with {X} and married her instead; the house of {K} took against the house of {H}.
+the-jilted-man-plots-against-the-lover: {B}, jilted, resolved that {X} would not have {A} for long.
+the-jilted-woman-plots-against-the-lover: {B}, jilted, resolved that {X} would not have {A} for long.
+the-jilted-nurse-a-grudge: {B} never forgave {A}.
+the-jilted-let-it-go: {B} put {A} out of {B:his} mind.
+
+the-feud-claims-a-target: With the houses at feud, {B} marked {Y} for death.
+the-feud-burns-out: The feud between {K} and {H} burned itself out.
+
+he-plots-against-the-groom: {C}, wanting {A}, resolved that {B} would not live to see {D}.
+she-plots-against-the-bride: {C}, wanting {A}, resolved that {B} would not live to see {D}.
+he-covets-another-mans-wife: {A} wanted {B}, and began to think how {C} might be got out of the way.
+she-covets-another-womans-husband: {A} wanted {B}, and began to think how {C} might be got out of the way.
+
+the-plotter-finds-an-accomplice: {C} found {X}, who had no love for {B}, willing to help.
+a-lover-is-drawn-into-the-plot: {X}, for love of {C}, was drawn into it.
+the-accomplice-turns: {X} lost {X:his} nerve and warned {B} what {C} intended.
+the-betrayed-man-learns-of-it: {C} learned it was {X} who had talked.
+the-warned-strike-first: Forewarned, {B} resolved to strike at {C} first.
+the-warned-keep-their-guard: {B} kept {B:his} guard up, and let it be.
+
+poison: {C} began putting poison in {B}'s food.
+released:poison: {B} died; it was {C}'s poison.
+cancel:poison: {B} was spared the poison.
+a-knife-in-the-dark: {C} waited for {B} in the dark with a knife.
+released:a-knife-in-the-dark: {B} was found stabbed; it was {C} who held the knife.
+cancel:a-knife-in-the-dark: {C} waited in the dark for nothing.
+the-river: {C} followed {B} down to the river.
+released:the-river: {B} drowned in the river; it was {C} who was there.
+cancel:the-river: {C} went to the river for nothing.
+the-plot-comes-to-nothing: {C} thought better of it.
+the-moment-passes: The day came and went, and {C}'s plot against {B} came to nothing.
+
+blood-for-blood: {X} swore that {A} would answer for {X:his} {C:father}'s death.
+a-father-avenges-his-son: {X} swore that {A} would answer for {X:his} {C:son}'s death.
+the-widow-swears-vengeance: {B}, widowed by {A}'s hand, swore {A} would pay for it.
+a-kinsman-takes-up-the-blood-debt: {X}, of {C}'s house, took up the blood-debt against {A}.
+the-killing-goes-unavenged: Nobody took up {C}'s cause.
+the-widow-learns-who-killed-him: {B} learned it was {A} who had killed {C}, and came to hate {A:him}.
+
+she-conceives: {A} was found to be with child.
+a-child-is-born: {A} bore {B} a {C':son}, whom they named {C'}.
+she-dies-in-childbed: {A} died in childbed, and the child with her.
+comes-of-age: {A} came of age.
+
+death-comes: {A} died.
+old-age: {A} died, old and full of years.
+a-sudden-illness: {A} took ill, and died.
+a-child-sickens: {A} sickened and died, still small.
+
+the-house-passes-to-a-son: {X} became head of {H} in {F}'s place.
+the-house-passes-to-a-kinsman: {X} became head of {H} in {F}'s place.
+
+
+# --- the confessional ---------------------------------------------------------
+
+a-killer-confesses: {A}, who had carried it since the week it happened, went to {P} and said
+  out loud what {A:he} had done to {C}.
+the-priest-sets-a-penance: {P} laid a penance on {A}, to be served until {Q'}.
+a-penitent-gives-up-his-plot: {A}, with a penance still to serve, put aside what {A:he} had meant
+  to do to {B}, and let it alone.
+the-penance-is-done: {A} served out {A:his} penance and was absolved.
+the-priest-keeps-the-seal:
+the-priest-breaks-the-seal: {P}, who had it under the seal and should have kept it there, let {B}
+  know that it was {A} who had killed {C}.
+the-priest-tells-the-son: {P} broke the seal of the confessional and told {X} whose hand had been
+  behind {C}'s death.
+the-unshriven-are-refused-burial: {A} went into the ground outside the wall of {K}, unshriven, with
+  {C}'s death still on {A:him}.
+a-new-priest-is-ordained: {X} took the living at {K}, the parish having been without a priest.
+the-seal-dies-with-the-priest:
+the-penitent-in-his-grave:
+a-confession-dies-with-the-confessor:
+nothing-is-held-against-a-corpse:
+absolution-outlives-nobody:
+guilt-outlives-nobody:
+
+# --- suspicion ------------------------------------------------------------------
+
+suspicion-falls-on-the-other-house: {X} decided that {C}'s death lay at the door of the other
+  house, and settled on {B} for it.
+a-widow-suspects-the-other-house: {X}, with the houses already at each other, had no doubt at all
+  that it was {B} who had taken {C}.
+the-son-looks-for-someone-to-blame: {X}, wanting somebody to lay {C}'s death against and having
+  nobody, settled on {B}.
+the-suspicion-spreads: What {X} thought of {B} had reached {Y} by the week's end.
+the-suspicion-is-said-aloud: {X} named {B} for it out loud, in front of whoever was standing there.
+the-suspicion-comes-to-nothing:
+the-houses-fall-out-over-an-accusation: The accusation {X} had made against {B} put the houses of
+  {H} and {K}, at peace that morning, at each other's throats by the evening.
+the-accused-strikes-back: {B}, named for a killing {B:he} had not done, resolved that {X} would
+  regret having said it.
+the-accuser-thinks-better-of-it:
+the-dead-suspect-nobody:
+nobody-suspects-a-corpse:
+an-accusation-dies-with-the-accuser:
+the-accused-in-his-grave:
+
+# --- silver ----------------------------------------------------------------------
+
+a-hard-season: The season went badly for the house of {H}.
+the-head-borrows: {F} went to {G} for silver, with {D'} set on the note.
+the-house-comes-through:
+the-debt-is-settled: {F} paid {G} what was owed, and that was the end of it.
+the-note-comes-due: The note {F} had signed came due with nothing to meet it, and the house was
+  ruined.
+a-ruined-house-marries-down: With nothing left to bargain with, {F} promised {A} to {B} on terms
+  nobody pretended were good, to be wed in {M'}.
+a-ruined-man-turns-on-his-creditor: {F}, ruined, began to think that {G} would be cheaper to be rid
+  of than to pay.
+the-house-recovers: The house of {F} came back from it, slowly.
+silver-dies-with-the-debtor:
+a-note-dies-with-the-lender:
+ruin-outlives-nobody:
+want-outlives-its-head:

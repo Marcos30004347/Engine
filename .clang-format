@@ -1,0 +1,37 @@
+# .clang-format
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: false
+  BeforeLambdaBody: false
+  SplitEmptyFunction: true
+ColumnLimit: 220
+
+# Custom honours the BraceWrapping block above (Allman placement).
+BreakBeforeBraces: Custom
+# Every control-statement body gets braces, even one-liners.
+InsertBraces: true
+# Blank line between definitions; none at the start of a block.
+SeparateDefinitionBlocks: Always
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+AllowShortEnumsOnASingleLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackParameters: false
+BinPackArguments : false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLambdasOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AlignAfterOpenBracket: AlwaysBreak
+BracedInitializerIndentWidth: 2
+EmptyLineBeforeAccessModifier : Always

@@ -1,0 +1,4 @@
+Generated using the built-in image_gen tool.
+Exact seamlessness is not guaranteed; reviewed in the repeating street viewer.
+
+Use case: stylized-concept. Asset type: seamless square repeating game albedo texture. Full-bleed orthographic top-down worn warm limestone flagstone sidewalk, large rectangular slabs in staggered courses, four courses across the square, narrow subtle mortar joints, softly chipped corners, restrained cream and warm grey palette. Deliberately chunky pixel clusters matching a medieval low-poly game, moderate detail and low contrast. Even diffuse illumination without directional shadows. Perfectly flat top view, no perspective, no objects, no plants, no text, no watermark, no borders. Seamless repeat on all four edges, material fills every pixel.

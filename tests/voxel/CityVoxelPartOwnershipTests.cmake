@@ -1,0 +1,5 @@
+add_executable(CityVoxelPartOwnershipTests
+    ${CMAKE_CURRENT_LIST_DIR}/CityVoxelPartOwnershipTests.cpp)
+target_link_libraries(CityVoxelPartOwnershipTests PRIVATE Engine)
+add_test(NAME CityVoxelPartOwnershipTests COMMAND CityVoxelPartOwnershipTests)
+set_tests_properties(CityVoxelPartOwnershipTests PROPERTIES LABELS "svraster.cityvoxel.ownership")

@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>World City · Fly-through</title><link rel="icon" href="data:,"><link rel="stylesheet" href="viewer.css"></head>
+<body>
+<canvas id="view" tabindex="0" aria-label="Interactive 3D generated city"></canvas>
+<header><div class="brand"><span class="eyebrow">ENGINE / WORLD EXPLORER</span><h1>A city you can enter.</h1><p id="summary">Loading the generated city…</p></div>
+<nav aria-label="Camera controls"><button id="overview">Overview <kbd>O</kbd></button><button id="street">Street <kbd>G</kbd></button><button id="fly" class="primary">Fly around</button></nav></header>
+<aside id="inspector"><div id="regionNav"></div><label for="landmark">Explore a building</label><select id="landmark"><option>Loading buildings…</option></select><div class="row"><button id="visit">Outside</button><button id="interior">Enter room</button><button id="nextRoom" title="Next generated room">Next room</button></div><p id="buildingInfo"></p><div id="buildingDetails"></div>
+<details><summary>View options & origin</summary><label class="check"><input type="checkbox" id="roofs" checked> Roofs</label><label class="check"><input type="checkbox" id="cutaway"> Horizontal cutaway</label><label for="cutHeight">Cut height <output id="cutLabel">3 m</output></label><input id="cutHeight" type="range" min="0" max="35" step=".25" value="3"><label for="speed">Flight speed <output id="speedLabel">12 m/s</output></label><input id="speed" type="range" min="1" max="80" value="12"><label class="check"><input type="checkbox" id="textures" checked> Textures</label><p id="origin"></p><p id="notes"></p></details></aside>
+<div id="loading" role="status"><span id="loadingText">Opening city region</span><progress id="progress" max="100" value="0"></progress></div>
+<div id="crosshair" aria-hidden="true">+</div>
+<div id="mapPanel"><span>City map · click to travel</span><canvas id="map" width="230" height="230" aria-label="City map; click to move the camera"></canvas></div>
+<footer><div><strong>W A S D</strong> move <span>·</span> <strong>Q / E</strong> down / up <span>·</span> <strong>Shift</strong> faster<br><small>Click a building to inspect · Drag to look · Click “Fly around” to lock the mouse · Esc releases it · Free flight passes through doors and walls.</small></div><output id="stats">Preparing scene</output></footer>
+<script type="module" src="viewer.js"></script></body></html>

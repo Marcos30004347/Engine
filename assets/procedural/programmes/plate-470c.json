@@ -1,0 +1,247 @@
+{
+  "page": 470,
+  "source": "The Builder's Practical Director, Plates 92 and 93, description on PDF page 470",
+  "kind": "isolated villa",
+  "storeys": 3,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1,
+    2
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "detached",
+    "plan": "double-pile",
+    "features": [
+      {
+        "kind": "red brick with cement dressings",
+        "count": 1
+      },
+      {
+        "kind": "astylar palazzo front",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "'A very compact little family residence with an effective inexpensive front. For the general idea of the principal elevation, we are indebted to a design by Mr. Lamb, or, perhaps, more properly speaking, the garden front of Sir Charles Barry's Traveller's Club House.' 850 pounds.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "the hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "staircase"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing room"
+        },
+        {
+          "use": "dining_room",
+          "raw": "Dining room"
+        },
+        {
+          "use": "breakfast_room",
+          "raw": "Breakfast room"
+        },
+        {
+          "use": "kitchen",
+          "raw": "Kitchen"
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery"
+        },
+        {
+          "use": "larder",
+          "raw": "convenient offices"
+        },
+        {
+          "use": "wc",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "breakfast_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "four Bed rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "4",
+          "raw": "ditto"
+        },
+        {
+          "use": "nursery",
+          "raw": "Nursery"
+        },
+        {
+          "use": "closet",
+          "qualifier": "1",
+          "raw": "Closets"
+        },
+        {
+          "use": "closet",
+          "qualifier": "2",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:4",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "nursery",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:1",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:1",
+          "b": "closet:2",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "attic",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "attic",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 1",
+          "raw": "Attic rooms are placed above"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "attic 2",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:attic",
+          "b": "bedroom:attic 2",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:attic",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "low",
+    "adjacency": "low"
+  }
+}

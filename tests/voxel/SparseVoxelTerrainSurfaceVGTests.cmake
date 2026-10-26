@@ -1,0 +1,7 @@
+add_executable(
+  SparseVoxelTerrainSurfaceVGTests
+  ${CMAKE_CURRENT_LIST_DIR}/SparseVoxelTerrainSurfaceVGTests.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/TerrainGenerationPhase0Utils.cpp)
+target_link_libraries(SparseVoxelTerrainSurfaceVGTests PRIVATE Engine)
+add_test(NAME SparseVoxelTerrainSurfaceVGTests COMMAND SparseVoxelTerrainSurfaceVGTests)
+set_tests_properties(SparseVoxelTerrainSurfaceVGTests PROPERTIES LABELS "virtualgeometry;voxel;terrain")

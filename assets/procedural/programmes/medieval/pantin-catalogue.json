@@ -1,0 +1,742 @@
+{
+ "source": "W. A. Pantin, 'Medieval English Town-House Plans', Medieval Archaeology, from buildingsengland.pdf",
+ "note": "Mined from the PDF text layer; the figures still need reading as images.",
+ "types": {
+  "parallel-extended": "I. 'Parallel' type: i. 'Extended' plan",
+  "parallel-contracted": "I. 'Parallel' type: ii. 'Contracted' plan",
+  "parallel-third": "I. 'Parallel' type: iii.",
+  "parallel-courtyard": "I. 'Parallel' type: iv. 'Courtyard' plan",
+  "right-angle-narrow": "II. 'Right-angle' type: i. 'Narrow' plan",
+  "right-angle-broad": "II. 'Right-angle' type: ii. 'Broad' plan"
+ },
+ "houses": [
+  {
+   "number": 2,
+   "name": "Leadenporch House, Deddington, Oxfordshire",
+   "planType": "parallel-extended",
+   "roomsMentioned": [
+    "chamber",
+    "hall",
+    "parlour",
+    "screens_passage",
+    "service_room",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      25,
+      19
+     ],
+     "raw": "tion and an original doorway and window. The central part consists of what was originally an open hall, about 25 ft. by 19 ft., by 29 ft. high, now dividcd by fic"
+    },
+    {
+     "use": "chamber",
+     "feet": [
+      19,
+      18
+     ],
+     "raw": "end, and a servicr- room; on the first floor, over both service-room and screens-passage, is a chamber, about 18 ft. by 19 ft., with an arch-braced roof of two ba"
+    }
+   ]
+  },
+  {
+   "number": 3,
+   "name": "Hill House, Burford",
+   "planType": "parallel-extended",
+   "roomsMentioned": [
+    "buttery",
+    "hall",
+    "kitchen",
+    "parlour",
+    "passage",
+    "screens_passage",
+    "service_room",
+    "solar",
+    "wc"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      31,
+      17
+     ],
+     "raw": "two-part plan, to judge from existing evidence. The southern part consisted originally of an open hall, about 31 ft. by 17 ft., lying parallel with the street, an"
+    }
+   ]
+  },
+  {
+   "number": 4,
+   "name": "Nos. 1-3, Priory Street, Coventry .Is",
+   "planType": "parallel-extended",
+   "roomsMentioned": [
+    "buttery",
+    "chamber",
+    "hall",
+    "pantry",
+    "parlour",
+    "screens_passage",
+    "solar"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 5,
+   "name": "Houses in Church Street, St. Radegund's, Canterbury",
+   "planType": "parallel-extended",
+   "roomsMentioned": [
+    "chamber",
+    "hall",
+    "screens_passage",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      15,
+      6
+     ],
+     "raw": "the street. The western one, no. 3, is a two-part house; the eastern half was an open one-bay hall, about 1 2 6 ft. by 15 ft. (now divided by a floor) ; it had a"
+    }
+   ]
+  },
+  {
+   "number": 6,
+   "name": "Scaplen's Court, Poole, Dorset",
+   "planType": "parallel-extended",
+   "roomsMentioned": [
+    "buttery",
+    "cellar",
+    "chamber",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "pantry",
+    "parlour",
+    "screens_passage",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      23,
+      18
+     ],
+     "raw": "by war-damage. A porch and a screens-passage led from the street to the courtyard. West of this was the hall, 23 ft. by 18 ft., apparently always divided into a l"
+    },
+    {
+     "use": "chamber",
+     "feet": [
+      36,
+      16
+     ],
+     "raw": "ed collar-beam trusses. From this opens a large chamber to the north. The N. range contained a large kitchen, 36 ft. by 16 ft., with a large fireplace at the E. e"
+    }
+   ]
+  },
+  {
+   "number": 8,
+   "name": "Beam Hall, Merton Street, Oxford .I9",
+   "planType": "parallel-extended",
+   "roomsMentioned": [
+    "chamber",
+    "hall",
+    "screens_passage",
+    "solar",
+    "staircase"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      33,
+      18
+     ],
+     "raw": "with the eastern part that we are concerned. This consisted in its original form of a stone-built hall, about 33 ft. long by 18 ft. wide, by c. 16 ft. high (to the wal"
+    },
+    {
+     "use": "hall",
+     "feet": [
+      16,
+      7
+     ],
+     "raw": "55, Spun Street, Coventry (FIG. 70). A timber-framed house of the fifteenth century, consisting of a hall, r 7 ft. wide by 16 ft. long (at ground-floor level), with"
+    }
+   ]
+  },
+  {
+   "number": 10,
+   "name": "No. 85, LU!uch Park Street, Coventry",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "buttery",
+    "cellar",
+    "chamber",
+    "hall",
+    "kitchen",
+    "screens_passage",
+    "solar",
+    "staircase"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      23,
+      16
+     ],
+     "raw": ", on the ground floor; above this is what is i n effect a first-floor hall, used as a court-room; it measures 23 ft. by 16 ft. and has a n open roof of four bays,"
+    }
+   ]
+  },
+  {
+   "number": 14,
+   "name": "Tuckley's Inn, OxfordI'",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "cellar",
+    "court",
+    "hall",
+    "kitchen",
+    "screens_passage",
+    "service_room",
+    "shop"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      33,
+      20
+     ],
+     "raw": "ed by an entry between two of the shops, and consisted of a two-part hall house. T o the W. was a large hall, 33 ft. by 20 ft., with an open 20C. A. R. Radford, T"
+    }
+   ]
+  },
+  {
+   "number": 15,
+   "name": "St. Mary Hall, Oxfordd",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "court",
+    "hall"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 16,
+   "name": "S'icers' Hall, Welsh Back, Bristol.Z4",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "cellar",
+    "chamber",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "parlour",
+    "passage",
+    "screens_passage",
+    "solar",
+    "staircase"
+   ],
+   "dimensioned": [
+    {
+     "use": "solar",
+     "feet": [
+      13,
+      7
+     ],
+     "raw": "idened), two small shops on the ground floor, and solar above. ( 2 ) The back part, the principalis mansio, 2 7 ft. long by 13 ft. wide, probably contained an open ha"
+    }
+   ]
+  },
+  {
+   "number": 18,
+   "name": "Southern part of Marshall's Inn, Cornmarket, Oxford .27",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "court",
+    "hall",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      89,
+      15
+     ],
+     "raw": "treet range contained three shops, with a solar above, 232 ft. by 194 ft.; behind this was a diminutive hall, 89 ft. by 15; ft., presumably reached through one of"
+    }
+   ]
+  },
+  {
+   "number": 19,
+   "name": "Nos. 20-1, Jordan Well, Coventry",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "hall",
+    "screens_passage",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      33,
+      16
+     ],
+     "raw": "ng by 13 ft. deep (on ground floor) increasing to 17 ft. deep (top floor). (2) At the back is the hall range, 33 ft. by 16 ft., of three bays. The two eastern bay"
+    }
+   ]
+  },
+  {
+   "number": 20,
+   "name": "NO.40, Jordan Well, Coventy",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "court",
+    "hall",
+    "passage",
+    "screens_passage",
+    "solar",
+    "staircase"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      45,
+      17
+     ],
+     "raw": "ops. (3) Behind the hall, a t right angles, flanking a narrow courtyard, runs a two-story range of four bays, 45 ft. by 17 ft., later converted into cottages; the"
+    }
+   ]
+  },
+  {
+   "number": 22,
+   "name": "Colston's House, Small Street, Bristol",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "chamber",
+    "court",
+    "hall",
+    "kitchen",
+    "parlour",
+    "passage",
+    "screens_passage",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "court",
+     "feet": [
+      25,
+      18
+     ],
+     "raw": "rn- most range, opening on to the courtyard, was of two stories, containing on each floor a large room, about 25 ft. by 18ft., with a small projection at the NE."
+    }
+   ]
+  },
+  {
+   "number": 23,
+   "name": "Tudor House, Southampton .30",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "buttery",
+    "cellar",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "parlour",
+    "passage",
+    "screens_passage",
+    "solar",
+    "staircase",
+    "wc"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 24,
+   "name": "Northern part of Marshall's Inn, Cornmarket, Oxford .31",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "cellar",
+    "chamber",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "screens_passage",
+    "solar",
+    "staircase"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 25,
+   "name": "House at Bucklersbury, London",
+   "planType": "parallel-contracted",
+   "roomsMentioned": [
+    "buttery",
+    "cellar",
+    "chamber",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "pantry",
+    "parlour",
+    "screens_passage",
+    "shop",
+    "solar",
+    "staircase",
+    "warehouse"
+   ],
+   "dimensioned": [
+    {
+     "use": "shop",
+     "feet": [
+      22,
+      18
+     ],
+     "raw": "as a street range containing on the ground floor a n entry, a 'sotelhouse' (possibly a showroom), and a shop, 22 ft. by 18 ft. (large as medieval shops went); the"
+    },
+    {
+     "use": "hall",
+     "feet": [
+      16,
+      10
+     ],
+     "raw": ", the hall range ; this contained on the ground floor a warehouse (with a cellar below), a large latrine pit (16 ft. by 10 ft.), a wood house and a stable. E. of"
+    }
+   ]
+  },
+  {
+   "number": 26,
+   "name": "Strangers' Hall, Norwich.34",
+   "planType": "parallel-courtyard",
+   "roomsMentioned": [
+    "buttery",
+    "cellar",
+    "chamber",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "pantry",
+    "parlour",
+    "screens_passage",
+    "solar",
+    "wc"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 27,
+   "name": "Courtenaj House, Exeter.35",
+   "planType": "parallel-courtyard",
+   "roomsMentioned": [
+    "buttery",
+    "cellar",
+    "chamber",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "parlour",
+    "passage",
+    "screens_passage",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      30,
+      24
+     ],
+     "raw": "tyard, and behind this the hall range, the main part of the house. I n the centre of this range was the hall, 30 ft. by 24 ft., with a screens-passage at the N. e"
+    }
+   ]
+  },
+  {
+   "number": 28,
+   "name": "Suckling's House, Norwich.36",
+   "planType": "parallel-courtyard",
+   "roomsMentioned": [
+    "buttery",
+    "cellar",
+    "chamber",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "office",
+    "parlour",
+    "passage",
+    "screens_passage",
+    "service_room",
+    "solar",
+    "warehouse"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      28,
+      21
+     ],
+     "raw": "ging to either type of plan. T h i s range was perhaps originally of two parts: (a) the hall, still existing, 28 ft. by 21 ft., has an open roof of two bays, with"
+    }
+   ]
+  },
+  {
+   "number": 29,
+   "name": "The Nag's Head, Wyle Cop, Shrewsbur_v",
+   "planType": "parallel-courtyard",
+   "roomsMentioned": [
+    "court",
+    "hall",
+    "passage",
+    "screens_passage",
+    "service_room",
+    "solar"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 30,
+   "name": "Leche House, Watergate Street, Chester",
+   "planType": "parallel-courtyard",
+   "roomsMentioned": [
+    "cellar",
+    "chamber",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "office",
+    "parlour",
+    "passage",
+    "screens_passage",
+    "service_room",
+    "shop",
+    "solar",
+    "staircase"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 32,
+   "name": "No. 38, North Street, Exeter",
+   "planType": "right-angle-narrow",
+   "roomsMentioned": [
+    "buttery",
+    "court",
+    "gallery",
+    "hall",
+    "kitchen",
+    "passage",
+    "screens_passage",
+    "shop",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "shop",
+     "feet": [
+      25,
+      13
+     ],
+     "raw": "s the original extent of the front part, which evidently always had two stories above the shop. This part was 25 ft. wide by c. 13 ft. deep, increasing to 16 ft. deep on"
+    },
+    {
+     "use": "hall",
+     "feet": [
+      27,
+      25
+     ],
+     "raw": "part was 25 ft. wide by c. 13 ft. deep, increasing to 16 ft. deep on the top floor. Behind this is the hall, 27 ft. by 25 ft. wide, now partly divided by a galle"
+    },
+    {
+     "use": "buttery",
+     "feet": [
+      18,
+      14
+     ],
+     "raw": "or taken out of the back room, the rest being perhaps a buttery. I n the courtyard at the back is a room, c. 18 ft. by 14 ft., which may represent the original k"
+    }
+   ]
+  },
+  {
+   "number": 33,
+   "name": "Canynge's House, Redclife Street, Bristol",
+   "planType": "right-angle-narrow",
+   "roomsMentioned": [
+    "court",
+    "gallery",
+    "hall",
+    "parlour",
+    "passage",
+    "service_room",
+    "shop",
+    "solar"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 34,
+   "name": "The Fox Inn, Low Petergate, York",
+   "planType": "right-angle-narrow",
+   "roomsMentioned": [
+    "gallery",
+    "hall",
+    "passage",
+    "shop",
+    "solar"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 35,
+   "name": "Hampton Court, King's Lynn .41",
+   "planType": "right-angle-narrow",
+   "roomsMentioned": [
+    "buttery",
+    "chamber",
+    "court",
+    "hall",
+    "kitchen",
+    "office",
+    "pantry",
+    "parlour",
+    "shop",
+    "solar",
+    "staircase",
+    "warehouse"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 36,
+   "name": "Stodlgy's Inn, OxJord.@",
+   "planType": "right-angle-broad",
+   "roomsMentioned": [
+    "buttery",
+    "court",
+    "hall",
+    "kitchen",
+    "parlour",
+    "passage",
+    "screens_passage",
+    "solar",
+    "staircase"
+   ],
+   "dimensioned": [
+    {
+     "use": "court",
+     "feet": [
+      33,
+      15
+     ],
+     "raw": "courtyard. O n the E. side of the courtyard, at right angles to the street, was a long narrow building, about 33 ft. by 15 ft., which was probably the hall; at th"
+    }
+   ]
+  },
+  {
+   "number": 37,
+   "name": "The Bridewell, Norwich.43",
+   "planType": "right-angle-broad",
+   "roomsMentioned": [
+    "buttery",
+    "cellar",
+    "court",
+    "hall",
+    "kitchen",
+    "pantry",
+    "parlour",
+    "screens_passage",
+    "solar"
+   ],
+   "dimensioned": []
+  },
+  {
+   "number": 38,
+   "name": "Hall of John Halle, Salisbury",
+   "planType": "right-angle-broad",
+   "roomsMentioned": [
+    "chamber",
+    "court",
+    "hall",
+    "kitchen",
+    "passage",
+    "shop",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      30,
+      18
+     ],
+     "raw": "l at the back, or was used as a separate tenement. The stone-built hall range at the back contains a hall, c. 30 ft. long by c. 18 ft. wide, with an open roof of three ba"
+    }
+   ]
+  },
+  {
+   "number": 39,
+   "name": "House in Church Street, St. Radegund's, Canterbury",
+   "planType": "right-angle-broad",
+   "roomsMentioned": [
+    "hall",
+    "screens_passage",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "hall",
+     "feet": [
+      21,
+      16
+     ],
+     "raw": "is a two- part house, with a two-story solar block at the S. end, and a two-bay hall, which probably measured 21 ft. by 16 ft. before it was curtailed. The constr"
+    }
+   ]
+  },
+  {
+   "number": 40,
+   "name": "No. 7, Church Street, M7incanton.44",
+   "planType": "right-angle-broad",
+   "roomsMentioned": [
+    "buttery",
+    "court",
+    "hall",
+    "kitchen",
+    "passage",
+    "screens_passage",
+    "shop",
+    "solar"
+   ],
+   "dimensioned": [
+    {
+     "use": "passage",
+     "feet": [
+      26,
+      13
+     ],
+     "raw": "ly a few feet longer, the N. gable end projecting into the street. S. of the passage is another long room, c. 13 ft. wide by c. 26 ft. long (now subdivided and modern- iz"
+    }
+   ]
+  }
+ ]
+}

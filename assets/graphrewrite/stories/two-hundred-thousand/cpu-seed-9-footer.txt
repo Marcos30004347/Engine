@@ -1,0 +1,7 @@
+Seed 9. Narration off (--no-text).
+
+-- The end --
+214325 living at the close of 416 weeks.
+Simulation (CPU): 416 ticks in 873.402 s; 2099.523 ms per tick on average, 4979.8 ms for the slowest.
+Programme: 124384 instruction ticks in 833.689 s; 6702.54 us per instruction tick, 299.0 per simulation tick.
+Where it went: match 95%, gather+dice 0%, rewrite 4%.

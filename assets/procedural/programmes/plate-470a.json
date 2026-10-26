@@ -1,0 +1,202 @@
+{
+  "page": 470,
+  "source": "The Builder's Practical Director, Plates 89 and 90, description on PDF page 470",
+  "kind": "country house",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "detached",
+    "plan": "double-pile with back addition",
+    "roof": "gabled",
+    "features": [
+      {
+        "kind": "rag stone walling",
+        "count": 1
+      },
+      {
+        "kind": "freestone quoins",
+        "count": 1
+      },
+      {
+        "kind": "tiled roof",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "A dairy on the ground floor and a bath room upstairs, which is an unusual pairing and a country one. 'If the walls are built of hammered Kentish rag stones in irregular courses, and the quoins of tooled freestone, with the roofs tiled as shown, the cost will not be under 1000 pounds.'",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "the hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "staircase"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing room"
+        },
+        {
+          "use": "parlour",
+          "raw": "Parlour"
+        },
+        {
+          "use": "kitchen",
+          "raw": "Kitchen"
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery"
+        },
+        {
+          "use": "dairy",
+          "raw": "Dairy"
+        },
+        {
+          "use": "pantry",
+          "raw": "Pantry"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "parlour",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "dairy",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "upper floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "four bed rooms, all of a good and convenient size"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "4",
+          "raw": "ditto"
+        },
+        {
+          "use": "bathroom",
+          "raw": "Bath room"
+        },
+        {
+          "use": "wc",
+          "qualifier": "upper",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:4",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bathroom",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:upper",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "low",
+    "adjacency": "low"
+  }
+}

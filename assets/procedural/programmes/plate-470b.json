@@ -1,0 +1,231 @@
+{
+  "page": 470,
+  "source": "The Builder's Practical Director, Plate 91, description on PDF page 470",
+  "kind": "villa residence of considerable pretension",
+  "storeys": 3,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "semi-detached",
+    "plan": "double-pile",
+    "features": [
+      {
+        "kind": "cement coursed to imitate masonry",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "'The two houses are varied in plan, but form one composition in the Elevation' - which is the only place in the corpus where a semi-detached pair is explicitly *not* mirrored. A saloon on the ground floor, which no other design here has. 6000 pounds the pair; the room list is all the description gives.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "The kitchen offices are placed on the Basement"
+        },
+        {
+          "use": "scullery",
+          "raw": "ditto"
+        },
+        {
+          "use": "larder",
+          "raw": "ditto"
+        },
+        {
+          "use": "pantry",
+          "raw": "ditto"
+        },
+        {
+          "use": "cellar",
+          "raw": "ditto"
+        },
+        {
+          "use": "passage",
+          "raw": "the basement passage"
+        },
+        {
+          "use": "staircase",
+          "qualifier": "service",
+          "raw": "the service stair"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "cellar",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "staircase:service",
+          "link": "open"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "qualifier": "entrance",
+          "raw": "the entrance Hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "the principal stair"
+        },
+        {
+          "use": "saloon",
+          "raw": "Saloon"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing Room"
+        },
+        {
+          "use": "dining_room",
+          "raw": "Dining Room"
+        },
+        {
+          "use": "library",
+          "raw": "Library"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall:entrance",
+          "b": "saloon",
+          "link": "open"
+        },
+        {
+          "a": "saloon",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "saloon",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "saloon",
+          "b": "library",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "staircase",
+          "b": "staircase:service",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "upper floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "the Bed and other rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "4",
+          "raw": "ditto"
+        },
+        {
+          "use": "dressing_room",
+          "raw": "other rooms"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:4",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:1",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "medium",
+    "dimensions": "low",
+    "adjacency": "low"
+  }
+}

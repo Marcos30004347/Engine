@@ -1,0 +1,80 @@
+let Character at Location.
+let Character has Object.
+let Character0 neutral towards Character1.
+let Character0 philia towards Character1.
+let Character0 anger towards Character1.
+let Character0 eros towards Character1.
+let Character0 murdered Character1.
+let Character0 married to Character1.
+let Character is unmarried.
+let Character is depressed.
+let Character is suicidal.
+let Character is sleeping.
+let Character is dead.
+let Character is awake.
+let Character is hungry.
+let Character is working.
+let Location is house of Character.
+let Location is work of Character.
+let Location is city of Character.
+
+rule do-form-opinion-like:
+when C at L, C' at L, C neutral towards C'
+then C at L, C' at L, C philia towards C'.
+
+rule do-form-opinion-dislike:
+when C at L, C' at L, C neutral towards C'
+then C at L, C' at L, C anger towards C'.
+
+rule do-compliment-private:
+when C at L, C' at L, C philia towards C'
+then C at L, C' at L, C' philia towards C.
+
+rule do-compliment-witnessed:
+when C at L, C' at L, Witness at L, C philia towards C', Witness anger towards C'
+then C at L, C' at L, Witness at L, C philia towards C', Witness anger towards C', C' philia towards C, Witness anger towards C.
+
+rule do-insult-private:
+when C at L, C' at L, C anger towards C'
+then C at L, C' at L, C anger towards C', C' anger towards C, C' is depressed.
+
+rule do-insult-witnessed:
+when C at L, C' at L, Witness at L, C anger towards C', Witness philia towards C'
+then C at L, C' at L, Witness at L, C anger towards C', Witness philia towards C', C' anger towards C, C' is depressed, Witness anger towards C.
+
+rule mixed-fellings:
+when C at L, C' at L, C philia towards C'
+then C at L, C neutral towards C'.
+
+rule do-wake-up:
+when C is sleeping
+then C is awake, C is hungry.
+
+rule do-cook-meal-at-home:
+when C at L, L is house of C, C is awake, C is hungry
+then C at L, L is house of C, C is awake.
+
+rule do-leave-building:
+when C at H, L is city of C, H is city of C
+then C at L, L is city of C.
+
+rule do-goto-work:
+when C at L, W is work of C
+then C at W, W is work of C.
+
+rule do-start-working:
+when C at L, L is work of C
+then C at L, L is work of C, C is working.
+
+rule do-stop-working:
+when C at L, L is work of C, C is working
+then C at L, L is work of C.
+
+rule do-leave-work:
+when C at L, L is work of C, C is working, H is city of C
+then C at H, L is work of C.
+
+rule do-goto-house:
+when C at L, L is city of C, H is house of C
+then C at H, L is city of C, H is house of C.
+
