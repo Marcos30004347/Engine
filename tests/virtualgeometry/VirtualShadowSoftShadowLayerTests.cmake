@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(VirtualShadowSoftShadowLayerTests)
+get_filename_component(TEST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+add_executable(VirtualShadowSoftShadowLayerTests ${TEST_DIR}/VirtualShadowSoftShadowLayerTests.cpp)
+target_link_libraries(VirtualShadowSoftShadowLayerTests PRIVATE Engine)
+add_test(NAME VirtualShadowSoftShadowLayerTests COMMAND VirtualShadowSoftShadowLayerTests)

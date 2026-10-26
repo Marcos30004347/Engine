@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(GPUSignedDistanceFieldsBuildPassKernelTests)
+get_filename_component(TEST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+add_executable(GPUSignedDistanceFieldsBuildPassKernelTests ${TEST_DIR}/GPUSignedDistanceFieldsBuildPassKernelTests.cpp)
+target_link_libraries(GPUSignedDistanceFieldsBuildPassKernelTests PRIVATE Engine)
+add_dependencies(GPUSignedDistanceFieldsBuildPassKernelTests GPUSignedDistanceFieldsShaders)
+add_test(NAME GPUSignedDistanceFieldsBuildPassKernelTests COMMAND GPUSignedDistanceFieldsBuildPassKernelTests)

@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(VirtualGeometryPageInstallsTests)
+get_filename_component(TEST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+add_executable(VirtualGeometryPageInstallsTests ${TEST_DIR}/VirtualGeometryPageInstallsTests.cpp)
+target_link_libraries(VirtualGeometryPageInstallsTests PRIVATE Engine)
+add_test(NAME VirtualGeometryPageInstallsTests COMMAND VirtualGeometryPageInstallsTests)
+
+add_dependencies(VirtualGeometryPageInstallsTests copy_mesh_assets)

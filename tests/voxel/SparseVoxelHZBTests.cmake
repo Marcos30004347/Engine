@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.14)
+
+add_executable(SparseVoxelHZBTests ${TEST_DIR}/SparseVoxelHZBTests.cpp)
+target_link_libraries(SparseVoxelHZBTests PRIVATE Engine)
+add_dependencies(SparseVoxelHZBTests SparseVoxelRasterShaders)
+add_dependencies(SparseVoxelHZBTests wgsl_virtualgeometry_depth_reduce_to_pot)
+add_dependencies(SparseVoxelHZBTests wgsl_virtualgeometry_depth_pyramid_spd)
+add_dependencies(SparseVoxelHZBTests wgsl_virtualgeometry_depth_pyramid_spd_source_depth)
+
+add_test(NAME SparseVoxelSharedHZBG20Tests COMMAND SparseVoxelHZBTests)
+set_tests_properties(SparseVoxelSharedHZBG20Tests PROPERTIES LABELS "svraster.g20;svraster.m3;gpu")
