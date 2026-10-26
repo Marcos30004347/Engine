@@ -1,0 +1,337 @@
+{
+  "page": 455,
+  "source": "The Builder's Practical Director, 'Design for semi-detached town houses': front elevation and ground plan on PDF page 463, basement and first floor plans on PDF page 455",
+  "kind": "semi-detached town house",
+  "storeys": 2,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "double-pile",
+    "features": [
+      {
+        "kind": "front area",
+        "count": 2
+      },
+      {
+        "kind": "back area",
+        "count": 2
+      },
+      {
+        "kind": "area steps",
+        "count": 4
+      },
+      {
+        "kind": "paired entrance",
+        "count": 1
+      },
+      {
+        "kind": "rusticated ground",
+        "count": 1
+      },
+      {
+        "kind": "arched window",
+        "count": 8
+      }
+    ]
+  },
+  "notes": "A mirrored pair with the two entrances paired in the middle under one arched centrepiece, so the two houses read as one. Three floors of two rooms over a basement of offices, and the drawing room, the back bedroom and the kitchen all 19'6 by 16, stacked. Two areas: one in front carrying the coal and wine cellars and the water closet, one behind the scullery.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            19.5,
+            16
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER"
+        },
+        {
+          "use": "closet",
+          "qualifier": "store",
+          "raw": "STORE CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the store",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the kitchen",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "housemaid's",
+          "raw": "HOUSEMAIDS CLOSET, beside the stair"
+        },
+        {
+          "use": "area",
+          "qualifier": "back",
+          "raw": "AREA, with steps up, behind the scullery"
+        },
+        {
+          "use": "area",
+          "qualifier": "front",
+          "raw": "AREA, with steps up, in front"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "COAL CELLAR"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "wine",
+          "raw": "WINE CELLAR"
+        },
+        {
+          "use": "wc",
+          "qualifier": "basement",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "staircase",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "closet:housemaid's",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "closet:by the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "closet:store",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "closet:by the store",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "area:back",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "area:front",
+          "link": "door"
+        },
+        {
+          "a": "area:front",
+          "b": "cellar:coal",
+          "link": "door"
+        },
+        {
+          "a": "area:front",
+          "b": "cellar:wine",
+          "link": "door"
+        },
+        {
+          "a": "area:front",
+          "b": "wc:basement",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "qualifier": "entrance",
+          "raw": "ENTRANCE HALL"
+        },
+        {
+          "use": "hall",
+          "raw": "HALL"
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn in the hall"
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            19.5,
+            16
+          ]
+        },
+        {
+          "use": "lobby",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall:entrance",
+          "b": "hall",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "lobby",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "wc",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "BED ROOM",
+          "feet": [
+            15.25,
+            15.25
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM",
+          "feet": [
+            19.5,
+            16
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "DRESSING ROOM"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "first floor",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "wc",
+          "qualifier": "first floor",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "lobby:first floor",
+          "link": "door"
+        },
+        {
+          "a": "lobby:first floor",
+          "b": "wc:first floor",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:back",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

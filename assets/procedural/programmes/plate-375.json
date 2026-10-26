@@ -1,0 +1,422 @@
+{
+  "page": 375,
+  "source": "The Builder's Practical Director, 'Design for an Italian villa', ground and first floor plans on PDF page 375, drawn by E. L. Tarbuck",
+  "kind": "Italian villa",
+  "storeys": 3,
+  "basement": true,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile with a conservatory",
+    "frontageFeet": 70,
+    "features": [
+      {
+        "kind": "conservatory",
+        "count": 1
+      },
+      {
+        "kind": "terrace",
+        "count": 2
+      },
+      {
+        "kind": "canted bay",
+        "count": 4
+      },
+      {
+        "kind": "seat on the terrace",
+        "count": 4
+      },
+      {
+        "kind": "service wing",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "The plate states the frontage itself: 70 feet. The three principal rooms open onto a terrace along the garden front and the first floor repeats it with a balcony terrace over. Symmetrical about a central hall and stair, with a corridor to the west chambers and a passage to the east, and a dressing room and water closet to each pair. A boudoir - the only one in the corpus. Only the ground and first floors are drawn; the plate marks a stair to a second floor that is not.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "HALL"
+        },
+        {
+          "use": "hall",
+          "qualifier": "inner",
+          "raw": "INNER HALL"
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn in the hall"
+        },
+        {
+          "use": "staircase",
+          "qualifier": "cellar",
+          "raw": "TO CELLARS"
+        },
+        {
+          "use": "passage",
+          "raw": "PASSAGE"
+        },
+        {
+          "use": "lobby",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM, with a canted bay",
+          "feet": [
+            18,
+            15
+          ]
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM, with a canted bay",
+          "feet": [
+            18,
+            18
+          ]
+        },
+        {
+          "use": "library",
+          "qualifier": "or breakfast parlour",
+          "raw": "BREAKFAST PARLOR OR LIBRARY",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "conservatory",
+          "raw": "CONSERVATORY"
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN, with a DRESSER",
+          "feet": [
+            20.75,
+            15.25
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            18.25,
+            10
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER"
+        },
+        {
+          "use": "closet",
+          "qualifier": "store",
+          "raw": "STORE CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the wc",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "wc",
+          "raw": "W.C."
+        },
+        {
+          "use": "yard",
+          "qualifier": "terrace",
+          "raw": "TERRACE, with a SEAT at each end"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "hall:inner",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "yard:terrace",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase:cellar",
+          "link": "door"
+        },
+        {
+          "a": "hall:inner",
+          "b": "library:or breakfast parlour",
+          "link": "door"
+        },
+        {
+          "a": "hall:inner",
+          "b": "passage",
+          "link": "open"
+        },
+        {
+          "a": "library:or breakfast parlour",
+          "b": "conservatory",
+          "link": "open"
+        },
+        {
+          "a": "passage",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "closet:store",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "lobby",
+          "link": "door"
+        },
+        {
+          "a": "wc",
+          "b": "closet:by the wc",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "drawing_room",
+          "b": "yard:terrace",
+          "link": "door"
+        },
+        {
+          "a": "dining_room",
+          "b": "yard:terrace",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "passage",
+          "qualifier": "corridor",
+          "raw": "CORRIDOR"
+        },
+        {
+          "use": "passage",
+          "qualifier": "chamber",
+          "raw": "PASSAGE"
+        },
+        {
+          "use": "staircase",
+          "qualifier": "second",
+          "raw": "TO SECOND FLOOR"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the drawing room",
+          "raw": "BED ROOM",
+          "feet": [
+            18,
+            18
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the dining room",
+          "raw": "BED ROOM",
+          "feet": [
+            18,
+            18
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the library",
+          "raw": "BED ROOM",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "boudoir",
+          "raw": "BOUDOIR",
+          "feet": [
+            15.25,
+            11.25
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "west",
+          "raw": "DRESSING ROOM",
+          "feet": [
+            10.5,
+            10.5
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "east",
+          "raw": "DRESSING ROOM",
+          "feet": [
+            10.5,
+            10.5
+          ]
+        },
+        {
+          "use": "wc",
+          "qualifier": "west",
+          "raw": "W C"
+        },
+        {
+          "use": "wc",
+          "qualifier": "east",
+          "raw": "W C"
+        },
+        {
+          "use": "closet",
+          "qualifier": "between the water closets",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "yard",
+          "qualifier": "upper terrace",
+          "raw": "TERRACE, with a SEAT at each end"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "passage:corridor",
+          "link": "open"
+        },
+        {
+          "a": "landing",
+          "b": "passage:chamber",
+          "link": "open"
+        },
+        {
+          "a": "landing",
+          "b": "staircase:second",
+          "link": "open"
+        },
+        {
+          "a": "landing",
+          "b": "yard:upper terrace",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "bedroom:over the drawing room",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "bedroom:over the library",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "dressing_room:west",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "wc:west",
+          "link": "door"
+        },
+        {
+          "a": "passage:corridor",
+          "b": "closet:between the water closets",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber",
+          "b": "bedroom:over the dining room",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber",
+          "b": "boudoir",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber",
+          "b": "dressing_room:east",
+          "link": "door"
+        },
+        {
+          "a": "passage:chamber",
+          "b": "wc:east",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:over the library",
+          "b": "dressing_room:west",
+          "link": "door"
+        },
+        {
+          "a": "boudoir",
+          "b": "dressing_room:east",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

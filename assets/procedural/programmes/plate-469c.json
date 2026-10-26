@@ -1,0 +1,199 @@
+{
+  "page": 469,
+  "source": "The Builder's Practical Director, Plate 88: front elevation and ground plan on PDF page 415, description on PDF page 469",
+  "kind": "model cottage, all on one level",
+  "storeys": 1,
+  "basement": false,
+  "floorsDrawn": [
+    0
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "rectangle with a back wing",
+    "roof": "gabled",
+    "features": [
+      {
+        "kind": "gable",
+        "count": 2
+      },
+      {
+        "kind": "gothic arch door",
+        "count": 2
+      },
+      {
+        "kind": "porch",
+        "count": 2
+      },
+      {
+        "kind": "loft in the roof",
+        "count": 1
+      },
+      {
+        "kind": "cistern",
+        "count": 1
+      },
+      {
+        "kind": "central stack",
+        "count": 2
+      }
+    ]
+  },
+  "notes": "'In this design the rooms are all on one level as they will occasionally be preferred by many.' The minimum the book argues for a labouring family - a living room, a scullery and three bedrooms, one for the parents, one for the boys, one for the girls - with the loft and the cistern in the roof. A mirrored pair, one half transcribed. The plate prints dimensions but the scan of it is a coarse halftone and they cannot be read with confidence, so none are recorded. Gothic, stone preferable; 250 pounds the pair.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "porch",
+          "raw": "PORCH"
+        },
+        {
+          "use": "living_room",
+          "raw": "LIVING ROOM"
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY, with a COPPER, a SINK and an OVEN"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "BED ROOM"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "side",
+          "raw": "BED ROOM"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM"
+        },
+        {
+          "use": "pantry",
+          "raw": "PANTRY"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "front",
+          "raw": "LOBBY, between the living room and the pantry"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "back",
+          "raw": "LOBBY, at the water closet"
+        },
+        {
+          "use": "closet",
+          "raw": "CLOSET, off the scullery"
+        },
+        {
+          "use": "store",
+          "qualifier": "coals and wood",
+          "raw": "COALS & WOOD"
+        },
+        {
+          "use": "store",
+          "qualifier": "dust",
+          "raw": "DUST"
+        },
+        {
+          "use": "wc",
+          "raw": "W.C."
+        },
+        {
+          "use": "store",
+          "qualifier": "loft",
+          "raw": "In the roof a loft or store room may be placed"
+        },
+        {
+          "use": "store",
+          "qualifier": "cistern",
+          "raw": "a cistern, to supply W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "bedroom:side",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "lobby:front",
+          "link": "door"
+        },
+        {
+          "a": "lobby:front",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "lobby:front",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "closet",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "lobby:back",
+          "link": "door"
+        },
+        {
+          "a": "lobby:back",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "lobby:back",
+          "b": "store:dust",
+          "link": "door"
+        },
+        {
+          "a": "lobby:back",
+          "b": "store:coals and wood",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "store:loft",
+          "link": "open"
+        },
+        {
+          "a": "store:loft",
+          "b": "store:cistern",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "none",
+    "adjacency": "medium"
+  }
+}

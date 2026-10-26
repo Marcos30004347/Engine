@@ -1,0 +1,282 @@
+{
+  "page": 295,
+  "source": "The Builder's Practical Director, ground and first floor plans on PDF page 295; the plate title is cropped by the scan",
+  "kind": "town house",
+  "storeys": 4,
+  "basement": true,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "detached",
+    "plan": "double-pile with back wing",
+    "features": [
+      {
+        "kind": "veranda",
+        "count": 1
+      },
+      {
+        "kind": "garden steps",
+        "count": 1
+      },
+      {
+        "kind": "seat in the hall",
+        "count": 1
+      },
+      {
+        "kind": "seat in the verandah",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Two rooms to a floor either side of a central hall and stair, with the kitchen in a back wing and a verandah off the drawing room into the garden. The plate states the storey count itself: 'THE SECOND AND THIRD FLOORS TO BE SIMILAR TO THE FIRST FLOOR', so four floors over coal and wine cellars reached by steps from the hall - and the second and third are not transcribed, because repeating the first is an instruction to the builder and not a drawn plan.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "HALL, with a SEAT"
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn at the head of the hall"
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING-ROOM, with a SIDEBOARD recess and a closet either side",
+          "feet": [
+            18,
+            15
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING-ROOM",
+          "feet": [
+            18,
+            15
+          ]
+        },
+        {
+          "use": "veranda",
+          "raw": "VERANDAH, with a SEAT, between the drawing room and the garden"
+        },
+        {
+          "use": "lobby",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN, with a DRESSER",
+          "feet": [
+            18,
+            15
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            10.5,
+            10
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER"
+        },
+        {
+          "use": "closet",
+          "qualifier": "brooms",
+          "raw": "BROOMS &c"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        },
+        {
+          "use": "staircase",
+          "qualifier": "cellar",
+          "raw": "STEPS TO COAL & WINE CELLARS"
+        },
+        {
+          "use": "closet",
+          "qualifier": "dining left",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "dining right",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "yard",
+          "qualifier": "garden",
+          "raw": "GARDEN"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "lobby",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase:cellar",
+          "link": "door"
+        },
+        {
+          "a": "drawing_room",
+          "b": "veranda",
+          "link": "door"
+        },
+        {
+          "a": "veranda",
+          "b": "yard:garden",
+          "link": "open"
+        },
+        {
+          "a": "lobby",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "closet:brooms",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "dining_room",
+          "b": "closet:dining left",
+          "link": "door"
+        },
+        {
+          "a": "dining_room",
+          "b": "closet:dining right",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "left",
+          "raw": "BED-ROOM",
+          "feet": [
+            18,
+            13.33
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "right",
+          "raw": "BED-ROOM",
+          "feet": [
+            18,
+            13.33
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "DRESSING-ROOM",
+          "feet": [
+            9,
+            9.5
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "landing",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "wc",
+          "qualifier": "first floor",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:left",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:right",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:landing",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:first floor",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

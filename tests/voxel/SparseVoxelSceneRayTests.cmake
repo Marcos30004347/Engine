@@ -1,0 +1,6 @@
+add_executable(SparseVoxelSceneRayTests ${TEST_DIR}/SparseVoxelSceneRayTests.cpp)
+target_link_libraries(SparseVoxelSceneRayTests PRIVATE Engine)
+add_dependencies(SparseVoxelSceneRayTests SparseVoxelRasterShaders)
+
+add_test(NAME SparseVoxelSceneRayABIContractTests COMMAND SparseVoxelSceneRayTests)
+set_tests_properties(SparseVoxelSceneRayABIContractTests PROPERTIES LABELS "svraster.scene-rays;cpu")

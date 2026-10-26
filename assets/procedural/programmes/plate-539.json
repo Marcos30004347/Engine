@@ -1,0 +1,440 @@
+{
+  "page": 539,
+  "source": "The Builder's Practical Director, Plates 98, 99 and 100: ground and first floor plans on PDF page 539, description ending on PDF page 497",
+  "kind": "mansion in the Old English style",
+  "storeys": 3,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "two corridors crossing, with a tower",
+    "roof": "gabled",
+    "features": [
+      {
+        "kind": "tower",
+        "count": 1
+      },
+      {
+        "kind": "octagonal bay",
+        "count": 2
+      },
+      {
+        "kind": "bay window",
+        "count": 3
+      },
+      {
+        "kind": "conservatory",
+        "count": 1
+      },
+      {
+        "kind": "lead cresting",
+        "count": 1
+      },
+      {
+        "kind": "copper vane",
+        "count": 1
+      },
+      {
+        "kind": "gothic doorway",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "The only octagonal rooms in the corpus, and they are in the tower: 'The octagonal Breakfast Parlour and Bed rooms above in the Tower have windows commanding views in several directions; and the Bay windows in the other apartments are similarly advantageous.' Both are seventeen feet across, recorded as 17 by 17 because a diameter is what the plate prints and an octagon has no long side. Planned on two corridors crossing, with a conservatory in the angle between them. Walls of limestone faced with hammered stones in irregular courses pointed with blue mortar, quoins of Caen or Bath, grey slates, the cresting to the tower of lead and the vanes of copper. 3500 pounds.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "HALL"
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn in the hall"
+        },
+        {
+          "use": "passage",
+          "qualifier": "north corridor",
+          "raw": "CORRIDOR, along the polite front"
+        },
+        {
+          "use": "passage",
+          "qualifier": "south corridor",
+          "raw": "CORRIDOR, across the middle of the house"
+        },
+        {
+          "use": "library",
+          "raw": "LIBRARY",
+          "feet": [
+            15,
+            13
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING-ROOM",
+          "feet": [
+            18.5,
+            15
+          ]
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING-ROOM",
+          "feet": [
+            18,
+            15
+          ]
+        },
+        {
+          "use": "breakfast_room",
+          "qualifier": "octagon",
+          "raw": "BREAKFAST PARLOR, 17 feet diameter and octagonal",
+          "feet": [
+            17,
+            17
+          ]
+        },
+        {
+          "use": "conservatory",
+          "raw": "CONSERVATORY"
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            18.5,
+            15
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            18.5,
+            12
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "larder",
+          "raw": "LOBBY, at the larder"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "kitchen",
+          "raw": "LOBBY, at the kitchen"
+        },
+        {
+          "use": "cellar",
+          "raw": "CELLARS"
+        },
+        {
+          "use": "wc",
+          "raw": "W C"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "library",
+          "raw": "LOBBY, at the library"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the hall",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the breakfast parlour",
+          "raw": "CLOSET"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "breakfast_room:octagon",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "passage:south corridor",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "closet:by the hall",
+          "link": "door"
+        },
+        {
+          "a": "breakfast_room:octagon",
+          "b": "closet:by the breakfast parlour",
+          "link": "door"
+        },
+        {
+          "a": "passage:south corridor",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "passage:south corridor",
+          "b": "conservatory",
+          "link": "door"
+        },
+        {
+          "a": "passage:south corridor",
+          "b": "cellar",
+          "link": "door"
+        },
+        {
+          "a": "passage:south corridor",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:south corridor",
+          "b": "passage:north corridor",
+          "link": "open"
+        },
+        {
+          "a": "passage:north corridor",
+          "b": "library",
+          "link": "door"
+        },
+        {
+          "a": "passage:north corridor",
+          "b": "lobby:library",
+          "link": "door"
+        },
+        {
+          "a": "passage:north corridor",
+          "b": "conservatory",
+          "link": "door"
+        },
+        {
+          "a": "lobby:library",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "conservatory",
+          "b": "lobby:larder",
+          "link": "door"
+        },
+        {
+          "a": "lobby:larder",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "lobby:larder",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "lobby:kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "passage",
+          "qualifier": "upper north corridor",
+          "raw": "CORRIDOR"
+        },
+        {
+          "use": "passage",
+          "qualifier": "upper south corridor",
+          "raw": "CORRIDOR"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the library",
+          "raw": "BED-ROOM",
+          "feet": [
+            15,
+            13
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the drawing room",
+          "raw": "BED-ROOM",
+          "feet": [
+            18,
+            15.25
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "BED ROOM",
+          "feet": [
+            18,
+            12.75
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "octagon",
+          "raw": "BED-ROOM, 17 feet diameter and octagonal, over the breakfast parlour",
+          "feet": [
+            17,
+            17
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "larger",
+          "raw": "DRESSING-ROOM",
+          "feet": [
+            15.25,
+            8.25
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "smaller",
+          "raw": "DRESSING-ROOM",
+          "feet": [
+            15.25,
+            5.25
+          ]
+        },
+        {
+          "use": "wc",
+          "qualifier": "north",
+          "raw": "W C"
+        },
+        {
+          "use": "wc",
+          "qualifier": "east",
+          "raw": "W C"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the east bedroom",
+          "raw": "CLOSET"
+        },
+        {
+          "use": "closet",
+          "qualifier": "by the octagon",
+          "raw": "CLOSET"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "passage:upper south corridor",
+          "link": "open"
+        },
+        {
+          "a": "passage:upper south corridor",
+          "b": "passage:upper north corridor",
+          "link": "open"
+        },
+        {
+          "a": "passage:upper north corridor",
+          "b": "bedroom:over the library",
+          "link": "door"
+        },
+        {
+          "a": "passage:upper north corridor",
+          "b": "dressing_room:larger",
+          "link": "door"
+        },
+        {
+          "a": "passage:upper north corridor",
+          "b": "dressing_room:smaller",
+          "link": "door"
+        },
+        {
+          "a": "passage:upper north corridor",
+          "b": "wc:north",
+          "link": "door"
+        },
+        {
+          "a": "passage:upper south corridor",
+          "b": "bedroom:over the drawing room",
+          "link": "door"
+        },
+        {
+          "a": "passage:upper south corridor",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:upper south corridor",
+          "b": "wc:east",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:octagon",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:over the kitchen",
+          "b": "closet:by the east bedroom",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:octagon",
+          "b": "closet:by the octagon",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:over the library",
+          "b": "dressing_room:larger",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

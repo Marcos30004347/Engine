@@ -1,0 +1,247 @@
+{
+  "page": 518,
+  "source": "The Builder's Practical Director, Plates 119 and 120, description on PDF page 518",
+  "kind": "suburban residence",
+  "storeys": 2,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "semi-detached",
+    "plan": "double-pile"
+  },
+  "notes": "A room list with no dimensions. The servants' room is in the basement with the kitchen, which is where this class of house puts it, and the ground floor has an 'Extra Room' the description declines to name.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "Kitchen"
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "servants'",
+          "raw": "Servants' Room"
+        },
+        {
+          "use": "pantry",
+          "raw": "Pantry"
+        },
+        {
+          "use": "closet",
+          "qualifier": "basement",
+          "raw": "Closets"
+        },
+        {
+          "use": "wc",
+          "qualifier": "basement",
+          "raw": "W. C."
+        },
+        {
+          "use": "cellar",
+          "raw": "Cellar"
+        },
+        {
+          "use": "passage",
+          "qualifier": "basement",
+          "raw": "the basement passage"
+        },
+        {
+          "use": "staircase",
+          "raw": "the stair"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage:basement",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:basement",
+          "b": "bedroom:servants'",
+          "link": "door"
+        },
+        {
+          "a": "passage:basement",
+          "b": "cellar",
+          "link": "door"
+        },
+        {
+          "a": "passage:basement",
+          "b": "closet:basement",
+          "link": "door"
+        },
+        {
+          "a": "passage:basement",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc:basement",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "Hall"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing Room"
+        },
+        {
+          "use": "dining_room",
+          "raw": "Dining Room"
+        },
+        {
+          "use": "study",
+          "qualifier": "extra room",
+          "raw": "Extra Room"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "study:extra room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "three Bed Rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto"
+        },
+        {
+          "use": "dressing_room",
+          "raw": "Dressing Room"
+        },
+        {
+          "use": "wc",
+          "qualifier": "chamber",
+          "raw": "W. C."
+        },
+        {
+          "use": "closet",
+          "qualifier": "chamber",
+          "raw": "Closets"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:chamber",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:chamber",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:1",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "none",
+    "adjacency": "low"
+  }
+}

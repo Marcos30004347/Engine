@@ -1,0 +1,148 @@
+{
+  "page": 27,
+  "source": "The Builder's Practical Director, PDF page 27 (basement plan and elevation)",
+  "kind": "semi-detached villa",
+  "storeys": 2,
+  "basement": true,
+  "floorsDrawn": [
+    -1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "double-pile",
+    "roof": "hipped",
+    "features": [
+      {
+        "kind": "area",
+        "count": 2
+      },
+      {
+        "kind": "coal shoot",
+        "count": 1
+      },
+      {
+        "kind": "bracketed eaves",
+        "count": 1
+      },
+      {
+        "kind": "entrance steps",
+        "count": 2
+      }
+    ]
+  },
+  "notes": "A mirrored semi-detached pair; one half transcribed. Only the basement plan is drawn - the elevation shows two storeys over it, so the ground and first floors exist but their rooms are not on this plate.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            13,
+            13
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            18,
+            13
+          ]
+        },
+        {
+          "use": "cellar",
+          "qualifier": "beer",
+          "raw": "BEER CELLAR",
+          "feet": [
+            9,
+            7
+          ]
+        },
+        {
+          "use": "cellar",
+          "qualifier": "wine",
+          "raw": "WINE CELLAR",
+          "feet": [
+            12,
+            5
+          ]
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "COAL CELLAR"
+        },
+        {
+          "use": "larder",
+          "qualifier": "and dairy",
+          "raw": "LARDER AND DAIRY",
+          "feet": [
+            16,
+            12.5
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "W.C."
+        },
+        {
+          "use": "area",
+          "raw": "AREA"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "area",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "area",
+          "link": "door"
+        },
+        {
+          "a": "cellar:beer",
+          "b": "cellar:wine",
+          "link": "door"
+        },
+        {
+          "a": "area",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

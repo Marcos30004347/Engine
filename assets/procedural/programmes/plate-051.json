@@ -1,0 +1,103 @@
+{
+  "page": 51,
+  "source": "The Builder's Practical Director, Plate 32, PDF page 51; specification of works on PDF pages 45 and 46",
+  "kind": "labourer's cottage",
+  "storeys": 1,
+  "basement": false,
+  "floorsDrawn": [
+    0
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "rectangle",
+    "roof": "hipped",
+    "features": [
+      {
+        "kind": "central stack",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "One storey under a hipped roof; the whole house is on the plate. Planned around a central stack carrying the oven, with the living room as the entrance and the hub. The specification calls it 'one labourer's cottage of five rooms, upon the ground-floor' and confirms the central stack: 'erect oven in middle of flues (as shewn in plan)'. It ends with the economics, which are the reason the design exists: 'This comfortable, convenient, and snug little residence, with the addition of about 30 poles of land, may be built to pay six per cent. upon the outlay, including rent of the land, by letting it at a rent of only two shillings per week.'",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "living_room",
+          "raw": "Living-room",
+          "feet": [
+            12,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "family",
+          "raw": "Family Bed room",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "girls",
+          "raw": "Girls-room",
+          "feet": [
+            10,
+            9
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "boys",
+          "raw": "Boys-room",
+          "feet": [
+            10,
+            7
+          ]
+        },
+        {
+          "use": "washhouse",
+          "raw": "Washhouse",
+          "feet": [
+            10,
+            6
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "living_room",
+          "b": "bedroom:family",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "washhouse",
+          "link": "door"
+        },
+        {
+          "a": "washhouse",
+          "b": "bedroom:girls",
+          "link": "door"
+        },
+        {
+          "a": "washhouse",
+          "b": "bedroom:boys",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "low"
+  }
+}

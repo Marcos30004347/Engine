@@ -1,0 +1,182 @@
+{
+  "page": 498,
+  "source": "The Builder's Practical Director, Plates 101 and 102, description on PDF pages 497 and 498",
+  "kind": "six-roomed cottage",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "semi-detached",
+    "plan": "rectangle with back addition",
+    "roof": "gabled",
+    "features": [
+      {
+        "kind": "bay window",
+        "count": 1
+      },
+      {
+        "kind": "gable",
+        "count": 2
+      }
+    ]
+  },
+  "notes": "'Small but convenient cottages, also in the Gothic style of architecture. They may be erected of either stone or brick according to the proposed locality.' Not a room is measured. The description comes with the book's argument against stone for cottages, quoted from a report on the condition of the labouring population: stone 'is the very worst material possible for the purpose' because it conducts heat and condenses the moisture of the room onto its own inner face, 'just as the windows steam on a frosty morning'. 500 pounds the two.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "passage",
+          "qualifier": "entrance",
+          "raw": "an Entrance Passage"
+        },
+        {
+          "use": "staircase",
+          "raw": "the Staircase"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C., under the Staircase"
+        },
+        {
+          "use": "closet",
+          "qualifier": "under the stairs",
+          "raw": "Closet under the Staircase"
+        },
+        {
+          "use": "parlour",
+          "raw": "Parlour, with bay window"
+        },
+        {
+          "use": "kitchen",
+          "raw": "Kitchen"
+        },
+        {
+          "use": "scullery",
+          "raw": "Scullery"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "Coal Cellar"
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage:entrance",
+          "b": "parlour",
+          "link": "door"
+        },
+        {
+          "a": "passage:entrance",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:entrance",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "staircase",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "closet:under the stairs",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "three Bed Rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "large",
+          "raw": "a large Closet"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:large",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "none",
+    "adjacency": "medium"
+  }
+}

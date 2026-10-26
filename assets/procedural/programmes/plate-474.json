@@ -1,0 +1,522 @@
+{
+  "page": 474,
+  "source": "The Builder's Practical Director, Plates 94, 95 and 96, description on PDF page 474",
+  "kind": "Italian villa with a tower",
+  "storeys": 3,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0,
+    1,
+    2,
+    3
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile with a tower and a service wing",
+    "roof": "curved with a lantern",
+    "features": [
+      {
+        "kind": "tower",
+        "count": 1
+      },
+      {
+        "kind": "lantern",
+        "count": 1
+      },
+      {
+        "kind": "terrace",
+        "count": 2
+      },
+      {
+        "kind": "bay window",
+        "count": 2
+      },
+      {
+        "kind": "conservatory",
+        "count": 1
+      },
+      {
+        "kind": "zinc roof",
+        "count": 1
+      },
+      {
+        "kind": "ornamental ventilator",
+        "count": 2
+      }
+    ]
+  },
+  "notes": "The fullest adjacency description in the book and the only design with a tower: 'the tower is a prominent feature, but, as will be perceived, it is not a mere adjunct, but forms an intimate portion of the mansion itself.' Every door below is stated in the prose, which is why the adjacency confidence is high and the dimension confidence is nothing - not one room is measured. Two things worth having: the lobby under the stairs exists so servants can get from the kitchen to the dining room without crossing the hall, and the proprietor's suite is shut off from the rest of the first floor by a single door - 'A desirable privacy is thus obtained, and the windows of these rooms command views on three sides of the house.' Two servants' bedrooms may be added by carrying up the storey at the rear. The tower room is reached by a narrow stair cut out of the bedroom below it, and the lantern over the curved roof is there to ventilate the smoking room. 3000 pounds.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": -1,
+      "name": "cellarage",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "cellar",
+          "raw": "the Cellarage"
+        },
+        {
+          "use": "staircase",
+          "qualifier": "cellar",
+          "raw": "A Staircase leads from the Kitchen passage to the Cellarage"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "staircase:cellar",
+          "b": "cellar",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "yard",
+          "qualifier": "terrace",
+          "raw": "A Terrace in the principal front"
+        },
+        {
+          "use": "hall",
+          "raw": "a spacious Hall"
+        },
+        {
+          "use": "hall",
+          "qualifier": "inner",
+          "raw": "an Inner Hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "the Staircase"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "under the stairs",
+          "raw": "The lobby under the stairs, convenient to the servants going from the Kitchen to the Dining Room"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing room, with a large bay window"
+        },
+        {
+          "use": "dining_room",
+          "raw": "Dining room, with a large bay window"
+        },
+        {
+          "use": "library",
+          "qualifier": "or breakfast parlour",
+          "raw": "the Breakfast Parlor or Library, at the side of the house"
+        },
+        {
+          "use": "conservatory",
+          "raw": "the Conservatory"
+        },
+        {
+          "use": "passage",
+          "qualifier": "offices",
+          "raw": "the passage to the Kitchen Offices and Cellars"
+        },
+        {
+          "use": "kitchen",
+          "raw": "The Kitchen, spacious and well lighted"
+        },
+        {
+          "use": "scullery",
+          "raw": "a Scullery beyond it"
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        },
+        {
+          "use": "store",
+          "raw": "Store"
+        },
+        {
+          "use": "closet",
+          "qualifier": "housemaid's",
+          "raw": "Housemaid's"
+        },
+        {
+          "use": "wc",
+          "qualifier": "offices first",
+          "raw": "two Water Closets"
+        },
+        {
+          "use": "wc",
+          "qualifier": "offices second",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "yard:terrace",
+          "b": "hall",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "hall:inner",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "passage:offices",
+          "link": "door"
+        },
+        {
+          "a": "hall:inner",
+          "b": "library:or breakfast parlour",
+          "link": "door"
+        },
+        {
+          "a": "hall:inner",
+          "b": "conservatory",
+          "link": "door"
+        },
+        {
+          "a": "hall:inner",
+          "b": "passage:offices",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "lobby:under the stairs",
+          "link": "open"
+        },
+        {
+          "a": "lobby:under the stairs",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "lobby:under the stairs",
+          "b": "passage:offices",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "store",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "closet:housemaid's",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "wc:offices first",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "wc:offices second",
+          "link": "door"
+        },
+        {
+          "a": "passage:offices",
+          "b": "staircase:cellar",
+          "link": "open"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "the capacious landing of the Staircase"
+        },
+        {
+          "use": "yard",
+          "qualifier": "upper terrace",
+          "raw": "a Terrace opening out of the landing"
+        },
+        {
+          "use": "passage",
+          "qualifier": "private suite",
+          "raw": "their passage, separated from the other portion of the house by a door"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "proprietor's",
+          "raw": "the suite of Bed and Dressing Rooms, Boudoir and W. C. appropriated to the proprietor and his lady"
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "proprietor's",
+          "raw": "ditto"
+        },
+        {
+          "use": "boudoir",
+          "raw": "Boudoir"
+        },
+        {
+          "use": "wc",
+          "qualifier": "proprietor's",
+          "raw": "W. C."
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second",
+          "raw": "Two Bed rooms also placed on this floor"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "third",
+          "raw": "ditto"
+        },
+        {
+          "use": "dressing_room",
+          "qualifier": "second",
+          "raw": "one Dressing room"
+        },
+        {
+          "use": "wc",
+          "qualifier": "extra",
+          "raw": "an extra W. C."
+        },
+        {
+          "use": "closet",
+          "qualifier": "large",
+          "raw": "large Closet"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "yard:upper terrace",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "passage:private suite",
+          "link": "door"
+        },
+        {
+          "a": "passage:private suite",
+          "b": "bedroom:proprietor's",
+          "link": "door"
+        },
+        {
+          "a": "passage:private suite",
+          "b": "boudoir",
+          "link": "door"
+        },
+        {
+          "a": "passage:private suite",
+          "b": "wc:proprietor's",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:proprietor's",
+          "b": "dressing_room:proprietor's",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:second",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:third",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:extra",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:large",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:second",
+          "b": "dressing_room:second",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "second floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "second",
+          "raw": "the landing above"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "upper 1",
+          "raw": "space for six Bed rooms, besides closets"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "upper 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "upper 3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "upper 4",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "upper 5",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "upper 6",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "upper 1",
+          "raw": "closets"
+        },
+        {
+          "use": "closet",
+          "qualifier": "upper 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "staircase",
+          "qualifier": "tower",
+          "raw": "a small narrow staircase, cutting off a portion of the Bed room below"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:second",
+          "b": "bedroom:upper 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:upper 2",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:upper 3",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:upper 4",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:upper 5",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:upper 6",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "closet:upper 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "closet:upper 2",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:upper 1",
+          "b": "staircase:tower",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:second",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "name": "tower",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "prospect_room",
+          "qualifier": "or smoking room",
+          "raw": "The Apartment in the upper part of the Tower may be appropriated as a Prospect or Smoking Room"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "staircase:tower",
+          "b": "prospect_room:or smoking room",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "low",
+    "adjacency": "high"
+  }
+}

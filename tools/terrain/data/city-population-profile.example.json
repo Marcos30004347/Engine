@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "status": "authored_design_scenario_not_runtime_input",
+  "id": "english_inspired_growing_market_settlement",
+  "seed": 722,
+  "population": {
+    "foundingResidentsRange": [
+      80,
+      140
+    ],
+    "targetResidentsRange": [
+      2800,
+      3400
+    ],
+    "targetPolicy": "soft; preserve selected target after first selection",
+    "startingHouseholdWeights": {
+      "single_adult": 0.16,
+      "couple": 0.18,
+      "family_with_dependents": 0.44,
+      "extended_family": 0.12,
+      "unrelated_sharing": 0.1
+    },
+    "weightBasis": "authored example; not historical statistics",
+    "workforceRule": "derive eligible workers from resident cohorts; no separate worker population"
+  },
+  "housing": {
+    "vacancyFractionTarget": 0.06,
+    "collectiveLodgingEnabled": true,
+    "collectiveLodgingOperators": [
+      "private_landlord",
+      "guild",
+      "employer"
+    ],
+    "collectiveLodgingProgrammes": [
+      "worker_lodging_hall",
+      "journeyman_lodge"
+    ],
+    "familyHousingProgrammes": [
+      "ordinary_house",
+      "labourer_cottage",
+      "burgage_home",
+      "row_house",
+      "rental_tenement"
+    ],
+    "mixedUseProgrammes": [
+      "general_shop_home",
+      "weaver_home",
+      "baker_home",
+      "shoemaker_home"
+    ],
+    "collectiveAssignment": "eligible consenting household arrangement with operating budget; not automatic from poverty",
+    "fitPolicy": "capacity after rooms, stairs, circulation and services; no shrinking required spaces"
+  },
+  "services": {
+    "participationByAffiliation": {
+      "local_faith": 0.8
+    },
+    "worshipCatchmentCapacityExample": 300,
+    "maximumWorshipWalkMinutes": 10,
+    "maximumEverydayMarketWalkMinutes": 12,
+    "maximumWaterCollectionWalkMinutes": 5,
+    "capacityBasis": "authored test values; catchment population differs from simultaneous visitors",
+    "churchPolicy": "prefer founding/neighbourhood centres; retain historical institutions; add facilities for unmet accessible capacity",
+    "templePolicy": "separate culture/affiliation programmes; no automatic universal floorplan"
+  },
+  "geography": {
+    "castlePreference": [
+      "buildable_relative_high_ground",
+      "route_control",
+      "reliable_water",
+      "defensible_approach"
+    ],
+    "hardExclusions": [
+      "water",
+      "unsafe_slope",
+      "flood_exclusion",
+      "unreachable_site",
+      "inadequate_platform",
+      "wall_and_gate_clearance"
+    ],
+    "productiveInteriorUses": [
+      "urban_farmstead",
+      "market_garden",
+      "kitchen_garden",
+      "orchard",
+      "medicinal_garden"
+    ],
+    "suburbLandSource": "world_filtered_buildable_masks; never inferred from empty map pixels"
+  },
+  "politics": {
+    "polityForm": "kingdom",
+    "isCapital": false,
+    "cityStatePromotion": "only_by_explicit_political_event",
+    "sizeBandsAreGameLabels": true
+  },
+  "growth": {
+    "tickYears": 1,
+    "maximumPlanningRepairsPerTick": 3,
+    "actionsInOrder": [
+      "reuse_vacancy",
+      "compatible_conversion",
+      "valid_addition",
+      "reserved_infill",
+      "gate_extension"
+    ],
+    "preserve": [
+      "resident_ids",
+      "household_ids",
+      "parcel_lineage",
+      "founding_roads",
+      "institution_history",
+      "holding_access"
+    ],
+    "budgetSources": [
+      "construction_labour",
+      "materials",
+      "food",
+      "water",
+      "operator_funding"
+    ],
+    "checkpoints": [
+      {
+        "year": 0,
+        "illustrativeResidents": 120
+      },
+      {
+        "year": 25,
+        "illustrativeResidents": 450
+      },
+      {
+        "year": 70,
+        "illustrativeResidents": 1200
+      },
+      {
+        "year": 140,
+        "illustrativeResidents": 3200
+      }
+    ],
+    "checkpointBasis": "authored preview targets, not simulated results or growth guarantees",
+    "declineActions": [
+      "vacancy",
+      "reduced_maintenance",
+      "service_consolidation",
+      "validated_conversion"
+    ]
+  }
+}

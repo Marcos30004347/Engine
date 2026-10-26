@@ -1,0 +1,243 @@
+{
+  "page": 526,
+  "source": "The Builder's Practical Director, Plates 123, 124 and 125, description on PDF page 526",
+  "kind": "school with master's and mistress's residences",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "two school rooms with residences between",
+    "roof": "open timber",
+    "features": [
+      {
+        "kind": "entrance porch",
+        "count": 2
+      },
+      {
+        "kind": "play yard",
+        "count": 2
+      },
+      {
+        "kind": "urinals",
+        "count": 1
+      },
+      {
+        "kind": "red brick with black headers",
+        "count": 1
+      },
+      {
+        "kind": "Bath stone dressings",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Two school rooms and two residences under one roof; one residence transcribed. 'The style is a modified species of Romanesque, chosen as more expressive of the purport of the buildings than perhaps others are.' The school rooms are warmed by stoves and ventilated from the roof, which is open timber 'as best adapted to the purpose, and securing the greatest possible amount of height'. The door between the residence and the school room is an inference and the adjacency confidence is low. 2100 pounds.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "school_room",
+          "qualifier": "boys",
+          "raw": "two spacious, well-lighted School Rooms for Boys and Girls, each 50 by 20 feet",
+          "feet": [
+            50,
+            20
+          ]
+        },
+        {
+          "use": "school_room",
+          "qualifier": "girls",
+          "raw": "ditto",
+          "feet": [
+            50,
+            20
+          ]
+        },
+        {
+          "use": "porch",
+          "qualifier": "boys",
+          "raw": "an Entrance Porch to each School Room"
+        },
+        {
+          "use": "porch",
+          "qualifier": "girls",
+          "raw": "ditto"
+        },
+        {
+          "use": "yard",
+          "qualifier": "boys' play yard",
+          "raw": "Play Yards"
+        },
+        {
+          "use": "yard",
+          "qualifier": "girls' play yard",
+          "raw": "ditto"
+        },
+        {
+          "use": "wc",
+          "qualifier": "school",
+          "raw": "W. C. and Urinals are attached to them"
+        },
+        {
+          "use": "parlour",
+          "qualifier": "master's",
+          "raw": "The Residences have each a Parlour"
+        },
+        {
+          "use": "kitchen",
+          "qualifier": "master's",
+          "raw": "Kitchen"
+        },
+        {
+          "use": "pantry",
+          "qualifier": "master's",
+          "raw": "Pantry"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "master's coal",
+          "raw": "Coal Cellar"
+        },
+        {
+          "use": "wc",
+          "qualifier": "master's",
+          "raw": "W. C."
+        },
+        {
+          "use": "store",
+          "qualifier": "master's dust",
+          "raw": "Dust place"
+        },
+        {
+          "use": "staircase",
+          "qualifier": "master's",
+          "raw": "the stair to the chamber floor"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch:boys",
+          "b": "school_room:boys",
+          "link": "door"
+        },
+        {
+          "a": "porch:girls",
+          "b": "school_room:girls",
+          "link": "door"
+        },
+        {
+          "a": "school_room:boys",
+          "b": "yard:boys' play yard",
+          "link": "door"
+        },
+        {
+          "a": "school_room:girls",
+          "b": "yard:girls' play yard",
+          "link": "door"
+        },
+        {
+          "a": "yard:boys' play yard",
+          "b": "wc:school",
+          "link": "door"
+        },
+        {
+          "a": "parlour:master's",
+          "b": "kitchen:master's",
+          "link": "door"
+        },
+        {
+          "a": "parlour:master's",
+          "b": "staircase:master's",
+          "link": "open"
+        },
+        {
+          "a": "kitchen:master's",
+          "b": "pantry:master's",
+          "link": "door"
+        },
+        {
+          "a": "kitchen:master's",
+          "b": "cellar:master's coal",
+          "link": "door"
+        },
+        {
+          "a": "kitchen:master's",
+          "b": "wc:master's",
+          "link": "door"
+        },
+        {
+          "a": "kitchen:master's",
+          "b": "store:master's dust",
+          "link": "door"
+        },
+        {
+          "a": "kitchen:master's",
+          "b": "school_room:boys",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "three Bed Rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "staircase:master's",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "medium",
+    "adjacency": "low"
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "page": 469,
+  "source": "The Builder's Practical Director, Plates 86 and 87, description on PDF page 469",
+  "kind": "public dispensary with residence",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "low",
+    "attachment": "detached",
+    "plan": "public rooms with a residence over",
+    "features": [
+      {
+        "kind": "side entrance for the surgeon",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Not a dwelling but a public building with a dwelling in it, which is why it is here: the corpus needs the type. The description names the public rooms and says only 'Residence comprising every accomodation' of the rest, so the residence is a guess at the minimum and its confidence is low. 1500 pounds. 'The first plate containing the Elevation to this design has unfortunately been omitted to be numbered.'",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "the Hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "staircase"
+        },
+        {
+          "use": "dispensary",
+          "raw": "Dispensary"
+        },
+        {
+          "use": "waiting_room",
+          "raw": "Waiting Room; 'the waiting room for women may be easily separated from that of the men'"
+        },
+        {
+          "use": "consulting_room",
+          "raw": "Consulting Room"
+        },
+        {
+          "use": "committee_room",
+          "raw": "Committee Room"
+        },
+        {
+          "use": "office",
+          "qualifier": "extra room",
+          "raw": "the extra room, whose partition wall may be shifted a little to the right"
+        },
+        {
+          "use": "porch",
+          "qualifier": "surgeon's",
+          "raw": "a private entrance for the surgeon at the side"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "waiting_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "waiting_room",
+          "b": "dispensary",
+          "link": "door"
+        },
+        {
+          "a": "waiting_room",
+          "b": "consulting_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "committee_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "office:extra room",
+          "link": "door"
+        },
+        {
+          "a": "porch:surgeon's",
+          "b": "consulting_room",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "residence",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "living_room",
+          "raw": "Residence comprising every accomodation"
+        },
+        {
+          "use": "kitchen",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "medium",
+    "dimensions": "low",
+    "adjacency": "low"
+  }
+}

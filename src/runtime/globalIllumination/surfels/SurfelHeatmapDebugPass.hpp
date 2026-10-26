@@ -1,0 +1,274 @@
+#pragma once
+
+#include <algorithm>
+#include <cstdint>
+#include <string>
+
+#include "globalIllumination/surfels/SurfelPersistenceTypes.hpp"
+#include "math/math.hpp"
+#include "os/File.hpp"
+#include "rendering/gpu/RenderGraph.hpp"
+
+namespace globalillumination
+{
+namespace surfels
+{
+
+class SurfelHeatmapDebugPass : public rendering::Pass
+{
+public:
+  struct Settings
+  {
+    uint32_t viewPortWidth = 1920u;
+    uint32_t viewPortHeight = 1080u;
+    uint32_t gridCapacity = 1u;
+    uint32_t listCapacity = 1u;
+    uint32_t lookupCellResolution = 16u;
+    float centralGridHalfExtent = 0.2f;
+    float gridScale = 10.0f;
+    float frustumFarDistance = 4096.0f;
+    float spawnMinRadius = 0.05f;
+    float spawnDepthRadiusScale = 0.01f;
+  };
+
+  SurfelHeatmapDebugPass(
+      rendering::Buffer surfelGridBuffer,
+      rendering::Texture sceneDepthTexture,
+      rendering::Texture outputDebugTexture,
+      Settings settings)
+      : surfelGridBuffer_(surfelGridBuffer),
+        sceneDepthTexture_(sceneDepthTexture),
+        outputDebugTexture_(outputDebugTexture),
+        settings_(settings)
+  {
+  }
+
+  ~SurfelHeatmapDebugPass() override
+  {
+    if (pipeline_.isValid())
+      renderGraph->deleteComputePipeline(pipeline_);
+    if (shader_.isValid())
+      renderGraph->deleteShader(shader_);
+    if (bindingGroups_.isValid())
+      renderGraph->deleteBindingGroups(bindingGroups_);
+    if (layout_.isValid())
+      renderGraph->deleteBindingsLayout(layout_);
+    if (uniformBuffer_.isValid())
+      renderGraph->deleteBuffer(uniformBuffer_);
+  }
+
+  void setSettings(const Settings &settings)
+  {
+    settings_ = settings;
+    if (uniformBuffer_.isValid())
+      writeUniforms();
+  }
+
+  void setEnabled(bool enabled)
+  {
+    enabled_ = enabled;
+  }
+
+  void updateUniforms(const math::Mat4f &inverseViewProjection, const math::Vec3f &cameraPosition, const math::Vec3f &cameraRight, const math::Vec3f &cameraUp, const math::Vec3f &cameraForward, bool reverseZ)
+  {
+    inverseViewProjection_ = inverseViewProjection;
+    cameraPosition_ = cameraPosition;
+    cameraRight_ = cameraRight;
+    cameraUp_ = cameraUp;
+    cameraForward_ = cameraForward;
+    reverseZ_ = reverseZ;
+    if (uniformBuffer_.isValid())
+      writeUniforms();
+  }
+
+  void recordCommandBuffer(rendering::CommandRecorder &commandBuffer) override
+  {
+    if (!enabled_)
+      return;
+    ensureResources();
+    writeUniforms();
+
+    commandBuffer.cmdBindComputePipeline(pipeline_);
+    commandBuffer.cmdBindBindingGroups(bindingGroups_, nullptr, 0u);
+    commandBuffer.cmdDispatch((settings_.viewPortWidth + 7u) / 8u, (settings_.viewPortHeight + 7u) / 8u, 1u);
+  }
+
+private:
+  struct Uniforms
+  {
+    math::Mat4f inverseViewProjection = math::Mat4f::identity();
+    float cameraPosition[4]{0.0f, 0.0f, 0.0f, 0.0f};
+    float cameraRight[4]{1.0f, 0.0f, 0.0f, 0.0f};
+    float cameraUp[4]{0.0f, 1.0f, 0.0f, 0.0f};
+    float cameraForward[4]{0.0f, 0.0f, -1.0f, 0.0f};
+    uint32_t viewport[2]{1u, 1u};
+    uint32_t reverseZ = 0u;
+    uint32_t gridCapacity = 1u;
+    uint32_t listCapacity = 1u;
+    uint32_t lookupCellResolution = 16u;
+    float centralGridHalfExtent = 0.2f;
+    float gridScale = 10.0f;
+    float frustumFarDistance = 4096.0f;
+    float spawnMinRadius = 0.05f;
+    float spawnDepthRadiusScale = 0.01f;
+  };
+
+  static rendering::BufferView makeReadOnlyBufferView(rendering::Buffer buffer, uint64_t size)
+  {
+    return rendering::BufferView{
+        .buffer = buffer,
+        .offset = 0u,
+        .size = size,
+        .access = rendering::AccessPattern::SHADER_READ,
+    };
+  }
+
+  static rendering::TextureView makeSampledDepthView(rendering::Texture texture)
+  {
+    return rendering::TextureView{
+        .texture = texture,
+        .access = rendering::AccessPattern::SHADER_READ,
+        .layout = rendering::ResourceLayout::SHADER_READ_ONLY,
+        .index = 0u,
+        .flags = rendering::ImageAspectFlags::Depth,
+        .baseArrayLayer = 0u,
+        .baseMipLevel = 0u,
+        .layerCount = 1u,
+        .levelCount = 1u,
+    };
+  }
+
+  static rendering::TextureView makeStorageColorView(rendering::Texture texture)
+  {
+    return rendering::TextureView{
+        .texture = texture,
+        .access = rendering::AccessPattern::SHADER_READ | rendering::AccessPattern::SHADER_WRITE,
+        .layout = rendering::ResourceLayout::GENERAL,
+        .index = 0u,
+        .flags = rendering::ImageAspectFlags::Color,
+        .baseArrayLayer = 0u,
+        .baseMipLevel = 0u,
+        .layerCount = 1u,
+        .levelCount = 1u,
+    };
+  }
+
+  void ensureResources()
+  {
+    if (!uniformBuffer_.isValid())
+    {
+      uniformBuffer_ = renderGraph->createBuffer(
+          rendering::BufferInfo{
+              .name = passName + "_Uniforms.buffer",
+              .size = sizeof(Uniforms),
+              .usage = rendering::BufferUsage::BufferUsage_Uniform | rendering::BufferUsage::BufferUsage_Push,
+          });
+    }
+
+    if (layout_.isValid())
+      return;
+
+    layout_ = renderGraph->createBindingsLayout(
+        rendering::BindingsLayoutInfo{
+            .name = passName + "_Layout",
+            .groups = {rendering::BindingGroupLayout{
+                .buffers = {
+                    {.name = "uniforms", .binding = 0, .isDynamic = false, .type = rendering::BufferBindingType::BufferBindingType_UniformBuffer, .visibility = rendering::BindingVisibility::BindingVisibility_Compute},
+                    {.name = "surfelGrid", .binding = 1, .isDynamic = false, .type = rendering::BufferBindingType::BufferBindingType_StorageBuffer, .visibility = rendering::BindingVisibility::BindingVisibility_Compute},
+                },
+                .textures = {
+                    {.name = "sceneDepthTexture", .binding = 2, .visibility = rendering::BindingVisibility::BindingVisibility_Compute},
+                },
+                .storageTextures = {
+                    {.name = "outputDebugTexture", .binding = 3, .visibility = rendering::BindingVisibility::BindingVisibility_Compute},
+                },
+            }},
+        });
+
+    bindingGroups_ = renderGraph->createBindingGroups(
+        rendering::BindingGroupsInfo{
+            .layout = layout_,
+            .name = passName + "_Groups",
+            .groups = {rendering::GroupInfo{
+                .name = "group0",
+                .buffers = {
+                    {.binding = 0, .bufferView = makeReadOnlyBufferView(uniformBuffer_, sizeof(Uniforms))},
+                    {.binding = 1, .bufferView = makeReadOnlyBufferView(surfelGridBuffer_, surfelGridBufferSize(SurfelRuntimeSettings{.gridCapacity = settings_.gridCapacity}))},
+                },
+                .textures = {
+                    {.binding = 2, .textureView = makeSampledDepthView(sceneDepthTexture_)},
+                },
+                .storageTextures = {
+                    {.binding = 3, .textureView = makeStorageColorView(outputDebugTexture_)},
+                },
+            }},
+        });
+
+    shader_ = renderGraph->createShader(
+        rendering::ShaderInfo{
+            .name = passName + "_Shader",
+            .layout = layout_,
+            .src = os::io::readRelativeFile("assets/shaders/spirv/globalIllumination/surfels/surfel-heatmap-debug-cs.spirv"),
+            .type = rendering::ShaderType::SpirV,
+        });
+
+    pipeline_ = renderGraph->createComputePipeline(
+        rendering::ComputePipelineInfo{
+            .entry = "cs_main",
+            .layout = layout_,
+            .name = passName + "_Pipeline",
+            .shader = shader_,
+        });
+  }
+
+  void writeUniforms()
+  {
+    Uniforms uniforms{};
+    uniforms.inverseViewProjection = inverseViewProjection_;
+    uniforms.cameraPosition[0] = cameraPosition_.x();
+    uniforms.cameraPosition[1] = cameraPosition_.y();
+    uniforms.cameraPosition[2] = cameraPosition_.z();
+    uniforms.cameraRight[0] = cameraRight_.x();
+    uniforms.cameraRight[1] = cameraRight_.y();
+    uniforms.cameraRight[2] = cameraRight_.z();
+    uniforms.cameraUp[0] = cameraUp_.x();
+    uniforms.cameraUp[1] = cameraUp_.y();
+    uniforms.cameraUp[2] = cameraUp_.z();
+    uniforms.cameraForward[0] = cameraForward_.x();
+    uniforms.cameraForward[1] = cameraForward_.y();
+    uniforms.cameraForward[2] = cameraForward_.z();
+    uniforms.viewport[0] = std::max(1u, settings_.viewPortWidth);
+    uniforms.viewport[1] = std::max(1u, settings_.viewPortHeight);
+    uniforms.reverseZ = reverseZ_ ? 1u : 0u;
+    uniforms.gridCapacity = std::max(1u, settings_.gridCapacity);
+    uniforms.listCapacity = std::max(1u, settings_.listCapacity);
+    uniforms.lookupCellResolution = std::max(1u, settings_.lookupCellResolution);
+    uniforms.centralGridHalfExtent = settings_.centralGridHalfExtent;
+    uniforms.gridScale = settings_.gridScale;
+    uniforms.frustumFarDistance = settings_.frustumFarDistance;
+    uniforms.spawnMinRadius = settings_.spawnMinRadius;
+    uniforms.spawnDepthRadiusScale = settings_.spawnDepthRadiusScale;
+    renderGraph->bufferWrite(uniformBuffer_, 0u, sizeof(Uniforms), &uniforms);
+  }
+
+  rendering::Buffer surfelGridBuffer_{};
+  rendering::Texture sceneDepthTexture_{};
+  rendering::Texture outputDebugTexture_{};
+  Settings settings_{};
+  math::Mat4f inverseViewProjection_ = math::Mat4f::identity();
+  math::Vec3f cameraPosition_{0.0f, 0.0f, 0.0f};
+  math::Vec3f cameraRight_{1.0f, 0.0f, 0.0f};
+  math::Vec3f cameraUp_{0.0f, 1.0f, 0.0f};
+  math::Vec3f cameraForward_{0.0f, 0.0f, -1.0f};
+  bool reverseZ_ = true;
+  bool enabled_ = true;
+
+  rendering::BindingsLayout layout_{};
+  rendering::BindingGroups bindingGroups_{};
+  rendering::Shader shader_{};
+  rendering::ComputePipeline pipeline_{};
+  rendering::Buffer uniformBuffer_{};
+};
+
+} // namespace surfels
+} // namespace globalillumination

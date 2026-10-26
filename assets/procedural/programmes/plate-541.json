@@ -1,0 +1,464 @@
+{
+  "page": 541,
+  "source": "The Builder's Practical Director, Plates 129 and 130: basement and first floor plans on PDF page 541, description on PDF page 529",
+  "kind": "detached villa",
+  "storeys": 3,
+  "basement": true,
+  "floorsDrawn": [
+    -1,
+    0,
+    1,
+    2
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile about a light well",
+    "features": [
+      {
+        "kind": "area",
+        "count": 2
+      },
+      {
+        "kind": "open space light well",
+        "count": 1
+      },
+      {
+        "kind": "area steps",
+        "count": 2
+      },
+      {
+        "kind": "difference of levels",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "The basement is a service establishment - servants' hall, footman's room, pantry, stores - lit in the middle of the plan by an open space, with an area to either side carrying the wine, beer and coal cellars and a cellar 'for cleaning knives, boots etc.' The ground and second floors are from the description and have no dimensions; the two drawn floors do. The dressing room sits between the two back bedrooms and opens off both. 'The effect of the Elevation is considerably increased by the difference of levels.' 1100 pounds.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": -1,
+      "name": "basement",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            18,
+            15
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            16,
+            13.5
+          ]
+        },
+        {
+          "use": "servants_hall",
+          "raw": "SERVANTS' HALL",
+          "feet": [
+            18,
+            15
+          ]
+        },
+        {
+          "use": "office",
+          "qualifier": "footman's",
+          "raw": "FOOTMAN'S ROOM",
+          "feet": [
+            14,
+            9
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "PANTRY"
+        },
+        {
+          "use": "store",
+          "raw": "STORES"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "wine",
+          "raw": "WINE-CELLAR"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "beer",
+          "raw": "BEER-CELLAR"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "COAL CELLAR"
+        },
+        {
+          "use": "closet",
+          "qualifier": "for cleaning",
+          "raw": "FOR CLEANING, a cellar for cleaning knives and boots"
+        },
+        {
+          "use": "wc",
+          "qualifier": "basement",
+          "raw": "W. C."
+        },
+        {
+          "use": "area",
+          "qualifier": "west",
+          "raw": "AREA"
+        },
+        {
+          "use": "area",
+          "qualifier": "east",
+          "raw": "AREA"
+        },
+        {
+          "use": "yard",
+          "qualifier": "open space",
+          "raw": "OPEN SPACE, lighting the middle of the plan"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "upper",
+          "raw": "LOBBY, at the foot of the stair"
+        },
+        {
+          "use": "lobby",
+          "qualifier": "lower",
+          "raw": "LOBBY, between the kitchen and the servants' hall"
+        },
+        {
+          "use": "staircase",
+          "raw": "the stair"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "lobby:upper",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "lobby:upper",
+          "b": "office:footman's",
+          "link": "door"
+        },
+        {
+          "a": "lobby:upper",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "lobby:upper",
+          "b": "lobby:lower",
+          "link": "open"
+        },
+        {
+          "a": "lobby:lower",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "lobby:lower",
+          "b": "servants_hall",
+          "link": "door"
+        },
+        {
+          "a": "lobby:lower",
+          "b": "store",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "yard:open space",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "area:west",
+          "link": "door"
+        },
+        {
+          "a": "office:footman's",
+          "b": "area:east",
+          "link": "door"
+        },
+        {
+          "a": "area:west",
+          "b": "closet:for cleaning",
+          "link": "door"
+        },
+        {
+          "a": "area:west",
+          "b": "wc:basement",
+          "link": "door"
+        },
+        {
+          "a": "area:west",
+          "b": "cellar:wine",
+          "link": "door"
+        },
+        {
+          "a": "area:east",
+          "b": "cellar:beer",
+          "link": "door"
+        },
+        {
+          "a": "area:east",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "passage",
+          "qualifier": "entrance",
+          "raw": "Entrance Passage"
+        },
+        {
+          "use": "hall",
+          "raw": "Hall"
+        },
+        {
+          "use": "drawing_room",
+          "raw": "Drawing Room"
+        },
+        {
+          "use": "drawing_room",
+          "qualifier": "secondary",
+          "raw": "Secondary Drawing Room"
+        },
+        {
+          "use": "dining_room",
+          "raw": "Dining Room"
+        },
+        {
+          "use": "morning_room",
+          "raw": "Morning Room"
+        },
+        {
+          "use": "wc",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage:entrance",
+          "b": "hall",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "morning_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "drawing_room",
+          "b": "drawing_room:secondary",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "LANDING"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front left",
+          "raw": "BED ROOM",
+          "feet": [
+            14.25,
+            13.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front right",
+          "raw": "BED ROOM",
+          "feet": [
+            14.25,
+            10
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back left",
+          "raw": "BED ROOM",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back right",
+          "raw": "BED ROOM",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "dressing_room",
+          "raw": "DRESSING ROOM",
+          "feet": [
+            8.5,
+            5.25
+          ]
+        },
+        {
+          "use": "lobby",
+          "qualifier": "first floor",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "wc",
+          "qualifier": "first floor",
+          "raw": "W. C."
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front left",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:front right",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back left",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back right",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "lobby:first floor",
+          "link": "door"
+        },
+        {
+          "a": "lobby:first floor",
+          "b": "wc:first floor",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:back left",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:back right",
+          "b": "dressing_room",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "second floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "qualifier": "second",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 1",
+          "raw": "three small Bed Rooms"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "second 3",
+          "raw": "ditto"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 1",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 2",
+          "link": "door"
+        },
+        {
+          "a": "landing:second",
+          "b": "bedroom:second 3",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing:second",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

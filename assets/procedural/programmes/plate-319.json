@@ -1,0 +1,247 @@
+{
+  "page": 319,
+  "source": "The Builder's Practical Director, 'A cottage', drawn by S. Brookes, elevation with ground and chamber plans on PDF page 319",
+  "kind": "cottage",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "cross with a canted bay",
+    "roof": "cross-gabled",
+    "features": [
+      {
+        "kind": "gable",
+        "count": 3
+      },
+      {
+        "kind": "pierced barge-board",
+        "count": 3
+      },
+      {
+        "kind": "finial",
+        "count": 2
+      },
+      {
+        "kind": "canted bay",
+        "count": 1
+      },
+      {
+        "kind": "gothic porch",
+        "count": 1
+      },
+      {
+        "kind": "fish-scale slating",
+        "count": 1
+      },
+      {
+        "kind": "mullioned window",
+        "count": 2
+      }
+    ]
+  },
+  "notes": "Gothic: steep gables with pierced barge-boards and finials, fish-scale slating, a traceried porch arch and a mullioned bay. One of very few designs in the book with a bath room - the water closet is common and the bath is not.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "porch",
+          "raw": "PORCH",
+          "feet": [
+            6,
+            5
+          ]
+        },
+        {
+          "use": "hall",
+          "raw": "HALL",
+          "feet": [
+            14,
+            5
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "stair drawn in the hall"
+        },
+        {
+          "use": "parlour",
+          "raw": "PARLOR, with a canted bay to the garden",
+          "feet": [
+            17,
+            14
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            11,
+            8
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            11,
+            5.75
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "LARDER",
+          "feet": [
+            6.33,
+            6
+          ]
+        },
+        {
+          "use": "pantry",
+          "qualifier": "china",
+          "raw": "CHINA PANTRY",
+          "feet": [
+            4.75,
+            6
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "W C",
+          "feet": [
+            7,
+            3.75
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "porch",
+          "b": "hall",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "parlour",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry:china",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "chamber floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "landing"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "BED-ROOM",
+          "feet": [
+            16,
+            14
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED-ROOM",
+          "feet": [
+            14,
+            11
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "side",
+          "raw": "BED-ROOM",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "bathroom",
+          "raw": "BATH ROOM",
+          "feet": [
+            8,
+            5
+          ]
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:side",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bathroom",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

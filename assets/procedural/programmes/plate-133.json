@@ -1,0 +1,204 @@
+{
+  "page": 133,
+  "source": "The Builder's Practical Director, Plate 25, specification on PDF page 133",
+  "kind": "six-roomed house on a freehold allotment",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "detached",
+    "plan": "rectangle with back addition",
+    "frontageFeet": 16,
+    "plotFrontageFeet": 25
+  },
+  "notes": "Under 200 pounds, for a 25-foot frontage leaving a nine-foot gateway. 'There is a fall of two steps into the kitchen, and the same from the back bedroom into the small bedroom' - which is where that last door comes from.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "qualifier": "entrance",
+          "raw": "An entrance hall or passage",
+          "feet": [
+            8.5,
+            3.5
+          ]
+        },
+        {
+          "use": "parlour",
+          "qualifier": "front",
+          "raw": "front parlor",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "A staircase with cellar underneath",
+          "feet": [
+            12,
+            3
+          ]
+        },
+        {
+          "use": "cellar",
+          "raw": "cellar underneath the stairs, excavated two feet for beer and coals"
+        },
+        {
+          "use": "living_room",
+          "raw": "A living room",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "A pantry",
+          "feet": [
+            4.5,
+            3.5
+          ]
+        },
+        {
+          "use": "kitchen",
+          "qualifier": "and washhouse",
+          "raw": "A kitchen or washhouse, with copper, pump, sink, and water-closet",
+          "feet": [
+            9,
+            7
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "water-closet in the kitchen"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall:entrance",
+          "b": "parlour:front",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "living_room",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "cellar",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "upper floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "A front bedroom",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "A back ditto",
+          "feet": [
+            12,
+            10
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "linen",
+          "raw": "A large linen closet",
+          "feet": [
+            5,
+            2.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "A small bedroom over the kitchen",
+          "feet": [
+            9,
+            7
+          ]
+        },
+        {
+          "use": "landing",
+          "raw": "landing"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:linen",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:back",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

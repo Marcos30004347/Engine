@@ -1,0 +1,8 @@
+add_executable(VirtualShadowPolicyTests ${CMAKE_CURRENT_LIST_DIR}/VirtualShadowPolicyTests.cpp)
+target_include_directories(VirtualShadowPolicyTests PRIVATE ${CMAKE_SOURCE_DIR}/src/runtime)
+target_compile_features(VirtualShadowPolicyTests PRIVATE cxx_std_17)
+add_test(NAME VirtualShadowPolicyTests COMMAND VirtualShadowPolicyTests)
+add_executable(VirtualShadowTileTests ${CMAKE_CURRENT_LIST_DIR}/VirtualShadowTileTests.cpp)
+target_link_libraries(VirtualShadowTileTests PRIVATE Engine)
+add_test(NAME VirtualShadowTileTests COMMAND VirtualShadowTileTests)
+set_tests_properties(VirtualShadowTileTests PROPERTIES LABELS "shadow;gpu")

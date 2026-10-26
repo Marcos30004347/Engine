@@ -1,0 +1,323 @@
+{
+  "page": 254,
+  "source": "The Builder's Practical Director, 'Design for a first class tavern', description and dimensions on PDF pages 254, 256 and 257",
+  "kind": "first class tavern",
+  "storeys": 2,
+  "basement": true,
+  "dwelling": false,
+  "floorsDrawn": [
+    -1,
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "detached",
+    "plan": "public rooms about a central bar",
+    "features": [
+      {
+        "kind": "public bar",
+        "count": 1
+      },
+      {
+        "kind": "private bar",
+        "count": 1
+      },
+      {
+        "kind": "side bar",
+        "count": 1
+      },
+      {
+        "kind": "covered way to the water closets",
+        "count": 1
+      },
+      {
+        "kind": "private yard",
+        "count": 1
+      },
+      {
+        "kind": "public yard",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "Not a dwelling but the other building a town is made of, and the only one in the corpus. Every door is argued for rather than drawn. The bar is the whole plan: 'It must present itself at once to the eye of the customers on entering the house, for all enquiries are addressed here; and it must command, on all sides, by means of openings, or sliding sashes, the external door; so that it may not be possible for any person to enter or leave the house without observation.' The tap room is kept apart - 'it should not be possible for any person to enter or leave the Tap room without passing within view of the bar' - and the kitchen offices are cut off by a door by the staircase. Two yards, private and public, with a door between them so nobody has to go round the house. The tap room is optional: it 'may be omitted and its place occupied with another Parlor, or it may be placed in the yard'. 2800 pounds, or 3000 with the bar fittings.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": -1,
+      "name": "cellar",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "cellar",
+          "raw": "the Cellar, unquestionably the most appropriate place for the stores"
+        },
+        {
+          "use": "staircase",
+          "qualifier": "cellar",
+          "raw": "the cellar stair"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "staircase:cellar",
+          "b": "cellar",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bar",
+          "raw": "A Bar centrally situated, with Public, Private and Side Bars"
+        },
+        {
+          "use": "parlour",
+          "raw": "A Parlor",
+          "feet": [
+            14.25,
+            14.25
+          ]
+        },
+        {
+          "use": "tap_room",
+          "raw": "A Tap Room",
+          "feet": [
+            14.25,
+            10.5
+          ]
+        },
+        {
+          "use": "bar_parlour",
+          "raw": "A Bar Parlor, with store closets",
+          "feet": [
+            15,
+            14.25
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "A Kitchen, exclusive of recess",
+          "feet": [
+            15,
+            14.25
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "A Scullery",
+          "feet": [
+            10.67,
+            9.5
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "A Pantry"
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        },
+        {
+          "use": "closet",
+          "qualifier": "glasses",
+          "raw": "closets for cleaning glasses etc."
+        },
+        {
+          "use": "staircase",
+          "raw": "The Staircase, spacious, well lit, and so placed as to present itself at once to the eye"
+        },
+        {
+          "use": "yard",
+          "qualifier": "private",
+          "raw": "private yard, behind the building"
+        },
+        {
+          "use": "yard",
+          "qualifier": "public",
+          "raw": "public yard, separated from the private one"
+        },
+        {
+          "use": "wc",
+          "qualifier": "public",
+          "raw": "water closets and urinals, with a covered way leading to them"
+        },
+        {
+          "use": "wc",
+          "qualifier": "private",
+          "raw": "a water-closet to the private yard"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "bar",
+          "b": "bar_parlour",
+          "link": "door"
+        },
+        {
+          "a": "bar",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "bar",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "bar",
+          "b": "parlour",
+          "link": "door"
+        },
+        {
+          "a": "bar",
+          "b": "tap_room",
+          "link": "door"
+        },
+        {
+          "a": "parlour",
+          "b": "bar_parlour",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "bar",
+          "b": "closet:glasses",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "yard:private",
+          "link": "door"
+        },
+        {
+          "a": "tap_room",
+          "b": "yard:public",
+          "link": "door"
+        },
+        {
+          "a": "yard:public",
+          "b": "yard:private",
+          "link": "door"
+        },
+        {
+          "a": "yard:public",
+          "b": "wc:public",
+          "link": "door"
+        },
+        {
+          "a": "yard:private",
+          "b": "wc:private",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "staircase:cellar",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "first floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "landing",
+          "raw": "the landing"
+        },
+        {
+          "use": "club_room",
+          "raw": "A Club Room or apartment for Public Meetings",
+          "feet": [
+            41.75,
+            21
+          ]
+        },
+        {
+          "use": "coffee_room",
+          "raw": "A Coffee Room",
+          "feet": [
+            14.25,
+            10.5
+          ]
+        },
+        {
+          "use": "billiard_room",
+          "raw": "A Billiard Room",
+          "feet": [
+            15,
+            11.25
+          ]
+        },
+        {
+          "use": "closet",
+          "qualifier": "stores",
+          "raw": "A Closet for stores or for waiter"
+        },
+        {
+          "use": "wc",
+          "qualifier": "first floor",
+          "raw": "Water Closet"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "club_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "coffee_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "billiard_room",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "closet:stores",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "wc:first floor",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

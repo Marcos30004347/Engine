@@ -1,0 +1,176 @@
+{
+  "page": 495,
+  "source": "The Builder's Practical Director, 'Design for a detached town house', principal elevation and ground plan on PDF page 495",
+  "kind": "detached town house",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0
+  ],
+  "notes": "Only the ground plan is drawn. Three principal rooms and the kitchen offices on one level, with a passage carrying the service side and the hall the polite side, which is the arrangement a house gets when it has no basement to put the kitchen in. The adjacencies are read off the plate: every service room - pantry, coal cellar, water closet - opens off a single small lobby rather than off the kitchen or off each other, which is what keeps the coal and the privy reachable without crossing the kitchen. The elevation is Italian, three storeys with heavily dressed windows over a rusticated ground.",
+  "massing": {
+    "confidence": "high",
+    "attachment": "detached",
+    "plan": "double-pile with a service half",
+    "roof": "parapet",
+    "features": [
+      {
+        "kind": "rusticated quoins",
+        "count": 1
+      },
+      {
+        "kind": "pedimented window",
+        "count": 3
+      },
+      {
+        "kind": "carved doorcase",
+        "count": 1
+      },
+      {
+        "kind": "side entrance",
+        "count": 1
+      }
+    ]
+  },
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "HALL, with the stair across its head"
+        },
+        {
+          "use": "staircase",
+          "raw": "the stair, drawn across the head of the hall"
+        },
+        {
+          "use": "passage",
+          "raw": "PASSAGE, continuous with the hall through an arch"
+        },
+        {
+          "use": "dining_room",
+          "raw": "DINING ROOM",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "drawing_room",
+          "raw": "DRAWING ROOM",
+          "feet": [
+            17.5,
+            15
+          ]
+        },
+        {
+          "use": "breakfast_room",
+          "raw": "BREAKFAST PARLOR",
+          "feet": [
+            15,
+            10
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            15,
+            15
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "SCULLERY",
+          "feet": [
+            10.5,
+            9.5
+          ]
+        },
+        {
+          "use": "pantry",
+          "raw": "PANTRY"
+        },
+        {
+          "use": "lobby",
+          "raw": "LOBBY"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "COAL CELLAR"
+        },
+        {
+          "use": "wc",
+          "raw": "W.C"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "passage",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "drawing_room",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "breakfast_room",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "dining_room",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "lobby",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "pantry",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "cellar:coal",
+          "link": "door"
+        },
+        {
+          "a": "lobby",
+          "b": "wc",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "adjacencySource": "openings",
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

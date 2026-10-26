@@ -1,0 +1,237 @@
+{
+  "page": 161,
+  "source": "The Builder's Practical Director, Plate 27, specification on PDF page 161",
+  "kind": "semi-detached family cottage residence, the smaller",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "medium",
+    "attachment": "semi-detached",
+    "plan": "double-pile",
+    "roof": "gabled",
+    "storeysInRoof": 1
+  },
+  "notes": "The smaller of the same semi-detached pair. 'The kitchen is lighted by a large window under the fire-place.' Four bedrooms each with a large closet, counted but not dimensioned.",
+  "adjacencySource": "inferred",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "qualifier": "entrance",
+          "raw": "An entrance-hall and passage"
+        },
+        {
+          "use": "staircase",
+          "raw": "the stairs"
+        },
+        {
+          "use": "cellar",
+          "raw": "a cellar under the stairs"
+        },
+        {
+          "use": "living_room",
+          "raw": "A living room",
+          "feet": [
+            15,
+            11
+          ]
+        },
+        {
+          "use": "parlour",
+          "raw": "A parlor",
+          "feet": [
+            15,
+            14.5
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "A kitchen",
+          "feet": [
+            14.5,
+            10
+          ]
+        },
+        {
+          "use": "scullery",
+          "raw": "A scullery",
+          "feet": [
+            15,
+            10.5
+          ]
+        },
+        {
+          "use": "larder",
+          "raw": "Larder"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "coal cellar"
+        },
+        {
+          "use": "wc",
+          "raw": "water-closet"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall:entrance",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "parlour",
+          "link": "door"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall:entrance",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "cellar",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "scullery",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "larder",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "scullery",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "upper floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "1",
+          "raw": "four large bed-rooms with large closets"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "3",
+          "raw": "ditto"
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "4",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "1",
+          "raw": "large closets"
+        },
+        {
+          "use": "closet",
+          "qualifier": "2",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "3",
+          "raw": "ditto"
+        },
+        {
+          "use": "closet",
+          "qualifier": "4",
+          "raw": "ditto"
+        },
+        {
+          "use": "landing",
+          "raw": "landing"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:1",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:2",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:3",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:4",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:1",
+          "b": "closet:1",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:2",
+          "b": "closet:2",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:3",
+          "b": "closet:3",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:4",
+          "b": "closet:4",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "medium"
+  }
+}

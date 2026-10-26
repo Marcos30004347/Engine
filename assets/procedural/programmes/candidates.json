@@ -1,0 +1,4550 @@
+{
+  "minRooms": 2,
+  "candidates": [
+    {
+      "page": 27,
+      "rooms": [
+        "basement",
+        "cellar",
+        "dairy",
+        "kitchen",
+        "larder",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "dairy",
+        "kitchen",
+        "larder",
+        "scullery"
+      ],
+      "roomCount": 6,
+      "kind": "",
+      "hasScaleBar": true,
+      "isDrawing": true,
+      "image": "page-027.jpg"
+    },
+    {
+      "page": 35,
+      "rooms": [
+        "bedroom",
+        "parlour",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "parlour",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-035.jpg"
+    },
+    {
+      "page": 37,
+      "rooms": [
+        "dressing_room",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "dressing_room"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-037.jpg"
+    },
+    {
+      "page": 42,
+      "rooms": [
+        "bedroom",
+        "closet",
+        "living_room"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "living_room"
+      ],
+      "roomCount": 3,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-042.jpg"
+    },
+    {
+      "page": 45,
+      "rooms": [
+        "area",
+        "living_room"
+      ],
+      "dwellingRooms": [
+        "living_room"
+      ],
+      "roomCount": 2,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-045.jpg"
+    },
+    {
+      "page": 51,
+      "rooms": [
+        "bedroom",
+        "living_room",
+        "washhouse"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "living_room",
+        "washhouse"
+      ],
+      "roomCount": 3,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-051.jpg"
+    },
+    {
+      "page": 53,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "hall",
+        "lobby",
+        "parlour",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "hall",
+        "lobby",
+        "parlour",
+        "passage"
+      ],
+      "roomCount": 7,
+      "kind": "school",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-053.jpg"
+    },
+    {
+      "page": 54,
+      "rooms": [
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "parlour",
+        "passage",
+        "staircase",
+        "washhouse",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "parlour",
+        "passage",
+        "staircase",
+        "washhouse"
+      ],
+      "roomCount": 9,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-054.jpg"
+    },
+    {
+      "page": 55,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "kitchen",
+        "parlour",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "kitchen",
+        "parlour",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 6,
+      "kind": "",
+      "hasScaleBar": true,
+      "isDrawing": true,
+      "image": "page-055.jpg"
+    },
+    {
+      "page": 57,
+      "rooms": [
+        "closet",
+        "hall",
+        "passage",
+        "washhouse"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "hall",
+        "passage",
+        "washhouse"
+      ],
+      "roomCount": 4,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-057.jpg"
+    },
+    {
+      "page": 58,
+      "rooms": [
+        "cellar",
+        "hall"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "hall"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-058.jpg"
+    },
+    {
+      "page": 61,
+      "rooms": [
+        "basement",
+        "cellar",
+        "hall",
+        "parlour"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "hall",
+        "parlour"
+      ],
+      "roomCount": 4,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-061.jpg"
+    },
+    {
+      "page": 62,
+      "rooms": [
+        "hall",
+        "kitchen",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "kitchen",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-062.jpg"
+    },
+    {
+      "page": 65,
+      "rooms": [
+        "hall",
+        "kitchen",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "kitchen",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-065.jpg"
+    },
+    {
+      "page": 66,
+      "rooms": [
+        "hall",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "staircase"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-066.jpg"
+    },
+    {
+      "page": 69,
+      "rooms": [
+        "cellar",
+        "porch",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "porch",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-069.jpg"
+    },
+    {
+      "page": 70,
+      "rooms": [
+        "hall",
+        "kitchen"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "kitchen"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-070.jpg"
+    },
+    {
+      "page": 71,
+      "rooms": [
+        "bedroom",
+        "kitchen",
+        "living_room",
+        "washhouse"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "kitchen",
+        "living_room",
+        "washhouse"
+      ],
+      "roomCount": 4,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-071.jpg"
+    },
+    {
+      "page": 73,
+      "rooms": [
+        "closet",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "wc"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-073.jpg"
+    },
+    {
+      "page": 77,
+      "rooms": [
+        "closet",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "wc"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-077.jpg"
+    },
+    {
+      "page": 79,
+      "rooms": [
+        "basement",
+        "cellar",
+        "hall",
+        "kitchen",
+        "larder",
+        "pantry",
+        "passage",
+        "scullery",
+        "store"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "hall",
+        "kitchen",
+        "larder",
+        "pantry",
+        "passage",
+        "scullery",
+        "store"
+      ],
+      "roomCount": 9,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-079.jpg"
+    },
+    {
+      "page": 83,
+      "rooms": [
+        "dining_room",
+        "hall",
+        "lobby"
+      ],
+      "dwellingRooms": [
+        "dining_room",
+        "hall",
+        "lobby"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-083.jpg"
+    },
+    {
+      "page": 85,
+      "rooms": [
+        "area",
+        "yard"
+      ],
+      "dwellingRooms": [],
+      "roomCount": 2,
+      "kind": "tenement",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-085.jpg"
+    },
+    {
+      "page": 87,
+      "rooms": [
+        "bathroom",
+        "bedroom"
+      ],
+      "dwellingRooms": [
+        "bathroom",
+        "bedroom"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-087.jpg"
+    },
+    {
+      "page": 95,
+      "rooms": [
+        "drawing_room",
+        "kitchen",
+        "parlour"
+      ],
+      "dwellingRooms": [
+        "drawing_room",
+        "kitchen",
+        "parlour"
+      ],
+      "roomCount": 3,
+      "kind": "semi-detached",
+      "hasScaleBar": true,
+      "isDrawing": true,
+      "image": "page-095.jpg"
+    },
+    {
+      "page": 109,
+      "rooms": [
+        "bedroom",
+        "closet",
+        "kitchen",
+        "living_room",
+        "passage",
+        "staircase",
+        "washhouse"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "kitchen",
+        "living_room",
+        "passage",
+        "staircase",
+        "washhouse"
+      ],
+      "roomCount": 7,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-109.jpg"
+    },
+    {
+      "page": 110,
+      "rooms": [
+        "cellar",
+        "hall",
+        "kitchen",
+        "pantry",
+        "parlour",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "hall",
+        "kitchen",
+        "pantry",
+        "parlour",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "roomCount": 8,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-110.jpg"
+    },
+    {
+      "page": 127,
+      "rooms": [
+        "bedroom",
+        "hall",
+        "parlour"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "hall",
+        "parlour"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-127.jpg"
+    },
+    {
+      "page": 133,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "office",
+        "parlour",
+        "passage",
+        "porch",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "office",
+        "parlour",
+        "passage",
+        "porch",
+        "staircase",
+        "wc"
+      ],
+      "roomCount": 12,
+      "kind": "farm house",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-133.jpg"
+    },
+    {
+      "page": 134,
+      "rooms": [
+        "bedroom",
+        "brewhouse",
+        "cellar",
+        "closet",
+        "dairy",
+        "drawing_room",
+        "kitchen",
+        "landing",
+        "larder",
+        "office",
+        "passage",
+        "scullery",
+        "stable",
+        "staircase",
+        "store",
+        "wc",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "brewhouse",
+        "cellar",
+        "closet",
+        "dairy",
+        "drawing_room",
+        "kitchen",
+        "landing",
+        "larder",
+        "office",
+        "passage",
+        "scullery",
+        "stable",
+        "staircase",
+        "store",
+        "wc"
+      ],
+      "roomCount": 17,
+      "kind": "farm house",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-134.jpg"
+    },
+    {
+      "page": 142,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "kitchen",
+        "living_room",
+        "office",
+        "parlour",
+        "stable",
+        "staircase",
+        "wc",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "kitchen",
+        "living_room",
+        "office",
+        "parlour",
+        "stable",
+        "staircase",
+        "wc"
+      ],
+      "roomCount": 11,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-142.jpg"
+    },
+    {
+      "page": 143,
+      "rooms": [
+        "basement",
+        "breakfast_room",
+        "cellar",
+        "conservatory",
+        "dining_room",
+        "hall"
+      ],
+      "dwellingRooms": [
+        "breakfast_room",
+        "cellar",
+        "conservatory",
+        "dining_room",
+        "hall"
+      ],
+      "roomCount": 6,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-143.jpg"
+    },
+    {
+      "page": 145,
+      "rooms": [
+        "area",
+        "bedroom",
+        "closet",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "staircase"
+      ],
+      "roomCount": 4,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-145.jpg"
+    },
+    {
+      "page": 155,
+      "rooms": [
+        "kitchen",
+        "living_room",
+        "parlour",
+        "store"
+      ],
+      "dwellingRooms": [
+        "kitchen",
+        "living_room",
+        "parlour",
+        "store"
+      ],
+      "roomCount": 4,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-155.jpg"
+    },
+    {
+      "page": 158,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "kitchen",
+        "parlour",
+        "staircase",
+        "washhouse"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "kitchen",
+        "parlour",
+        "staircase",
+        "washhouse"
+      ],
+      "roomCount": 6,
+      "kind": "semi-detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-158.jpg"
+    },
+    {
+      "page": 161,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "kitchen",
+        "larder",
+        "living_room",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "kitchen",
+        "larder",
+        "living_room",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "roomCount": 12,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-161.jpg"
+    },
+    {
+      "page": 162,
+      "rooms": [
+        "bar",
+        "cellar",
+        "landing",
+        "passage",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "cellar",
+        "landing",
+        "passage",
+        "staircase"
+      ],
+      "roomCount": 5,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-162.jpg"
+    },
+    {
+      "page": 163,
+      "rooms": [
+        "dining_room",
+        "hall",
+        "kitchen",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "dining_room",
+        "hall",
+        "kitchen",
+        "scullery"
+      ],
+      "roomCount": 4,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-163.jpg"
+    },
+    {
+      "page": 167,
+      "rooms": [
+        "bedroom",
+        "closet"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet"
+      ],
+      "roomCount": 2,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-167.jpg"
+    },
+    {
+      "page": 177,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "porch",
+        "store",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "porch",
+        "store",
+        "wc"
+      ],
+      "roomCount": 10,
+      "kind": "semi-detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-177.jpg"
+    },
+    {
+      "page": 178,
+      "rooms": [
+        "cellar",
+        "dressing_room",
+        "kitchen",
+        "landing",
+        "pantry",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "dressing_room",
+        "kitchen",
+        "landing",
+        "pantry",
+        "wc"
+      ],
+      "roomCount": 6,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-178.jpg"
+    },
+    {
+      "page": 182,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "chamber",
+        "closet",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "parlour",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "chamber",
+        "closet",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "parlour",
+        "wc"
+      ],
+      "roomCount": 10,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-182.jpg"
+    },
+    {
+      "page": 183,
+      "rooms": [
+        "bedroom",
+        "breakfast_room",
+        "dining_room",
+        "hall"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "breakfast_room",
+        "dining_room",
+        "hall"
+      ],
+      "roomCount": 4,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-183.jpg"
+    },
+    {
+      "page": 185,
+      "rooms": [
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "larder",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "larder",
+        "wc"
+      ],
+      "roomCount": 6,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-185.jpg"
+    },
+    {
+      "page": 186,
+      "rooms": [
+        "bedroom",
+        "hall",
+        "kitchen",
+        "living_room",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "hall",
+        "kitchen",
+        "living_room",
+        "passage"
+      ],
+      "roomCount": 5,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-186.jpg"
+    },
+    {
+      "page": 189,
+      "rooms": [
+        "bedroom",
+        "landing",
+        "living_room",
+        "pantry",
+        "passage",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "landing",
+        "living_room",
+        "pantry",
+        "passage",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "roomCount": 9,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-189.jpg"
+    },
+    {
+      "page": 191,
+      "rooms": [
+        "bedroom",
+        "hall",
+        "kitchen",
+        "parlour",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "hall",
+        "kitchen",
+        "parlour",
+        "scullery"
+      ],
+      "roomCount": 5,
+      "kind": "semi-detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-191.jpg"
+    },
+    {
+      "page": 198,
+      "rooms": [
+        "bedroom",
+        "kitchen",
+        "larder",
+        "living_room",
+        "tap_room"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "kitchen",
+        "larder",
+        "living_room",
+        "tap_room"
+      ],
+      "roomCount": 5,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-198.jpg"
+    },
+    {
+      "page": 202,
+      "rooms": [
+        "wc",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "wc"
+      ],
+      "roomCount": 2,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-202.jpg"
+    },
+    {
+      "page": 206,
+      "rooms": [
+        "living_room",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "living_room",
+        "scullery"
+      ],
+      "roomCount": 2,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-206.jpg"
+    },
+    {
+      "page": 211,
+      "rooms": [
+        "hall",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "scullery"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-211.jpg"
+    },
+    {
+      "page": 214,
+      "rooms": [
+        "bedroom",
+        "living_room",
+        "store"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "living_room",
+        "store"
+      ],
+      "roomCount": 3,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-214.jpg"
+    },
+    {
+      "page": 217,
+      "rooms": [
+        "bar",
+        "cellar",
+        "closet",
+        "living_room",
+        "pantry",
+        "passage",
+        "porch",
+        "scullery",
+        "staircase",
+        "wc",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "cellar",
+        "closet",
+        "living_room",
+        "pantry",
+        "passage",
+        "porch",
+        "scullery",
+        "staircase",
+        "wc"
+      ],
+      "roomCount": 11,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-217.jpg"
+    },
+    {
+      "page": 218,
+      "rooms": [
+        "cellar",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 3,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-218.jpg"
+    },
+    {
+      "page": 221,
+      "rooms": [
+        "chamber",
+        "closet",
+        "landing",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "closet",
+        "landing",
+        "staircase",
+        "wc"
+      ],
+      "roomCount": 5,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-221.jpg"
+    },
+    {
+      "page": 222,
+      "rooms": [
+        "bedroom",
+        "closet",
+        "pantry",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "pantry",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 5,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-222.jpg"
+    },
+    {
+      "page": 225,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "store",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "store",
+        "wc"
+      ],
+      "roomCount": 11,
+      "kind": "semi-detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-225.jpg"
+    },
+    {
+      "page": 226,
+      "rooms": [
+        "area",
+        "basement",
+        "bedroom",
+        "cellar",
+        "closet",
+        "conservatory",
+        "dining_room",
+        "hall",
+        "kitchen",
+        "passage",
+        "porch",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "conservatory",
+        "dining_room",
+        "hall",
+        "kitchen",
+        "passage",
+        "porch",
+        "staircase",
+        "wc"
+      ],
+      "roomCount": 13,
+      "kind": "semi-detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-226.jpg"
+    },
+    {
+      "page": 233,
+      "rooms": [
+        "area",
+        "passage",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "passage",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-233.jpg"
+    },
+    {
+      "page": 237,
+      "rooms": [
+        "chamber",
+        "kitchen"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "kitchen"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-237.jpg"
+    },
+    {
+      "page": 238,
+      "rooms": [
+        "chamber",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "passage"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-238.jpg"
+    },
+    {
+      "page": 239,
+      "rooms": [
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "parlour",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "parlour",
+        "staircase"
+      ],
+      "roomCount": 6,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-239.jpg"
+    },
+    {
+      "page": 249,
+      "rooms": [
+        "chamber",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "passage"
+      ],
+      "roomCount": 2,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-249.jpg"
+    },
+    {
+      "page": 253,
+      "rooms": [
+        "cellar",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "cellar"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-253.jpg"
+    },
+    {
+      "page": 254,
+      "rooms": [
+        "bar",
+        "cellar",
+        "kitchen",
+        "larder",
+        "pantry",
+        "parlour",
+        "scullery",
+        "staircase",
+        "store",
+        "tap_room"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "cellar",
+        "kitchen",
+        "larder",
+        "pantry",
+        "parlour",
+        "scullery",
+        "staircase",
+        "store",
+        "tap_room"
+      ],
+      "roomCount": 10,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-254.jpg"
+    },
+    {
+      "page": 255,
+      "rooms": [
+        "chamber",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "staircase"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-255.jpg"
+    },
+    {
+      "page": 257,
+      "rooms": [
+        "bar",
+        "billiard_room",
+        "closet",
+        "club_room",
+        "dining_room",
+        "kitchen",
+        "larder",
+        "pantry",
+        "parlour",
+        "staircase",
+        "tap_room",
+        "wc",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "billiard_room",
+        "closet",
+        "club_room",
+        "dining_room",
+        "kitchen",
+        "larder",
+        "pantry",
+        "parlour",
+        "staircase",
+        "tap_room",
+        "wc"
+      ],
+      "roomCount": 13,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-257.jpg"
+    },
+    {
+      "page": 261,
+      "rooms": [
+        "cellar",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "kitchen",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "kitchen",
+        "wc"
+      ],
+      "roomCount": 7,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-261.jpg"
+    },
+    {
+      "page": 262,
+      "rooms": [
+        "cellar",
+        "hall",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "hall",
+        "wc"
+      ],
+      "roomCount": 3,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-262.jpg"
+    },
+    {
+      "page": 265,
+      "rooms": [
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "pantry",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "pantry",
+        "passage"
+      ],
+      "roomCount": 6,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-265.jpg"
+    },
+    {
+      "page": 266,
+      "rooms": [
+        "closet",
+        "hall",
+        "kitchen"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "hall",
+        "kitchen"
+      ],
+      "roomCount": 3,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-266.jpg"
+    },
+    {
+      "page": 267,
+      "rooms": [
+        "bedroom",
+        "passage",
+        "sitting_room"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "passage",
+        "sitting_room"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-267.jpg"
+    },
+    {
+      "page": 269,
+      "rooms": [
+        "bar",
+        "closet",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "pantry",
+        "passage",
+        "sitting_room",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "closet",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "pantry",
+        "passage",
+        "sitting_room",
+        "staircase",
+        "wc"
+      ],
+      "roomCount": 10,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-269.jpg"
+    },
+    {
+      "page": 270,
+      "rooms": [
+        "chamber",
+        "closet",
+        "hall",
+        "kitchen",
+        "passage",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "closet",
+        "hall",
+        "kitchen",
+        "passage",
+        "wc"
+      ],
+      "roomCount": 6,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-270.jpg"
+    },
+    {
+      "page": 271,
+      "rooms": [
+        "bedroom",
+        "chamber",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "landing"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "chamber",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "landing"
+      ],
+      "roomCount": 7,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-271.jpg"
+    },
+    {
+      "page": 273,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "chamber",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "landing",
+        "lobby",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "chamber",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "landing",
+        "lobby",
+        "wc"
+      ],
+      "roomCount": 10,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-273.jpg"
+    },
+    {
+      "page": 274,
+      "rooms": [
+        "kitchen",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "kitchen",
+        "passage"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-274.jpg"
+    },
+    {
+      "page": 275,
+      "rooms": [
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "passage"
+      ],
+      "roomCount": 4,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-275.jpg"
+    },
+    {
+      "page": 277,
+      "rooms": [
+        "bedroom",
+        "kitchen"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "kitchen"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-277.jpg"
+    },
+    {
+      "page": 278,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "kitchen",
+        "pantry",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "kitchen",
+        "pantry",
+        "wc"
+      ],
+      "roomCount": 6,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-278.jpg"
+    },
+    {
+      "page": 281,
+      "rooms": [
+        "dining_room",
+        "hall"
+      ],
+      "dwellingRooms": [
+        "dining_room",
+        "hall"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-281.jpg"
+    },
+    {
+      "page": 291,
+      "rooms": [
+        "billiard_room",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "billiard_room",
+        "passage"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-291.jpg"
+    },
+    {
+      "page": 295,
+      "rooms": [
+        "bedroom",
+        "closet",
+        "kitchen",
+        "landing",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "kitchen",
+        "landing",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 6,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-295.jpg"
+    },
+    {
+      "page": 297,
+      "rooms": [
+        "bar",
+        "staircase",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-297.jpg"
+    },
+    {
+      "page": 303,
+      "rooms": [
+        "dining_room",
+        "drawing_room",
+        "kitchen",
+        "parlour",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "dining_room",
+        "drawing_room",
+        "kitchen",
+        "parlour",
+        "scullery"
+      ],
+      "roomCount": 5,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-303.jpg"
+    },
+    {
+      "page": 305,
+      "rooms": [
+        "shop",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "shop",
+        "staircase"
+      ],
+      "roomCount": 2,
+      "kind": "shop",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-305.jpg"
+    },
+    {
+      "page": 315,
+      "rooms": [
+        "bedroom",
+        "chamber",
+        "closet",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "chamber",
+        "closet",
+        "wc"
+      ],
+      "roomCount": 4,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-315.jpg"
+    },
+    {
+      "page": 319,
+      "rooms": [
+        "chamber",
+        "kitchen",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "kitchen",
+        "scullery"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-319.jpg"
+    },
+    {
+      "page": 322,
+      "rooms": [
+        "area",
+        "bar",
+        "basement",
+        "bedroom",
+        "closet",
+        "conservatory",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "larder",
+        "lobby",
+        "pantry",
+        "parlour",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "bedroom",
+        "closet",
+        "conservatory",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "larder",
+        "lobby",
+        "pantry",
+        "parlour",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 16,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-322.jpg"
+    },
+    {
+      "page": 326,
+      "rooms": [
+        "dressing_room",
+        "hall",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "dressing_room",
+        "hall",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-326.jpg"
+    },
+    {
+      "page": 329,
+      "rooms": [
+        "cellar",
+        "landing",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "landing",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-329.jpg"
+    },
+    {
+      "page": 343,
+      "rooms": [
+        "bedroom",
+        "chamber",
+        "living_room",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "chamber",
+        "living_room",
+        "scullery"
+      ],
+      "roomCount": 4,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-343.jpg"
+    },
+    {
+      "page": 349,
+      "rooms": [
+        "basement",
+        "bedroom",
+        "breakfast_room",
+        "chamber",
+        "closet",
+        "dairy",
+        "dining_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "living_room",
+        "lobby",
+        "passage",
+        "porch",
+        "wc",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "breakfast_room",
+        "chamber",
+        "closet",
+        "dairy",
+        "dining_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "living_room",
+        "lobby",
+        "passage",
+        "porch",
+        "wc"
+      ],
+      "roomCount": 17,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-349.jpg"
+    },
+    {
+      "page": 350,
+      "rooms": [
+        "cellar",
+        "hall",
+        "living_room"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "hall",
+        "living_room"
+      ],
+      "roomCount": 3,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-350.jpg"
+    },
+    {
+      "page": 354,
+      "rooms": [
+        "area",
+        "yard"
+      ],
+      "dwellingRooms": [],
+      "roomCount": 2,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-354.jpg"
+    },
+    {
+      "page": 357,
+      "rooms": [
+        "closet",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "wc"
+      ],
+      "roomCount": 2,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-357.jpg"
+    },
+    {
+      "page": 359,
+      "rooms": [
+        "bedroom",
+        "chamber",
+        "landing"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "chamber",
+        "landing"
+      ],
+      "roomCount": 3,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-359.jpg"
+    },
+    {
+      "page": 361,
+      "rooms": [
+        "bar",
+        "chamber",
+        "closet",
+        "living_room",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "chamber",
+        "closet",
+        "living_room",
+        "passage"
+      ],
+      "roomCount": 5,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-361.jpg"
+    },
+    {
+      "page": 363,
+      "rooms": [
+        "area",
+        "basement",
+        "bedroom",
+        "cellar",
+        "drawing_room",
+        "kitchen",
+        "landing",
+        "parlour",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "drawing_room",
+        "kitchen",
+        "landing",
+        "parlour",
+        "scullery"
+      ],
+      "roomCount": 9,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-363.jpg"
+    },
+    {
+      "page": 373,
+      "rooms": [
+        "basement",
+        "bathroom",
+        "bedroom",
+        "closet",
+        "hall",
+        "kitchen",
+        "library",
+        "lobby",
+        "pantry",
+        "store",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bathroom",
+        "bedroom",
+        "closet",
+        "hall",
+        "kitchen",
+        "library",
+        "lobby",
+        "pantry",
+        "store",
+        "wc"
+      ],
+      "roomCount": 11,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-373.jpg"
+    },
+    {
+      "page": 375,
+      "rooms": [
+        "bedroom",
+        "kitchen",
+        "parlour",
+        "passage",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "kitchen",
+        "parlour",
+        "passage",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 6,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-375.jpg"
+    },
+    {
+      "page": 377,
+      "rooms": [
+        "bathroom",
+        "bedroom",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "larder",
+        "pantry",
+        "parlour",
+        "passage",
+        "porch",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bathroom",
+        "bedroom",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "larder",
+        "pantry",
+        "parlour",
+        "passage",
+        "porch",
+        "wc"
+      ],
+      "roomCount": 12,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-377.jpg"
+    },
+    {
+      "page": 385,
+      "rooms": [
+        "bedroom",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "pantry",
+        "store"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "pantry",
+        "store"
+      ],
+      "roomCount": 8,
+      "kind": "semi-detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-385.jpg"
+    },
+    {
+      "page": 386,
+      "rooms": [
+        "basement",
+        "hall",
+        "kitchen"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "kitchen"
+      ],
+      "roomCount": 3,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-386.jpg"
+    },
+    {
+      "page": 393,
+      "rooms": [
+        "kitchen",
+        "porch",
+        "sitting_room"
+      ],
+      "dwellingRooms": [
+        "kitchen",
+        "porch",
+        "sitting_room"
+      ],
+      "roomCount": 3,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-393.jpg"
+    },
+    {
+      "page": 394,
+      "rooms": [
+        "kitchen",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "kitchen",
+        "scullery"
+      ],
+      "roomCount": 2,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-394.jpg"
+    },
+    {
+      "page": 395,
+      "rooms": [
+        "bedroom",
+        "chamber"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "chamber"
+      ],
+      "roomCount": 2,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-395.jpg"
+    },
+    {
+      "page": 398,
+      "rooms": [
+        "bar",
+        "chamber",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "larder",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "chamber",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "larder",
+        "scullery"
+      ],
+      "roomCount": 8,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-398.jpg"
+    },
+    {
+      "page": 401,
+      "rooms": [
+        "bar",
+        "basement",
+        "cellar",
+        "closet",
+        "hall",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "cellar",
+        "closet",
+        "hall",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 7,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-401.jpg"
+    },
+    {
+      "page": 402,
+      "rooms": [
+        "basement",
+        "bedroom",
+        "closet",
+        "kitchen",
+        "larder",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "kitchen",
+        "larder",
+        "wc"
+      ],
+      "roomCount": 6,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-402.jpg"
+    },
+    {
+      "page": 405,
+      "rooms": [
+        "closet",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "landing",
+        "pantry",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "landing",
+        "pantry",
+        "staircase",
+        "wc"
+      ],
+      "roomCount": 9,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-405.jpg"
+    },
+    {
+      "page": 406,
+      "rooms": [
+        "basement",
+        "closet",
+        "hall"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "hall"
+      ],
+      "roomCount": 3,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-406.jpg"
+    },
+    {
+      "page": 411,
+      "rooms": [
+        "bedroom",
+        "closet",
+        "landing"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "landing"
+      ],
+      "roomCount": 3,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-411.jpg"
+    },
+    {
+      "page": 413,
+      "rooms": [
+        "hall",
+        "study"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "study"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-413.jpg"
+    },
+    {
+      "page": 426,
+      "rooms": [
+        "basement",
+        "bedroom",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "pantry",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "store",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "pantry",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "store",
+        "wc"
+      ],
+      "roomCount": 15,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-426.jpg"
+    },
+    {
+      "page": 429,
+      "rooms": [
+        "basement",
+        "chamber"
+      ],
+      "dwellingRooms": [
+        "chamber"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-429.jpg"
+    },
+    {
+      "page": 430,
+      "rooms": [
+        "dressing_room",
+        "kitchen",
+        "passage"
+      ],
+      "dwellingRooms": [
+        "dressing_room",
+        "kitchen",
+        "passage"
+      ],
+      "roomCount": 3,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-430.jpg"
+    },
+    {
+      "page": 433,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "dairy",
+        "kitchen",
+        "pantry",
+        "stable",
+        "store",
+        "washhouse"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "dairy",
+        "kitchen",
+        "pantry",
+        "stable",
+        "store",
+        "washhouse"
+      ],
+      "roomCount": 8,
+      "kind": "mansion",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-433.jpg"
+    },
+    {
+      "page": 438,
+      "rooms": [
+        "kitchen",
+        "shop"
+      ],
+      "dwellingRooms": [
+        "kitchen",
+        "shop"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-438.jpg"
+    },
+    {
+      "page": 441,
+      "rooms": [
+        "landing",
+        "shop"
+      ],
+      "dwellingRooms": [
+        "landing",
+        "shop"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-441.jpg"
+    },
+    {
+      "page": 442,
+      "rooms": [
+        "landing",
+        "shop"
+      ],
+      "dwellingRooms": [
+        "landing",
+        "shop"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-442.jpg"
+    },
+    {
+      "page": 446,
+      "rooms": [
+        "bedroom",
+        "drawing_room",
+        "kitchen",
+        "pantry",
+        "parlour",
+        "shop",
+        "staircase",
+        "workshop",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "drawing_room",
+        "kitchen",
+        "pantry",
+        "parlour",
+        "shop",
+        "staircase",
+        "workshop"
+      ],
+      "roomCount": 9,
+      "kind": "shop",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-446.jpg"
+    },
+    {
+      "page": 447,
+      "rooms": [
+        "dining_room",
+        "kitchen"
+      ],
+      "dwellingRooms": [
+        "dining_room",
+        "kitchen"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-447.jpg"
+    },
+    {
+      "page": 455,
+      "rooms": [
+        "basement",
+        "bedroom",
+        "cellar",
+        "closet",
+        "kitchen",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "kitchen",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 7,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-455.jpg"
+    },
+    {
+      "page": 459,
+      "rooms": [
+        "hall",
+        "kitchen",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "kitchen",
+        "scullery"
+      ],
+      "roomCount": 3,
+      "kind": "school",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-459.jpg"
+    },
+    {
+      "page": 461,
+      "rooms": [
+        "cellar",
+        "chamber",
+        "parlour",
+        "school_room",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "chamber",
+        "parlour",
+        "school_room",
+        "wc"
+      ],
+      "roomCount": 5,
+      "kind": "school",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-461.jpg"
+    },
+    {
+      "page": 462,
+      "rooms": [
+        "basement",
+        "chamber",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "scullery"
+      ],
+      "roomCount": 6,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-462.jpg"
+    },
+    {
+      "page": 467,
+      "rooms": [
+        "bedroom",
+        "chamber",
+        "landing"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "chamber",
+        "landing"
+      ],
+      "roomCount": 3,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-467.jpg"
+    },
+    {
+      "page": 469,
+      "rooms": [
+        "cellar",
+        "larder",
+        "store",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "larder",
+        "store",
+        "wc"
+      ],
+      "roomCount": 4,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-469.jpg"
+    },
+    {
+      "page": 470,
+      "rooms": [
+        "basement",
+        "bathroom",
+        "breakfast_room",
+        "dairy",
+        "drawing_room",
+        "kitchen",
+        "office",
+        "pantry",
+        "parlour",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "bathroom",
+        "breakfast_room",
+        "dairy",
+        "drawing_room",
+        "kitchen",
+        "office",
+        "pantry",
+        "parlour",
+        "scullery"
+      ],
+      "roomCount": 10,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-470.jpg"
+    },
+    {
+      "page": 471,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "dining_room",
+        "hall",
+        "kitchen",
+        "landing",
+        "parlour",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "dining_room",
+        "hall",
+        "kitchen",
+        "landing",
+        "parlour",
+        "scullery"
+      ],
+      "roomCount": 8,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-471.jpg"
+    },
+    {
+      "page": 474,
+      "rooms": [
+        "closet",
+        "dining_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "landing",
+        "library",
+        "passage",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "dining_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "landing",
+        "library",
+        "passage",
+        "staircase",
+        "wc"
+      ],
+      "roomCount": 10,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-474.jpg"
+    },
+    {
+      "page": 478,
+      "rooms": [
+        "closet",
+        "shop",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "shop",
+        "wc"
+      ],
+      "roomCount": 3,
+      "kind": "shop",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-478.jpg"
+    },
+    {
+      "page": 479,
+      "rooms": [
+        "closet",
+        "kitchen"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "kitchen"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-479.jpg"
+    },
+    {
+      "page": 494,
+      "rooms": [
+        "kitchen",
+        "parlour"
+      ],
+      "dwellingRooms": [
+        "kitchen",
+        "parlour"
+      ],
+      "roomCount": 2,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-494.jpg"
+    },
+    {
+      "page": 495,
+      "rooms": [
+        "cellar",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "lobby",
+        "parlour",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "lobby",
+        "parlour",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 9,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-495.jpg"
+    },
+    {
+      "page": 497,
+      "rooms": [
+        "dressing_room",
+        "larder",
+        "parlour"
+      ],
+      "dwellingRooms": [
+        "dressing_room",
+        "larder",
+        "parlour"
+      ],
+      "roomCount": 3,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-497.jpg"
+    },
+    {
+      "page": 498,
+      "rooms": [
+        "chamber",
+        "closet",
+        "hall",
+        "kitchen",
+        "larder",
+        "passage",
+        "porch",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "closet",
+        "hall",
+        "kitchen",
+        "larder",
+        "passage",
+        "porch",
+        "wc"
+      ],
+      "roomCount": 8,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-498.jpg"
+    },
+    {
+      "page": 501,
+      "rooms": [
+        "basement",
+        "bedroom",
+        "cellar",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "library",
+        "pantry",
+        "scullery",
+        "store",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "library",
+        "pantry",
+        "scullery",
+        "store",
+        "wc"
+      ],
+      "roomCount": 14,
+      "kind": "villa",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-501.jpg"
+    },
+    {
+      "page": 502,
+      "rooms": [
+        "basement",
+        "breakfast_room",
+        "cellar",
+        "closet",
+        "dining_room",
+        "dressing_room",
+        "hall",
+        "larder",
+        "lobby",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "breakfast_room",
+        "cellar",
+        "closet",
+        "dining_room",
+        "dressing_room",
+        "hall",
+        "larder",
+        "lobby",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 11,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-502.jpg"
+    },
+    {
+      "page": 503,
+      "rooms": [
+        "dining_room",
+        "hall"
+      ],
+      "dwellingRooms": [
+        "dining_room",
+        "hall"
+      ],
+      "roomCount": 2,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-503.jpg"
+    },
+    {
+      "page": 505,
+      "rooms": [
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "larder",
+        "lobby",
+        "office",
+        "porch",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "larder",
+        "lobby",
+        "office",
+        "porch",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 10,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-505.jpg"
+    },
+    {
+      "page": 514,
+      "rooms": [
+        "basement",
+        "chamber",
+        "closet",
+        "hall",
+        "kitchen"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "closet",
+        "hall",
+        "kitchen"
+      ],
+      "roomCount": 5,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-514.jpg"
+    },
+    {
+      "page": 518,
+      "rooms": [
+        "basement",
+        "cellar",
+        "chamber",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "office",
+        "shop",
+        "warehouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "chamber",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "office",
+        "shop",
+        "warehouse",
+        "wc"
+      ],
+      "roomCount": 10,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-518.jpg"
+    },
+    {
+      "page": 519,
+      "rooms": [
+        "hall",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "scullery"
+      ],
+      "roomCount": 2,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-519.jpg"
+    },
+    {
+      "page": 526,
+      "rooms": [
+        "area",
+        "basement",
+        "bedroom",
+        "cellar",
+        "chamber",
+        "dressing_room",
+        "kitchen",
+        "larder",
+        "pantry",
+        "parlour",
+        "porch",
+        "school_room",
+        "scullery",
+        "store",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "chamber",
+        "dressing_room",
+        "kitchen",
+        "larder",
+        "pantry",
+        "parlour",
+        "porch",
+        "school_room",
+        "scullery",
+        "store",
+        "wc"
+      ],
+      "roomCount": 15,
+      "kind": "school",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-526.jpg"
+    },
+    {
+      "page": 529,
+      "rooms": [
+        "area",
+        "basement",
+        "breakfast_room",
+        "cellar",
+        "closet",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "pantry",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "breakfast_room",
+        "cellar",
+        "closet",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "pantry",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 11,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-529.jpg"
+    },
+    {
+      "page": 533,
+      "rooms": [
+        "closet",
+        "passage",
+        "shop",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "passage",
+        "shop",
+        "staircase"
+      ],
+      "roomCount": 4,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-533.jpg"
+    },
+    {
+      "page": 534,
+      "rooms": [
+        "bar",
+        "hall",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "hall",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-534.jpg"
+    },
+    {
+      "page": 538,
+      "rooms": [
+        "passage",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "passage",
+        "staircase"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-538.jpg"
+    },
+    {
+      "page": 539,
+      "rooms": [
+        "kitchen",
+        "parlour",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "kitchen",
+        "parlour",
+        "scullery"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-539.jpg"
+    },
+    {
+      "page": 541,
+      "rooms": [
+        "cellar",
+        "kitchen",
+        "scullery",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "kitchen",
+        "scullery",
+        "wc"
+      ],
+      "roomCount": 4,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-541.jpg"
+    },
+    {
+      "page": 543,
+      "rooms": [
+        "bedroom",
+        "landing"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "landing"
+      ],
+      "roomCount": 2,
+      "kind": "cottage",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-543.jpg"
+    },
+    {
+      "page": 555,
+      "rooms": [
+        "area",
+        "hall",
+        "office"
+      ],
+      "dwellingRooms": [
+        "hall",
+        "office"
+      ],
+      "roomCount": 3,
+      "kind": "tenement",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-555.jpg"
+    },
+    {
+      "page": 564,
+      "rooms": [
+        "area",
+        "warehouse"
+      ],
+      "dwellingRooms": [
+        "warehouse"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-564.jpg"
+    },
+    {
+      "page": 571,
+      "rooms": [
+        "area",
+        "passage",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "passage",
+        "staircase"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-571.jpg"
+    },
+    {
+      "page": 572,
+      "rooms": [
+        "area",
+        "cellar",
+        "dressing_room",
+        "shop"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "dressing_room",
+        "shop"
+      ],
+      "roomCount": 4,
+      "kind": "semi-detached",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-572.jpg"
+    },
+    {
+      "page": 576,
+      "rooms": [
+        "area",
+        "hall"
+      ],
+      "dwellingRooms": [
+        "hall"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-576.jpg"
+    },
+    {
+      "page": 584,
+      "rooms": [
+        "court",
+        "office"
+      ],
+      "dwellingRooms": [
+        "office"
+      ],
+      "roomCount": 2,
+      "kind": "detached",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-584.jpg"
+    },
+    {
+      "page": 587,
+      "rooms": [
+        "area",
+        "cellar",
+        "closet",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "closet",
+        "wc"
+      ],
+      "roomCount": 4,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-587.jpg"
+    },
+    {
+      "page": 600,
+      "rooms": [
+        "bar",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "staircase",
+        "wc"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-600.jpg"
+    },
+    {
+      "page": 603,
+      "rooms": [
+        "bar",
+        "closet",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "closet",
+        "wc"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-603.jpg"
+    },
+    {
+      "page": 616,
+      "rooms": [
+        "basement",
+        "kitchen",
+        "shop"
+      ],
+      "dwellingRooms": [
+        "kitchen",
+        "shop"
+      ],
+      "roomCount": 3,
+      "kind": "school",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-616.jpg"
+    },
+    {
+      "page": 619,
+      "rooms": [
+        "chamber",
+        "library"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "library"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-619.jpg"
+    },
+    {
+      "page": 620,
+      "rooms": [
+        "chamber",
+        "passage",
+        "study"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "passage",
+        "study"
+      ],
+      "roomCount": 3,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-620.jpg"
+    },
+    {
+      "page": 628,
+      "rooms": [
+        "bar",
+        "shop"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "shop"
+      ],
+      "roomCount": 2,
+      "kind": "shop",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-628.jpg"
+    },
+    {
+      "page": 636,
+      "rooms": [
+        "cellar",
+        "closet",
+        "office",
+        "parlour"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "closet",
+        "office",
+        "parlour"
+      ],
+      "roomCount": 4,
+      "kind": "lodge",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-636.jpg"
+    },
+    {
+      "page": 639,
+      "rooms": [
+        "bar",
+        "chamber",
+        "lobby",
+        "office"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "chamber",
+        "lobby",
+        "office"
+      ],
+      "roomCount": 4,
+      "kind": "lodge",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-639.jpg"
+    },
+    {
+      "page": 643,
+      "rooms": [
+        "basement",
+        "yard"
+      ],
+      "dwellingRooms": [],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-643.jpg"
+    },
+    {
+      "page": 647,
+      "rooms": [
+        "conservatory",
+        "shop"
+      ],
+      "dwellingRooms": [
+        "conservatory",
+        "shop"
+      ],
+      "roomCount": 2,
+      "kind": "shop",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-647.jpg"
+    },
+    {
+      "page": 671,
+      "rooms": [
+        "basement",
+        "closet",
+        "wc",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "closet",
+        "wc"
+      ],
+      "roomCount": 4,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-671.jpg"
+    },
+    {
+      "page": 687,
+      "rooms": [
+        "chamber",
+        "hall"
+      ],
+      "dwellingRooms": [
+        "chamber",
+        "hall"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-687.jpg"
+    },
+    {
+      "page": 711,
+      "rooms": [
+        "bar",
+        "closet"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "closet"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-711.jpg"
+    },
+    {
+      "page": 720,
+      "rooms": [
+        "area",
+        "hall"
+      ],
+      "dwellingRooms": [
+        "hall"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-720.jpg"
+    },
+    {
+      "page": 721,
+      "rooms": [
+        "bedroom",
+        "coach_house",
+        "stable"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "coach_house",
+        "stable"
+      ],
+      "roomCount": 3,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-721.jpg"
+    },
+    {
+      "page": 731,
+      "rooms": [
+        "area",
+        "bar",
+        "shop",
+        "stable",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "shop",
+        "stable"
+      ],
+      "roomCount": 5,
+      "kind": "labourer",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-731.jpg"
+    },
+    {
+      "page": 739,
+      "rooms": [
+        "basement",
+        "cellar",
+        "conservatory",
+        "porch"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "conservatory",
+        "porch"
+      ],
+      "roomCount": 4,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-739.jpg"
+    },
+    {
+      "page": 740,
+      "rooms": [
+        "bedroom",
+        "coach_house",
+        "stable",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "coach_house",
+        "stable"
+      ],
+      "roomCount": 4,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-740.jpg"
+    },
+    {
+      "page": 743,
+      "rooms": [
+        "bar",
+        "stable"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "stable"
+      ],
+      "roomCount": 2,
+      "kind": "inn",
+      "hasScaleBar": false,
+      "isDrawing": true,
+      "image": "page-743.jpg"
+    },
+    {
+      "page": 744,
+      "rooms": [
+        "passage",
+        "stable"
+      ],
+      "dwellingRooms": [
+        "passage",
+        "stable"
+      ],
+      "roomCount": 2,
+      "kind": "",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-744.jpg"
+    },
+    {
+      "page": 776,
+      "rooms": [
+        "conservatory",
+        "office"
+      ],
+      "dwellingRooms": [
+        "conservatory",
+        "office"
+      ],
+      "roomCount": 2,
+      "kind": "school",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-776.jpg"
+    },
+    {
+      "page": 777,
+      "rooms": [
+        "shop",
+        "stable"
+      ],
+      "dwellingRooms": [
+        "shop",
+        "stable"
+      ],
+      "roomCount": 2,
+      "kind": "lodge",
+      "hasScaleBar": false,
+      "isDrawing": false,
+      "image": "page-777.jpg"
+    }
+  ],
+  "specifications": [
+    {
+      "page": 53,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "lobby",
+        "parlour",
+        "passage",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "lobby",
+        "parlour",
+        "passage",
+        "staircase"
+      ],
+      "dimensions": 11,
+      "kind": "school",
+      "image": "page-053.jpg"
+    },
+    {
+      "page": 109,
+      "rooms": [
+        "bedroom",
+        "closet",
+        "kitchen",
+        "living_room",
+        "passage",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "kitchen",
+        "living_room",
+        "passage",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dimensions": 5,
+      "kind": "labourer",
+      "image": "page-109.jpg"
+    },
+    {
+      "page": 110,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "kitchen",
+        "landing",
+        "pantry",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "kitchen",
+        "landing",
+        "pantry",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dimensions": 14,
+      "kind": "",
+      "image": "page-110.jpg"
+    },
+    {
+      "page": 133,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "living_room",
+        "office",
+        "pantry",
+        "parlour",
+        "passage",
+        "porch",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "living_room",
+        "office",
+        "pantry",
+        "parlour",
+        "passage",
+        "porch",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dimensions": 5,
+      "kind": "farm house",
+      "image": "page-133.jpg"
+    },
+    {
+      "page": 134,
+      "rooms": [
+        "bedroom",
+        "brewhouse",
+        "closet",
+        "dairy",
+        "drawing_room",
+        "kitchen",
+        "landing",
+        "larder",
+        "office",
+        "passage",
+        "scullery",
+        "stable",
+        "staircase",
+        "store",
+        "wc",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "brewhouse",
+        "closet",
+        "dairy",
+        "drawing_room",
+        "kitchen",
+        "landing",
+        "larder",
+        "office",
+        "passage",
+        "scullery",
+        "stable",
+        "staircase",
+        "store",
+        "wc"
+      ],
+      "dimensions": 3,
+      "kind": "farm house",
+      "image": "page-134.jpg"
+    },
+    {
+      "page": 142,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "living_room",
+        "office",
+        "pantry",
+        "parlour",
+        "stable",
+        "staircase",
+        "wc",
+        "yard"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "living_room",
+        "office",
+        "pantry",
+        "parlour",
+        "stable",
+        "staircase",
+        "wc"
+      ],
+      "dimensions": 2,
+      "kind": "cottage",
+      "image": "page-142.jpg"
+    },
+    {
+      "page": 158,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "kitchen",
+        "parlour",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "kitchen",
+        "parlour",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dimensions": 4,
+      "kind": "semi-detached",
+      "image": "page-158.jpg"
+    },
+    {
+      "page": 161,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "kitchen",
+        "larder",
+        "living_room",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "hall",
+        "kitchen",
+        "larder",
+        "living_room",
+        "parlour",
+        "passage",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dimensions": 10,
+      "kind": "cottage",
+      "image": "page-161.jpg"
+    },
+    {
+      "page": 189,
+      "rooms": [
+        "bedroom",
+        "landing",
+        "living_room",
+        "pantry",
+        "passage",
+        "porch",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "landing",
+        "living_room",
+        "pantry",
+        "passage",
+        "porch",
+        "scullery",
+        "staircase",
+        "washhouse",
+        "wc"
+      ],
+      "dimensions": 6,
+      "kind": "cottage",
+      "image": "page-189.jpg"
+    },
+    {
+      "page": 225,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "pantry",
+        "parlour",
+        "passage",
+        "porch",
+        "scullery",
+        "staircase",
+        "store",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "pantry",
+        "parlour",
+        "passage",
+        "porch",
+        "scullery",
+        "staircase",
+        "store",
+        "wc"
+      ],
+      "dimensions": 4,
+      "kind": "semi-detached",
+      "image": "page-225.jpg"
+    },
+    {
+      "page": 226,
+      "rooms": [
+        "area",
+        "basement",
+        "bedroom",
+        "breakfast_room",
+        "cellar",
+        "closet",
+        "conservatory",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "passage",
+        "porch",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "breakfast_room",
+        "cellar",
+        "closet",
+        "conservatory",
+        "dining_room",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "passage",
+        "porch",
+        "staircase",
+        "wc"
+      ],
+      "dimensions": 13,
+      "kind": "semi-detached",
+      "image": "page-226.jpg"
+    },
+    {
+      "page": 254,
+      "rooms": [
+        "bar",
+        "cellar",
+        "kitchen",
+        "larder",
+        "pantry",
+        "parlour",
+        "scullery",
+        "staircase",
+        "store",
+        "tap_room"
+      ],
+      "dwellingRooms": [
+        "bar",
+        "cellar",
+        "kitchen",
+        "larder",
+        "pantry",
+        "parlour",
+        "scullery",
+        "staircase",
+        "store",
+        "tap_room"
+      ],
+      "dimensions": 2,
+      "kind": "inn",
+      "image": "page-254.jpg"
+    },
+    {
+      "page": 273,
+      "rooms": [
+        "bedroom",
+        "cellar",
+        "chamber",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "landing",
+        "lobby",
+        "pantry",
+        "passage",
+        "scullery",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "chamber",
+        "closet",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "landing",
+        "lobby",
+        "pantry",
+        "passage",
+        "scullery",
+        "staircase",
+        "wc"
+      ],
+      "dimensions": 4,
+      "kind": "",
+      "image": "page-273.jpg"
+    },
+    {
+      "page": 322,
+      "rooms": [
+        "area",
+        "basement",
+        "bedroom",
+        "closet",
+        "conservatory",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "library",
+        "lobby",
+        "parlour",
+        "scullery",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "closet",
+        "conservatory",
+        "dining_room",
+        "drawing_room",
+        "dressing_room",
+        "hall",
+        "kitchen",
+        "library",
+        "lobby",
+        "parlour",
+        "scullery",
+        "staircase",
+        "wc"
+      ],
+      "dimensions": 4,
+      "kind": "detached",
+      "image": "page-322.jpg"
+    },
+    {
+      "page": 349,
+      "rooms": [
+        "basement",
+        "bedroom",
+        "cellar",
+        "chamber",
+        "closet",
+        "dairy",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "library",
+        "living_room",
+        "lobby",
+        "passage",
+        "scullery",
+        "staircase"
+      ],
+      "dwellingRooms": [
+        "bedroom",
+        "cellar",
+        "chamber",
+        "closet",
+        "dairy",
+        "drawing_room",
+        "hall",
+        "kitchen",
+        "larder",
+        "library",
+        "living_room",
+        "lobby",
+        "passage",
+        "scullery",
+        "staircase"
+      ],
+      "dimensions": 2,
+      "kind": "labourer",
+      "image": "page-349.jpg"
+    },
+    {
+      "page": 373,
+      "rooms": [
+        "basement",
+        "bathroom",
+        "bedroom",
+        "closet",
+        "hall",
+        "kitchen",
+        "larder",
+        "library",
+        "lobby",
+        "pantry",
+        "store",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bathroom",
+        "bedroom",
+        "closet",
+        "hall",
+        "kitchen",
+        "larder",
+        "library",
+        "lobby",
+        "pantry",
+        "store",
+        "wc"
+      ],
+      "dimensions": 6,
+      "kind": "detached",
+      "image": "page-373.jpg"
+    },
+    {
+      "page": 377,
+      "rooms": [
+        "bathroom",
+        "bedroom",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "larder",
+        "pantry",
+        "parlour",
+        "passage",
+        "porch",
+        "scullery",
+        "staircase",
+        "wc"
+      ],
+      "dwellingRooms": [
+        "bathroom",
+        "bedroom",
+        "closet",
+        "hall",
+        "kitchen",
+        "landing",
+        "larder",
+        "pantry",
+        "parlour",
+        "passage",
+        "porch",
+        "scullery",
+        "staircase",
+        "wc"
+      ],
+      "dimensions": 11,
+      "kind": "cottage",
+      "image": "page-377.jpg"
+    },
+    {
+      "page": 636,
+      "rooms": [
+        "cellar",
+        "chamber",
+        "closet",
+        "hall",
+        "office",
+        "pantry",
+        "parlour",
+        "scullery"
+      ],
+      "dwellingRooms": [
+        "cellar",
+        "chamber",
+        "closet",
+        "hall",
+        "office",
+        "pantry",
+        "parlour",
+        "scullery"
+      ],
+      "dimensions": 4,
+      "kind": "lodge",
+      "image": "page-636.jpg"
+    }
+  ]
+}

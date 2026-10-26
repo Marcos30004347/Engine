@@ -1,0 +1,220 @@
+{
+  "page": 127,
+  "source": "The Builder's Practical Director, Plate 26, PDF page 127; specification on PDF page 158",
+  "kind": "fourth-rate house in a row of four",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "terrace",
+    "plan": "double-pile with back addition",
+    "roof": "parapet",
+    "features": [
+      {
+        "kind": "ashes pit",
+        "count": 1
+      },
+      {
+        "kind": "rear yard",
+        "count": 1
+      }
+    ]
+  },
+  "notes": "One of a row of four; the plate draws two of them, mirrored about the party wall. The front and back parlours communicate by folding doors, which the specification states outright - an open wall, not a door. The specification gives the front bedroom as 12'9 by 9'6 and the plate as 12 by 9'6; the plate's is recorded. 750 pounds for the four, under 200 for one built alone.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "hall",
+          "raw": "HALL"
+        },
+        {
+          "use": "staircase",
+          "raw": "staircase drawn at the party wall"
+        },
+        {
+          "use": "parlour",
+          "qualifier": "front",
+          "raw": "SITTING ROOM; 'A Front Parlour' in the specification",
+          "feet": [
+            12,
+            11.5
+          ]
+        },
+        {
+          "use": "parlour",
+          "qualifier": "back",
+          "raw": "PARLOR; 'A Back ditto'",
+          "feet": [
+            11,
+            9.5
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            12,
+            8
+          ]
+        },
+        {
+          "use": "washhouse",
+          "raw": "WASH HOUSE",
+          "feet": [
+            8.5,
+            6.5
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "W.C."
+        },
+        {
+          "use": "store",
+          "qualifier": "ashes",
+          "raw": "ASHES"
+        },
+        {
+          "use": "cellar",
+          "qualifier": "coal",
+          "raw": "a coal cellar under the staircase"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "hall",
+          "b": "parlour:front",
+          "link": "door"
+        },
+        {
+          "a": "hall",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "hall",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "parlour:front",
+          "b": "parlour:back",
+          "link": "open"
+        },
+        {
+          "a": "parlour:back",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "washhouse",
+          "link": "door"
+        },
+        {
+          "a": "washhouse",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "washhouse",
+          "b": "store:ashes",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "cellar:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "bedroom floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "large front",
+          "raw": "BED ROOM",
+          "feet": [
+            12,
+            9.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "children's",
+          "raw": "BED ROOM; 'Childrens room adjoining'",
+          "feet": [
+            9,
+            5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM",
+          "feet": [
+            11,
+            9.5
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "over the kitchen",
+          "raw": "BED ROOM",
+          "feet": [
+            12,
+            8
+          ]
+        },
+        {
+          "use": "landing",
+          "raw": "landing"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "landing",
+          "b": "bedroom:large front",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "landing",
+          "b": "bedroom:over the kitchen",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:large front",
+          "b": "bedroom:children's",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "landing",
+          "link": "open"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}

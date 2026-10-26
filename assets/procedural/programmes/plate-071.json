@@ -1,0 +1,170 @@
+{
+  "page": 71,
+  "source": "The Builder's Practical Director, Plate 20, PDF page 71; specification and adjacency prose on PDF page 109",
+  "kind": "labourer's cottage",
+  "storeys": 2,
+  "basement": false,
+  "floorsDrawn": [
+    0,
+    1
+  ],
+  "massing": {
+    "confidence": "high",
+    "attachment": "semi-detached",
+    "plan": "row",
+    "roof": "gabled",
+    "features": [
+      {
+        "kind": "central gable",
+        "count": 1
+      },
+      {
+        "kind": "barge-board",
+        "count": 1
+      },
+      {
+        "kind": "lean-to porch",
+        "count": 2
+      }
+    ]
+  },
+  "notes": "'Adapted for a narrow slip of land' - one room deep, four rooms long, built in pairs. The plate draws the ground plan of the right-hand cottage and the bedroom floor of the left-hand one, so the two halves are mirrored; transcribed as one house. Cost of a pair, 170 pounds.",
+  "adjacencySource": "stated",
+  "floors": [
+    {
+      "level": 0,
+      "name": "ground",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "passage",
+          "raw": "Passage and staircase",
+          "feet": [
+            10,
+            5
+          ]
+        },
+        {
+          "use": "staircase",
+          "raw": "stairs behind the front door"
+        },
+        {
+          "use": "living_room",
+          "raw": "LIVING ROOM",
+          "feet": [
+            15,
+            12
+          ]
+        },
+        {
+          "use": "kitchen",
+          "raw": "KITCHEN",
+          "feet": [
+            10,
+            10
+          ]
+        },
+        {
+          "use": "washhouse",
+          "raw": "WASH HOUSE",
+          "feet": [
+            10,
+            7
+          ]
+        },
+        {
+          "use": "wc",
+          "raw": "WC"
+        },
+        {
+          "use": "store",
+          "qualifier": "coal",
+          "raw": "a roomy place for coals or fuel, under the stairs"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "passage",
+          "b": "staircase",
+          "link": "open"
+        },
+        {
+          "a": "passage",
+          "b": "living_room",
+          "link": "door"
+        },
+        {
+          "a": "passage",
+          "b": "kitchen",
+          "link": "door"
+        },
+        {
+          "a": "kitchen",
+          "b": "washhouse",
+          "link": "door"
+        },
+        {
+          "a": "washhouse",
+          "b": "wc",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "store:coal",
+          "link": "door"
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "name": "bedroom floor",
+      "complete": true,
+      "rooms": [
+        {
+          "use": "bedroom",
+          "qualifier": "front",
+          "raw": "BED ROOM",
+          "feet": [
+            15,
+            12
+          ]
+        },
+        {
+          "use": "bedroom",
+          "qualifier": "back",
+          "raw": "BED ROOM",
+          "feet": [
+            10,
+            10
+          ]
+        },
+        {
+          "use": "closet",
+          "raw": "a closet of good size in the corner by the staircase window"
+        }
+      ],
+      "adjacencies": [
+        {
+          "a": "staircase",
+          "b": "bedroom:front",
+          "link": "door"
+        },
+        {
+          "a": "staircase",
+          "b": "bedroom:back",
+          "link": "door"
+        },
+        {
+          "a": "bedroom:back",
+          "b": "closet",
+          "link": "door"
+        }
+      ]
+    }
+  ],
+  "confidence": {
+    "rooms": "high",
+    "dimensions": "high",
+    "adjacency": "high"
+  }
+}
