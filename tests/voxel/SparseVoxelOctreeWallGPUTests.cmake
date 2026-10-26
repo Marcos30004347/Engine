@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.10)
+
+get_filename_component(TEST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+add_executable(
+  SparseVoxelOctreeWallGPUTests
+  ${TEST_DIR}/SparseVoxelOctreeWallGPUTests.cpp)
+target_link_libraries(SparseVoxelOctreeWallGPUTests PRIVATE Engine)
+add_dependencies(SparseVoxelOctreeWallGPUTests wgsl_virtualgeometry_id_readback_cs)
+add_dependencies(SparseVoxelOctreeWallGPUTests wgsl_virtualgeometry_page_decode_cs)
+add_dependencies(SparseVoxelOctreeWallGPUTests wgsl_virtualgeometry_cull_prepass_multipass)
+add_dependencies(SparseVoxelOctreeWallGPUTests wgsl_virtualgeometry_vertex_shader)
+add_dependencies(SparseVoxelOctreeWallGPUTests wgsl_virtualgeometry_fragment_shader)
+add_dependencies(SparseVoxelOctreeWallGPUTests wgsl_virtualgeometry_vertex_shader_draw_indirect_count_disabled)
+add_dependencies(SparseVoxelOctreeWallGPUTests wgsl_virtualgeometry_cull_prepass_multipass_draw_indirect_count_disabled)
+
+add_test(
+  NAME SparseVoxelOctreeWallGPU
+  COMMAND SparseVoxelOctreeWallGPUTests)
+set_tests_properties(
+  SparseVoxelOctreeWallGPU
+  PROPERTIES
+    TIMEOUT 900
+    LABELS "svraster.virtualgeometry;svraster.streaming;gpu")

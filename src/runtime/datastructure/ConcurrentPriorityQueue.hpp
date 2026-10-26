@@ -1,0 +1,648 @@
+#pragma once
+
+#include "datastructure/ConcurrentEpochGarbageCollector.hpp"
+#include <atomic>
+#include <unordered_set>
+namespace lib
+{
+
+template <typename T, typename P = size_t> class ConcurrentPriorityQueue
+{
+  static thread_local uint32_t seed;
+
+  struct Node
+  {
+    std::atomic<Node *> parent;
+    std::atomic<Node *> left;
+    std::atomic<Node *> next;
+    std::atomic<Node *> right;
+    T value;
+    P priority;
+    std::atomic<unsigned char> inserting;
+    std::atomic<unsigned char> parentDirection;
+
+    Node(T value, P priority) : parent(nullptr), left(nullptr), next(nullptr), right(nullptr), inserting(false), parentDirection(false), value(value), priority(priority)
+    {
+    }
+  };
+
+  struct InsertSeekRecordInfo
+  {
+    Node *child;
+    Node *next;
+    Node *cast1;
+    Node *cast2;
+    unsigned char duplicate;
+    unsigned char parentDirection;
+  };
+
+  std::atomic<Node *> head;
+  std::atomic<Node *> root;
+
+  ConcurrentEpochGarbageCollector<Node> garbageCollector;
+
+  static constexpr size_t LEFT_DIRECTION = 1;
+  static constexpr size_t RIGHT_DIRECTION = 2;
+  static constexpr size_t DUPLICATE_DIRECTION = 3;
+  static constexpr size_t NOT_MARKED = 0;
+  static constexpr size_t DELETE_MARK = 1;
+  static constexpr size_t INSERT_MARK = 2;
+  static constexpr size_t LEAF_MARK = 3;
+
+  static inline Node *address(Node *ptr)
+  {
+    return reinterpret_cast<Node *>(reinterpret_cast<uintptr_t>(ptr) & ~uintptr_t(0x3));
+  }
+
+  static inline uint64_t getMark(Node *ptr)
+  {
+    return reinterpret_cast<uintptr_t>(ptr) & 0x3;
+  }
+
+  static inline Node *mark(volatile Node *ptr, size_t mark)
+  {
+    return reinterpret_cast<Node *>((reinterpret_cast<uintptr_t>(ptr) & ~uintptr_t(0x3)) | mark);
+  }
+
+#define LOAD_ADDR(c, b, a)                                                                                                                                                         \
+  a = b;                                                                                                                                                                           \
+  c = address(a);
+
+#define LOAD(a, b) a = b;
+
+  inline void readLeft(volatile Node *&parent_node, volatile Node *&child_node, volatile size_t &child_mark, size_t &operation_mark, unsigned char &parent_direction)
+  {
+    Node *parent, *parent_addr;
+
+    LOAD_ADDR(parent_addr, parent_node->next.load(), parent);
+
+    operation_mark = getMark(parent);
+
+    Node *raw;
+    LOAD_ADDR(child_node, parent_node->left.load(), raw);
+
+    child_mark = getMark(raw);
+    parent_direction = LEFT_DIRECTION;
+  }
+
+  inline void readRight(volatile Node *&parent_node, volatile Node *&child_node, volatile size_t &child_mark, size_t &operation_mark, unsigned char &parent_direction)
+  {
+    Node *parent, *parent_addr;
+    LOAD_ADDR(parent_addr, parent_node->next.load(), parent);
+
+    operation_mark = getMark(parent);
+    Node *raw;
+    LOAD_ADDR(child_node, parent_node->right.load(), raw);
+    child_mark = getMark(raw);
+    parent_direction = RIGHT_DIRECTION;
+  }
+
+  uint32_t xorshift32()
+  {
+    if (seed == 0)
+    {
+      seed = static_cast<uint32_t>(os::Thread::getCurrentThreadId());
+    }
+    seed ^= seed << 13;
+    seed ^= seed >> 17;
+    seed ^= seed << 5;
+    return seed;
+  }
+
+  uint32_t randomGen(size_t randomScale = 100)
+  {
+    return xorshift32() % randomScale;
+  }
+
+  InsertSeekRecordInfo insertSearch(P priority)
+  {
+    // dump += "inserting " + std::to_string(priority) + "\n";
+    Node *parent_node_left, *parent_original, *grand_parent_node_next, *grand_parent_node_left_addr, *grand_parent_node_left, *grand_parent_node_next_addr, *child_node_next_addr,
+        *child_node_next;
+
+    volatile Node *grand_parent_node = nullptr;
+
+    volatile Node *parent_node;
+    LOAD(parent_node, root.load());
+
+    volatile Node *child_node; // = address(parent_node->left.load());
+    LOAD_ADDR(child_node, parent_node->left.load(), parent_node_left);
+    size_t operation_mark = getMark(parent_node_left);
+
+    volatile size_t child_mark = 0;
+    unsigned char parent_direction;
+
+    Node *marked_node = nullptr;
+
+    while (true)
+    {
+      // dump += "current " + std::to_string(child_node->priority) + "\n";
+
+      if (operation_mark == DELETE_MARK)
+      {
+        readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
+        marked_node = const_cast<Node *>(parent_node);
+
+        while (true)
+        {
+          if (operation_mark == DELETE_MARK)
+          {
+            if (child_mark != LEAF_MARK)
+            {
+              parent_node = child_node;
+
+              readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
+              continue;
+            }
+            else
+            {
+              LOAD_ADDR(parent_node, child_node->next.load(), parent_original);
+              readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
+              break;
+            }
+          }
+          else
+          {
+            const static uint32_t insertCleanRate = 50;
+
+            // occasional cleanup
+            if (randomGen(100) < insertCleanRate)
+            {
+              LOAD_ADDR(grand_parent_node_next_addr, grand_parent_node->next.load(), grand_parent_node_next);
+              LOAD_ADDR(grand_parent_node_left_addr, grand_parent_node->left.load(), grand_parent_node_left);
+
+              if (!getMark(grand_parent_node_next) && grand_parent_node_left == marked_node)
+              {
+                grand_parent_node->left.compare_exchange_strong(marked_node, const_cast<Node *>(parent_node));
+              }
+            }
+
+            // TRAVERSE()
+            if (priority <= parent_node->priority)
+              readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction);
+            else
+              readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
+            break;
+          }
+        }
+        continue;
+      }
+
+      if (child_mark != LEAF_MARK)
+      {
+        grand_parent_node = parent_node;
+        parent_node = child_node;
+
+        // dump += "traversal 1: " + std::to_string(priority) + " <= " + std::to_string(parent_node->priority) + "\n";
+
+        if (priority <= parent_node->priority)
+          readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction);
+        else
+          readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
+      }
+      else
+      {
+
+        Node *current_next; // = child_node->next.load();
+        Node *child_next;   // = address(current_next);
+
+        LOAD_ADDR(child_next, child_node->next.load(), current_next);
+
+        if (getMark(current_next))
+        {
+          // printf("got mark\n");
+          parent_node = child_next;
+          // dump += "traversal 2 right: " + std::to_string(priority) + " <= " + std::to_string(parent_node->priority) + "\n";
+          readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
+          continue;
+        }
+
+        while (child_next && child_next->inserting.load())
+        {
+          /*
+          dump += "inserting " + std::to_string(priority) + " will try help insert, child next = " + std::to_string(child_next->priority) + "\n";
+          // printf("child next inserting\n");
+          tryHelpInsert(child_next);
+
+          parent_node = child_next;
+          dump += "traversal 3: " + std::to_string(priority) + " <= " + std::to_string(parent_node->priority) + "\n";
+          if (priority <= parent_node->priority)
+            readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction);
+          else
+            readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
+
+          continue;
+          */
+        }
+
+        if (child_next && child_next->priority == priority)
+        {
+          InsertSeekRecordInfo ins_seek;
+
+          // printf("child next priority equal %p %lu %lu\n", child_next, child_next->priority, priority);
+          ins_seek.duplicate = DUPLICATE_DIRECTION;
+          return ins_seek;
+        }
+
+        Node *parent_left, *parent_left_addr;
+        Node *parent_right, *parent_right_addr;
+
+        LOAD_ADDR(parent_left_addr, parent_node->left.load(), parent_left);
+        LOAD_ADDR(parent_right_addr, parent_node->right.load(), parent_right);
+
+        bool is_correct_leaf = (parent_direction == LEFT_DIRECTION && parent_left == mark(child_node, LEAF_MARK)) ||
+                               (parent_direction == RIGHT_DIRECTION && parent_right == mark(child_node, LEAF_MARK));
+
+        if (is_correct_leaf)
+        {
+          // printf("correct leaf %i\n", parent_direction);
+          InsertSeekRecordInfo ins_seek;
+          ins_seek.duplicate = 0;
+          ins_seek.child = const_cast<Node *>(child_node);
+          ins_seek.cast1 = const_cast<Node *>(parent_node);
+          ins_seek.cast2 = mark(child_node, LEAF_MARK);
+          ins_seek.next = child_next;
+          ins_seek.parentDirection = parent_direction;
+
+          // std::string out = "";
+          // Node *r = root.load(std::memory_order_acquire);
+          // std::unordered_set<Node *> visited;
+          // printSubtree(r, 0, out, visited, "Root");
+
+          return ins_seek;
+        }
+
+        // dump += "traversal 4: " + std::to_string(priority) + " <= " + std::to_string(parent_node->priority) + "\n";
+        //  else TRAVERSE()
+        if (priority < parent_node->priority)
+          readLeft(parent_node, child_node, child_mark, operation_mark, parent_direction);
+        else
+          readRight(parent_node, child_node, child_mark, operation_mark, parent_direction);
+      }
+    }
+  }
+
+  void physicalDelete(Node *root, Node *dummyNode)
+  {
+    volatile Node *grandParent = nullptr;
+    volatile Node *parent; // = root.load(std::memory_order_acquire);
+    volatile Node *child;  // = address(parent->left.load(std::memory_order_acquire));
+    Node *child_ptr;
+
+    LOAD(parent, root);
+    LOAD_ADDR(child, parent->left.load(), child_ptr);
+
+    unsigned char parentDirection;
+    size_t opMark = getMark(child_ptr);
+
+    volatile size_t childMark = 0;
+    Node *marked = nullptr;
+
+    while (true)
+    {
+      if (opMark == DELETE_MARK)
+      {
+        readRight(parent, child, childMark, opMark, parentDirection);
+        marked = const_cast<Node *>(parent);
+
+        while (true)
+        {
+          if (opMark == DELETE_MARK)
+          {
+            if (childMark != LEAF_MARK)
+            {
+              parent = child;
+
+              readRight(parent, child, childMark, opMark, parentDirection);
+
+              continue;
+            }
+            else
+            {
+              Node *childNext, *childNextPtr;
+              LOAD_ADDR(childNext, child->next.load(std::memory_order_acquire), childNextPtr);
+              Node *parentRightPtr, *parentRight;
+
+              // LOAD_ADDR(parentRight, parent->right.load(std::memory_order_acquire), parentRightPtr, record, 10);
+
+              if (childNext->inserting.load(std::memory_order_acquire) && childNext->parent.load(std::memory_order_acquire) == parent)
+              {
+                while (childNext->inserting.load(std::memory_order_acquire) && childNext->parent.load(std::memory_order_acquire) == parent)
+                {
+                }
+              }
+              else if (parent->right.load(std::memory_order_acquire) == mark(child, LEAF_MARK))
+              {
+                if (grandParent && grandParent->priority != P(0))
+                {
+                  grandParent->priority = 0;
+                }
+                goto FINISH;
+              }
+
+              readRight(parent, child, childMark, opMark, parentDirection);
+              continue;
+            }
+          }
+          else
+          {
+            // try cleanup
+            if (grandParent)
+            {
+              Node *grandParentNextPtr; // = child->next.load(std::memory_order_acquire);
+              Node *grandParentNext;    // = address(currentNext);
+
+              LOAD_ADDR(grandParentNext, grandParent->next.load(std::memory_order_acquire), grandParentNextPtr);
+
+              if (!getMark(grandParentNextPtr))
+              {
+                if (grandParent->left.load(std::memory_order_acquire) == marked)
+                {
+                  if (grandParent->left.compare_exchange_strong(marked, const_cast<Node *>(parent), std::memory_order_acq_rel, std::memory_order_acquire))
+                  {
+
+                    readLeft(grandParent, child, childMark, opMark, parentDirection);
+                    break;
+                  }
+                }
+              }
+
+              parent = grandParent;
+              readLeft(parent, child, childMark, opMark, parentDirection);
+              break;
+            }
+            goto FINISH;
+          }
+        }
+      }
+      else
+      {
+        // --- traverse active nodes ---
+        if (childMark != LEAF_MARK)
+        {
+          if (parent->priority == P(0) || parent == dummyNode)
+          {
+            if (parent->priority != P(0))
+            {
+              parent->priority = P(0);
+            }
+            goto FINISH;
+          }
+
+          grandParent = parent;
+          parent = child;
+
+          readLeft(parent, child, childMark, opMark, parentDirection);
+          continue;
+        }
+        else
+        {
+          Node *currentNext; // = child->next.load(std::memory_order_acquire);
+          Node *childNext;   // = address(currentNext);
+
+          LOAD_ADDR(childNext, child->next.load(std::memory_order_acquire), currentNext);
+
+          if (getMark(currentNext))
+          {
+            if (childNext->inserting.load(std::memory_order_acquire) && childNext->parent.load(std::memory_order_acquire) == parent)
+            {
+
+              while (childNext->inserting.load(std::memory_order_acquire) && childNext->parent.load(std::memory_order_acquire) == parent)
+              {
+              }
+            }
+            else if (parent->left.load(std::memory_order_acquire) == mark(child, LEAF_MARK))
+            {
+              if (childNext->priority != P(0))
+              {
+                childNext->priority = 0;
+              }
+              goto FINISH;
+            }
+            readLeft(parent, child, childMark, opMark, parentDirection);
+            continue;
+          }
+        }
+      }
+
+    FINISH:
+      break;
+    }
+  }
+
+public:
+  ConcurrentPriorityQueue() : garbageCollector()
+  {
+    auto scope = garbageCollector.openEpochGuard();
+
+    Node *headNode = garbageCollector.template allocate<T, P>(scope, 0, 0);
+    Node *rootNode = garbageCollector.template allocate<T, P>(scope, 0, 1);
+    Node *dummyNode = garbageCollector.template allocate<T, P>(scope, 0, 0);
+
+    dummyNode->priority = 0;
+    dummyNode->value = T(0);
+    dummyNode->left.store(headNode, std::memory_order_relaxed);
+    dummyNode->right.store(mark(dummyNode, LEAF_MARK), std::memory_order_relaxed);
+    dummyNode->parent.store(rootNode, std::memory_order_relaxed);
+    dummyNode->next.store(nullptr, std::memory_order_relaxed);
+
+    headNode->left.store(nullptr, std::memory_order_relaxed);
+    headNode->right.store(nullptr, std::memory_order_relaxed);
+    headNode->next.store(dummyNode, std::memory_order_relaxed);
+    headNode->priority = 0;
+
+    rootNode->left.store(dummyNode, std::memory_order_relaxed);
+    rootNode->right.store(nullptr, std::memory_order_relaxed);
+    rootNode->parent.store(nullptr, std::memory_order_relaxed);
+    rootNode->priority = 1;
+
+    head.store(headNode, std::memory_order_relaxed);
+    root.store(rootNode, std::memory_order_relaxed);
+  }
+
+  ~ConcurrentPriorityQueue()
+  {
+    auto scope = garbageCollector.openEpochGuard();
+
+    while (head.load())
+    {
+      Node *tmp = head.load();
+      head.store(address(tmp->next));
+      scope.retire(tmp);
+    }
+  }
+
+  bool enqueue(const T &value, P priority)
+  {
+    auto scope = garbageCollector.openEpochGuard();
+
+    assert(priority != 0);
+
+    Node *newNode = garbageCollector.allocate(scope, value, priority);
+    newNode->right.store(mark(newNode, LEAF_MARK), std::memory_order_relaxed);
+
+    while (true)
+    {
+      InsertSeekRecordInfo ins = insertSearch(priority);
+
+      if (ins.duplicate == DUPLICATE_DIRECTION)
+      {
+        return false;
+      }
+
+      Node *leaf = ins.child;
+      if (!leaf)
+      {
+        continue;
+      }
+
+      Node *cas1 = ins.cast1;
+      Node *cas2 = ins.cast2;
+      Node *nextLeaf = ins.next;
+
+      unsigned char parentDir = ins.parentDirection;
+
+      newNode->left.store(mark(leaf, LEAF_MARK), std::memory_order_relaxed);
+      newNode->parentDirection.store(parentDir, std::memory_order_relaxed);
+      newNode->parent.store(cas1, std::memory_order_relaxed);
+      newNode->next.store(nextLeaf, std::memory_order_relaxed);
+      newNode->inserting.store(1, std::memory_order_release);
+      unsigned char expected = 1;
+
+      Node *leaf_next_addr, *leaf_next;
+      LOAD_ADDR(leaf_next_addr, leaf->next.load(), leaf_next);
+
+      if (leaf_next == nextLeaf)
+      {
+        if (parentDir == RIGHT_DIRECTION)
+        {
+          if (leaf_next == nextLeaf)
+          {
+            if (leaf->next.compare_exchange_strong(nextLeaf, newNode, std::memory_order_acq_rel, std::memory_order_acquire))
+            {
+              if (newNode->inserting.load(std::memory_order_acquire))
+              {
+                if (cas1->right.load() == cas2)
+                {
+                  cas1->right.compare_exchange_strong(cas2, newNode, std::memory_order_acq_rel, std::memory_order_acquire);
+                }
+                if (newNode->inserting.load())
+                {
+                  newNode->inserting.store(0);
+                }
+              }
+
+              return true;
+            }
+          }
+        }
+        else if (parentDir == LEFT_DIRECTION)
+        {
+          if (leaf_next == nextLeaf)
+          {
+            if (leaf->next.compare_exchange_strong(nextLeaf, newNode))
+            {
+              if (newNode->inserting.load(std::memory_order_acquire))
+              {
+                if (cas1->left.load() == cas2)
+                {
+                  cas1->left.compare_exchange_strong(cas2, newNode);
+                }
+                if (newNode->inserting.load())
+                {
+                  newNode->inserting.store(0);
+                }
+              }
+
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  bool dequeue(T &out)
+  {
+    auto scope = garbageCollector.openEpochGuard();
+
+    Node *hNode = head.load()->next;
+
+    while (true)
+    {
+      if (hNode == nullptr)
+      {
+        return false;
+      }
+
+      if (getMark(hNode) == DELETE_MARK)
+      {
+        hNode = address(hNode->next);
+        continue;
+      }
+
+      Node *xorNode = (Node *)reinterpret_cast<std::atomic<uintptr_t> &>(hNode->next).fetch_or(1LL, std::memory_order_acquire);
+
+      if (!(getMark(xorNode) == DELETE_MARK))
+      {
+        out = xorNode->value;
+
+        xorNode->priority = 0;
+
+        // if (randomGen(100) < 50)
+        // {
+        //   return true;
+        // }
+
+        if (head.load()->next.compare_exchange_strong(hNode, xorNode))
+        {
+          physicalDelete(xorNode, hNode);
+
+          Node *nextLeaf = hNode;
+          while (nextLeaf != xorNode)
+          {
+            Node *curr = nextLeaf;
+            nextLeaf = address(nextLeaf->next.load());
+            scope.retire(curr);
+          }
+        }
+
+        return true;
+      }
+
+      hNode = address(xorNode);
+    }
+  }
+
+  bool peek(P &outPriority) const
+  {
+    garbageCollector.openThreadContext();
+
+    Node *h = head.load(std::memory_order_acquire);
+    Node *leaf = address(h->next.load(std::memory_order_acquire));
+
+    while (true)
+    {
+      uintptr_t rawNext = reinterpret_cast<uintptr_t>(leaf->next.load(std::memory_order_acquire));
+      Node *nextLeaf = address(reinterpret_cast<Node *>(rawNext));
+
+      if (!nextLeaf)
+      {
+        return false;
+      }
+
+      if (getMark(reinterpret_cast<Node *>(rawNext)) != NOT_MARKED)
+      {
+        leaf = nextLeaf;
+        continue;
+      }
+
+      outPriority = nextLeaf->priority;
+      return true;
+    }
+  }
+};
+
+template <typename T, typename P> thread_local uint32_t ConcurrentPriorityQueue<T, P>::seed = 0;
+// template <typename T, typename P> thread_local std::string ConcurrentPriorityQueue<T, P>::dump = "";
+} // namespace lib
