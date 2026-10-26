@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.10)
+
+get_filename_component(TEST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+add_executable(
+  SparseVoxelTerrainVirtualGeometryEndToEndTests
+  ${TEST_DIR}/SparseVoxelTerrainVirtualGeometryEndToEndTests.cpp
+  ${TEST_DIR}/TerrainGenerationPhase0Utils.cpp)
+target_link_libraries(SparseVoxelTerrainVirtualGeometryEndToEndTests PRIVATE Engine)
+add_dependencies(SparseVoxelTerrainVirtualGeometryEndToEndTests wgsl_virtualgeometry_id_readback_cs)
+add_dependencies(SparseVoxelTerrainVirtualGeometryEndToEndTests wgsl_virtualgeometry_page_decode_cs)
+add_dependencies(SparseVoxelTerrainVirtualGeometryEndToEndTests wgsl_virtualgeometry_cull_prepass_multipass)
+add_dependencies(SparseVoxelTerrainVirtualGeometryEndToEndTests wgsl_virtualgeometry_vertex_shader_motion)
+add_dependencies(SparseVoxelTerrainVirtualGeometryEndToEndTests wgsl_virtualgeometry_vertex_shader_motion_draw_indirect_count_disabled)
+add_dependencies(SparseVoxelTerrainVirtualGeometryEndToEndTests wgsl_virtualgeometry_fragment_shader_motion)
+
+add_test(
+  NAME SparseVoxelTerrainVirtualGeometryEndToEnd
+  COMMAND SparseVoxelTerrainVirtualGeometryEndToEndTests)
+set_tests_properties(
+  SparseVoxelTerrainVirtualGeometryEndToEnd
+  PROPERTIES
+    TIMEOUT 900
+    LABELS "svraster.terrain;svraster.virtualgeometry;svraster.streaming;gpu")
